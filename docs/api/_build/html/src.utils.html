@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.utils package &mdash; LSB-AI-Detection 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="src.visualization package" href="src.visualization.html" />
+    <link rel="prev" title="src.evaluation package" href="src.evaluation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LSB-AI-Detection
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="src.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="src.data.html">src.data package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="src.evaluation.html">src.evaluation package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">src.utils package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="src.visualization.html">src.visualization package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="src.html#module-src">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LSB-AI-Detection</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="src.html">src package</a></li>
+      <li class="breadcrumb-item active">src.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/src.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src-utils-package">
+<h1>src.utils package<a class="headerlink" href="#src-utils-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-src.utils.coco_utils">
+<span id="src-utils-coco-utils-module"></span><h2>src.utils.coco_utils module<a class="headerlink" href="#module-src.utils.coco_utils" title="Link to this heading"></a></h2>
+<p>COCO format utilities.</p>
+<p>Provides functions for converting masks to COCO-compatible RLE format,
+extracting bounding boxes, and generating COCO annotations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.coco_utils.create_categories">
+<span class="sig-prename descclassname"><span class="pre">src.utils.coco_utils.</span></span><span class="sig-name descname"><span class="pre">create_categories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#create_categories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.coco_utils.create_categories" title="Link to this definition"></a></dt>
+<dd><p>Create COCO category definitions for stream and satellite classes.</p>
+<p>Generates categories for each surface brightness threshold, with both
+‘stellar_stream’ and ‘satellite’ variants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>thresholds</strong> – List of surface brightness thresholds</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>List of category dictionaries for COCO JSON</p></li>
+<li><p>Mapping dict: (type, threshold) -&gt; category_id</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">categories</span><span class="p">,</span> <span class="n">mapping</span> <span class="o">=</span> <span class="n">create_categories</span><span class="p">([</span><span class="mf">27.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapping</span><span class="p">[(</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="mf">27.0</span><span class="p">)]</span>  <span class="c1"># Returns category ID for SB27 streams</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.coco_utils.get_bbox_from_mask">
+<span class="sig-prename descclassname"><span class="pre">src.utils.coco_utils.</span></span><span class="sig-name descname"><span class="pre">get_bbox_from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#get_bbox_from_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.coco_utils.get_bbox_from_mask" title="Link to this definition"></a></dt>
+<dd><p>Extract bounding box [x, y, width, height] from a binary mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>binary_mask</strong> – Binary mask array</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Bounding box in COCO format [x, y, width, height].
+Returns [0, 0, 0, 0] for empty masks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.coco_utils.mask_to_rle">
+<span class="sig-prename descclassname"><span class="pre">src.utils.coco_utils.</span></span><span class="sig-name descname"><span class="pre">mask_to_rle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#mask_to_rle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.coco_utils.mask_to_rle" title="Link to this definition"></a></dt>
+<dd><p>Convert a binary mask to COCO RLE (Run-Length Encoding) format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>binary_mask</strong> – Binary mask array (0 = background, 1 = foreground)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>RLE dictionary with ‘size’ and ‘counts’ keys.
+The ‘counts’ is decoded to UTF-8 string for JSON serialization.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.coco_utils.process_mask_to_annotations">
+<span class="sig-prename descclassname"><span class="pre">src.utils.coco_utils.</span></span><span class="sig-name descname"><span class="pre">process_mask_to_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ann_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#process_mask_to_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.coco_utils.process_mask_to_annotations" title="Link to this definition"></a></dt>
+<dd><p>Convert an instance mask to COCO annotation dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_data</strong> – Instance mask with unique labels for each instance</p></li>
+<li><p><strong>image_id</strong> – COCO image ID</p></li>
+<li><p><strong>category_id</strong> – COCO category ID</p></li>
+<li><p><strong>ann_id</strong> – Starting annotation ID</p></li>
+<li><p><strong>min_area</strong> – Minimum pixel area to include (filters noise)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>List of annotation dictionaries</p></li>
+<li><p>Updated annotation ID counter</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-src.utils.logger">
+<span id="src-utils-logger-module"></span><h2>src.utils.logger module<a class="headerlink" href="#module-src.utils.logger" title="Link to this heading"></a></h2>
+<p>Centralized logging configuration.</p>
+<p>Provides a standard logging setup with both console and rotating file output
+for consistent logging across all scripts.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.logger.setup_logger">
+<span class="sig-prename descclassname"><span class="pre">src.utils.logger.</span></span><span class="sig-name descname"><span class="pre">setup_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10485760</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backup_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="reference internal" href="_modules/src/utils/logger.html#setup_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.logger.setup_logger" title="Link to this definition"></a></dt>
+<dd><p>Set up a logger with console and optional file handlers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Logger name (typically __name__ or script name)</p></li>
+<li><p><strong>log_dir</strong> – Directory for log files. If None, only console logging is used.</p></li>
+<li><p><strong>level</strong> – Logging level (default: INFO)</p></li>
+<li><p><strong>max_bytes</strong> – Maximum size of each log file before rotation</p></li>
+<li><p><strong>backup_count</strong> – Number of backup files to keep</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured logger instance</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">src.utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="s2">&quot;build_dataset&quot;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;logs&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting dataset build...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+<section id="module-src.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.utils" title="Link to this heading"></a></h2>
+<p>Utility modules for logging, COCO format handling, etc.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.create_categories">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">create_categories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thresholds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#create_categories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.create_categories" title="Link to this definition"></a></dt>
+<dd><p>Create COCO category definitions for stream and satellite classes.</p>
+<p>Generates categories for each surface brightness threshold, with both
+‘stellar_stream’ and ‘satellite’ variants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>thresholds</strong> – List of surface brightness thresholds</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>List of category dictionaries for COCO JSON</p></li>
+<li><p>Mapping dict: (type, threshold) -&gt; category_id</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">categories</span><span class="p">,</span> <span class="n">mapping</span> <span class="o">=</span> <span class="n">create_categories</span><span class="p">([</span><span class="mf">27.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mapping</span><span class="p">[(</span><span class="s2">&quot;stream&quot;</span><span class="p">,</span> <span class="mf">27.0</span><span class="p">)]</span>  <span class="c1"># Returns category ID for SB27 streams</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.get_bbox_from_mask">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">get_bbox_from_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#get_bbox_from_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.get_bbox_from_mask" title="Link to this definition"></a></dt>
+<dd><p>Extract bounding box [x, y, width, height] from a binary mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>binary_mask</strong> – Binary mask array</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Bounding box in COCO format [x, y, width, height].
+Returns [0, 0, 0, 0] for empty masks.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.mask_to_rle">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">mask_to_rle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#mask_to_rle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.mask_to_rle" title="Link to this definition"></a></dt>
+<dd><p>Convert a binary mask to COCO RLE (Run-Length Encoding) format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>binary_mask</strong> – Binary mask array (0 = background, 1 = foreground)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>RLE dictionary with ‘size’ and ‘counts’ keys.
+The ‘counts’ is decoded to UTF-8 string for JSON serialization.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.process_mask_to_annotations">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">process_mask_to_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ann_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_area</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/src/utils/coco_utils.html#process_mask_to_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.process_mask_to_annotations" title="Link to this definition"></a></dt>
+<dd><p>Convert an instance mask to COCO annotation dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_data</strong> – Instance mask with unique labels for each instance</p></li>
+<li><p><strong>image_id</strong> – COCO image ID</p></li>
+<li><p><strong>category_id</strong> – COCO category ID</p></li>
+<li><p><strong>ann_id</strong> – Starting annotation ID</p></li>
+<li><p><strong>min_area</strong> – Minimum pixel area to include (filters noise)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>List of annotation dictionaries</p></li>
+<li><p>Updated annotation ID counter</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.setup_logger">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">setup_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10485760</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backup_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="reference internal" href="_modules/src/utils/logger.html#setup_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.setup_logger" title="Link to this definition"></a></dt>
+<dd><p>Set up a logger with console and optional file handlers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Logger name (typically __name__ or script name)</p></li>
+<li><p><strong>log_dir</strong> – Directory for log files. If None, only console logging is used.</p></li>
+<li><p><strong>level</strong> – Logging level (default: INFO)</p></li>
+<li><p><strong>max_bytes</strong> – Maximum size of each log file before rotation</p></li>
+<li><p><strong>backup_count</strong> – Number of backup files to keep</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured logger instance</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">src.utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_logger</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="s2">&quot;build_dataset&quot;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;logs&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting dataset build...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.evaluation.html" class="btn btn-neutral float-left" title="src.evaluation package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.visualization.html" class="btn btn-neutral float-right" title="src.visualization package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Yuqi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

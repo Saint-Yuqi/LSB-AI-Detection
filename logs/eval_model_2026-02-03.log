@@ -1,0 +1,49 @@
+2026-02-03 14:42:25 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-03.log
+2026-02-03 14:42:25 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-03 14:42:25 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-03 14:42:31 | INFO     | eval_model | Found 70 unique images with 1025 GT masks
+2026-02-03 14:42:31 | INFO     | eval_model | Loading SAM2 model...
+2026-02-03 14:42:31 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-03 14:42:31 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/sam2/scratch/run_20260127_223151/checkpoints/checkpoint.pt
+2026-02-03 14:42:31 | INFO     | eval_model |   Device: cuda
+2026-02-03 14:44:22 | INFO     | eval_model | Created type-specific mask generators:
+2026-02-03 14:44:22 | INFO     | eval_model |   Streams: points_per_side=64, pred_iou_thresh=0.6
+2026-02-03 14:44:22 | INFO     | eval_model |   Satellites: points_per_side=128, pred_iou_thresh=0.8
+2026-02-03 14:44:22 | INFO     | eval_model | Processing 70 unique images...
+2026-02-03 14:44:22 | INFO     | eval_model |   (1025 total GT mask evaluations)
+2026-02-03 14:44:22 | INFO     | eval_model |   [1/70] 11_eo (types: ['satellites', 'streams'], 20 GT masks)
+2026-02-03 14:52:06 | INFO     | eval_model |   [10/70] 24_fo (types: ['satellites', 'streams'], 13 GT masks)
+2026-02-03 14:59:54 | INFO     | eval_model |   [20/70] 30_fo (types: ['satellites', 'streams'], 15 GT masks)
+2026-02-03 15:07:10 | INFO     | eval_model |   [30/70] 36_fo (types: ['satellites', 'streams'], 7 GT masks)
+2026-02-03 15:14:20 | INFO     | eval_model |   [40/70] 42_fo (types: ['satellites', 'streams'], 20 GT masks)
+2026-02-03 15:21:10 | INFO     | eval_model |   [50/70] 47_fo (types: ['satellites', 'streams'], 20 GT masks)
+2026-02-03 15:28:14 | INFO     | eval_model |   [60/70] 56_fo (types: ['satellites', 'streams'], 16 GT masks)
+2026-02-03 15:35:42 | INFO     | eval_model |   [70/70] 72_fo (types: ['satellites'], 10 GT masks)
+2026-02-03 15:36:17 | INFO     | eval_model | ======================================================================
+2026-02-03 15:36:17 | INFO     | eval_model | EVALUATION RESULTS
+2026-02-03 15:36:17 | INFO     | eval_model | ======================================================================
+2026-02-03 15:36:17 | INFO     | eval_model | Overall (n=1025):
+2026-02-03 15:36:17 | INFO     | eval_model |   Binary IoU:        mean=0.0114, std=0.0483
+2026-02-03 15:36:17 | INFO     | eval_model |   Mean Instance IoU: mean=0.0066, std=0.0289
+2026-02-03 15:36:17 | INFO     | eval_model | Streams (n=413):
+2026-02-03 15:36:17 | INFO     | eval_model |   Binary IoU:        mean=0.0284
+2026-02-03 15:36:17 | INFO     | eval_model |   Mean Instance IoU: mean=0.0164
+2026-02-03 15:36:17 | INFO     | eval_model |   Recall:            mean=0.0818
+2026-02-03 15:36:17 | INFO     | eval_model | Satellites (n=612):
+2026-02-03 15:36:17 | INFO     | eval_model |   Binary IoU:        mean=0.0000
+2026-02-03 15:36:17 | INFO     | eval_model |   Mean Instance IoU: mean=0.0000
+2026-02-03 15:36:17 | INFO     | eval_model |   Recall:            mean=0.0000
+2026-02-03 15:36:17 | INFO     | eval_model | By SB Threshold:
+2026-02-03 15:36:17 | INFO     | eval_model |   SB27.0: n=55, Binary=0.0010, Instance=0.0010
+2026-02-03 15:36:17 | INFO     | eval_model |   SB27.5: n=63, Binary=0.0033, Instance=0.0032
+2026-02-03 15:36:17 | INFO     | eval_model |   SB28.0: n=69, Binary=0.0046, Instance=0.0044
+2026-02-03 15:36:17 | INFO     | eval_model |   SB28.5: n=84, Binary=0.0047, Instance=0.0042
+2026-02-03 15:36:17 | INFO     | eval_model |   SB29.0: n=95, Binary=0.0070, Instance=0.0062
+2026-02-03 15:36:17 | INFO     | eval_model |   SB29.5: n=109, Binary=0.0080, Instance=0.0059
+2026-02-03 15:36:17 | INFO     | eval_model |   SB30.0: n=118, Binary=0.0114, Instance=0.0073
+2026-02-03 15:36:17 | INFO     | eval_model |   SB30.5: n=121, Binary=0.0135, Instance=0.0073
+2026-02-03 15:36:17 | INFO     | eval_model |   SB31.0: n=126, Binary=0.0155, Instance=0.0083
+2026-02-03 15:36:17 | INFO     | eval_model |   SB31.5: n=127, Binary=0.0169, Instance=0.0077
+2026-02-03 15:36:17 | INFO     | eval_model |   SB32.0: n=58, Binary=0.0366, Instance=0.0148
+2026-02-03 15:36:17 | INFO     | eval_model | Results saved to: data/03_results/sam2_eval/iou_results_20260203_153617.json
+2026-02-03 15:36:17 | INFO     | eval_model | Evaluation complete!

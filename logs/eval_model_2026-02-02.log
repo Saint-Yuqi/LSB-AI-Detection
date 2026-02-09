@@ -1,0 +1,113 @@
+2026-02-02 16:58:17 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 16:58:17 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 16:58:17 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 16:58:17 | INFO     | eval_model | Found 1025 samples
+2026-02-02 16:58:17 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 16:58:17 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_l.yaml
+2026-02-02 16:58:17 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/LSB-AI-Detection/scratch/sam2_finetuning_20260129_115737/checkpoints/checkpoint_160.pt
+2026-02-02 16:58:17 | INFO     | eval_model |   Device: cuda
+2026-02-02 17:09:43 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 17:09:43 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 17:09:43 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 17:09:43 | INFO     | eval_model | Found 2 samples
+2026-02-02 17:09:43 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 17:09:43 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-02 17:09:43 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/LSB-AI-Detection/scratch/sam2_finetuning_20260129_115737/checkpoints/checkpoint_160.pt
+2026-02-02 17:09:43 | INFO     | eval_model |   Device: cuda
+2026-02-02 17:11:22 | INFO     | eval_model | Processing 2 samples...
+2026-02-02 17:11:22 | INFO     | eval_model |   [1/2] 00011_eo_SB27.5_satellites
+2026-02-02 17:11:37 | INFO     | eval_model | ======================================================================
+2026-02-02 17:11:37 | INFO     | eval_model | EVALUATION RESULTS
+2026-02-02 17:11:37 | INFO     | eval_model | ======================================================================
+2026-02-02 17:11:37 | INFO     | eval_model | Overall (n=2):
+2026-02-02 17:11:37 | INFO     | eval_model |   Binary IoU:        mean=0.0001, std=0.0001
+2026-02-02 17:11:37 | INFO     | eval_model |   Mean Instance IoU: mean=0.0000, std=0.0000
+2026-02-02 17:11:37 | INFO     | eval_model | Streams (n=1):
+2026-02-02 17:11:37 | INFO     | eval_model |   Binary IoU:        mean=0.0000
+2026-02-02 17:11:37 | INFO     | eval_model |   Mean Instance IoU: mean=0.0000
+2026-02-02 17:11:37 | INFO     | eval_model | Satellites (n=1):
+2026-02-02 17:11:37 | INFO     | eval_model |   Binary IoU:        mean=0.0003
+2026-02-02 17:11:37 | INFO     | eval_model |   Mean Instance IoU: mean=0.0001
+2026-02-02 17:11:37 | INFO     | eval_model | By SB Threshold:
+2026-02-02 17:11:37 | INFO     | eval_model |   SB27.5: n=2, Binary=0.0001, Instance=0.0000
+2026-02-02 17:11:37 | INFO     | eval_model | Results saved to: data/03_results/sam2_eval/iou_results_20260202_171137.json
+2026-02-02 17:11:37 | INFO     | eval_model | Evaluation complete!
+2026-02-02 17:16:54 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 17:16:54 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 17:16:54 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 17:16:54 | INFO     | eval_model | Found 2 samples
+2026-02-02 17:16:54 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 17:16:54 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-02 17:16:54 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/LSB-AI-Detection/scratch/sam2_finetuning_20260129_115737/checkpoints/checkpoint_160.pt
+2026-02-02 17:16:54 | INFO     | eval_model |   Device: cuda
+2026-02-02 17:18:20 | INFO     | eval_model | Processing 2 samples...
+2026-02-02 17:18:21 | INFO     | eval_model |   [1/2] 00011_eo_SB27.5_satellites
+2026-02-02 17:18:38 | INFO     | eval_model | ======================================================================
+2026-02-02 17:18:38 | INFO     | eval_model | EVALUATION RESULTS
+2026-02-02 17:18:38 | INFO     | eval_model | ======================================================================
+2026-02-02 17:18:38 | INFO     | eval_model | Overall (n=2):
+2026-02-02 17:18:38 | INFO     | eval_model |   Binary IoU:        mean=0.0025, std=0.0015
+2026-02-02 17:18:38 | INFO     | eval_model |   Mean Instance IoU: mean=0.0022, std=0.0019
+2026-02-02 17:18:38 | INFO     | eval_model | Streams (n=1):
+2026-02-02 17:18:38 | INFO     | eval_model |   Binary IoU:        mean=0.0041
+2026-02-02 17:18:38 | INFO     | eval_model |   Mean Instance IoU: mean=0.0041
+2026-02-02 17:18:38 | INFO     | eval_model | Satellites (n=1):
+2026-02-02 17:18:38 | INFO     | eval_model |   Binary IoU:        mean=0.0010
+2026-02-02 17:18:38 | INFO     | eval_model |   Mean Instance IoU: mean=0.0003
+2026-02-02 17:18:38 | INFO     | eval_model | By SB Threshold:
+2026-02-02 17:18:38 | INFO     | eval_model |   SB27.5: n=2, Binary=0.0025, Instance=0.0022
+2026-02-02 17:18:38 | INFO     | eval_model | Results saved to: data/03_results/sam2_eval/iou_results_20260202_171838.json
+2026-02-02 17:18:38 | INFO     | eval_model | Evaluation complete!
+2026-02-02 17:28:53 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 17:28:53 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 17:28:53 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 17:28:53 | INFO     | eval_model | Found 2 samples
+2026-02-02 17:28:53 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 17:28:53 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-02 17:28:53 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/LSB-AI-Detection/scratch/sam2_finetuning_20260129_115737/checkpoints/checkpoint_160.pt
+2026-02-02 17:28:53 | INFO     | eval_model |   Device: cuda
+2026-02-02 17:28:59 | INFO     | eval_model | Processing 2 samples...
+2026-02-02 17:28:59 | INFO     | eval_model |   [1/2] 00011_eo_SB27.5_satellites
+2026-02-02 17:29:34 | INFO     | eval_model | ======================================================================
+2026-02-02 17:29:34 | INFO     | eval_model | EVALUATION RESULTS
+2026-02-02 17:29:34 | INFO     | eval_model | ======================================================================
+2026-02-02 17:29:34 | INFO     | eval_model | Overall (n=2):
+2026-02-02 17:29:34 | INFO     | eval_model |   Binary IoU:        mean=0.0490, std=0.0490
+2026-02-02 17:29:34 | INFO     | eval_model |   Mean Instance IoU: mean=0.0128, std=0.0128
+2026-02-02 17:29:34 | INFO     | eval_model | Streams (n=1):
+2026-02-02 17:29:34 | INFO     | eval_model |   Binary IoU:        mean=0.0000
+2026-02-02 17:29:34 | INFO     | eval_model |   Mean Instance IoU: mean=0.0000
+2026-02-02 17:29:34 | INFO     | eval_model | Satellites (n=1):
+2026-02-02 17:29:34 | INFO     | eval_model |   Binary IoU:        mean=0.0981
+2026-02-02 17:29:34 | INFO     | eval_model |   Mean Instance IoU: mean=0.0256
+2026-02-02 17:29:34 | INFO     | eval_model | By SB Threshold:
+2026-02-02 17:29:34 | INFO     | eval_model |   SB27.5: n=2, Binary=0.0490, Instance=0.0128
+2026-02-02 17:29:34 | INFO     | eval_model | Results saved to: data/03_results/sam2_eval/iou_results_20260202_172934.json
+2026-02-02 17:29:34 | INFO     | eval_model | Evaluation complete!
+2026-02-02 23:40:17 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 23:40:17 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 23:40:17 | ERROR    | eval_model | No checkpoint specified! Use --checkpoint or set in config.
+2026-02-02 23:45:01 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 23:45:01 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 23:45:01 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 23:45:01 | INFO     | eval_model | Found 1025 samples
+2026-02-02 23:45:01 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 23:45:01 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-02 23:45:01 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/sam2/scratch/run_20260127_223151/checkpoints/checkpoint.pt
+2026-02-02 23:45:01 | INFO     | eval_model |   Device: cuda
+2026-02-02 23:45:14 | INFO     | eval_model | Processing 1025 samples...
+2026-02-02 23:45:14 | INFO     | eval_model |   [1/1025] 00011_eo_SB27.5_satellites
+2026-02-02 23:47:30 | INFO     | eval_model |   [10/1025] 00011_eo_SB29_satellites
+2026-02-02 23:58:50 | INFO     | eval_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/eval_model_2026-02-02.log
+2026-02-02 23:58:50 | INFO     | eval_model | Configuration loaded from /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam2.yaml
+2026-02-02 23:58:50 | INFO     | eval_model | Collecting samples from data/02_processed/sam2_prepared...
+2026-02-02 23:58:50 | INFO     | eval_model | Found 70 unique images with 1025 GT masks
+2026-02-02 23:58:50 | INFO     | eval_model | Loading SAM2 model...
+2026-02-02 23:58:50 | INFO     | eval_model |   Config: configs/sam2.1/sam2.1_hiera_b+.yaml
+2026-02-02 23:58:50 | INFO     | eval_model |   Checkpoint: /home/yuqyan/Yuqi/sam2/scratch/run_20260127_223151/checkpoints/checkpoint.pt
+2026-02-02 23:58:50 | INFO     | eval_model |   Device: cuda
+2026-02-02 23:58:52 | INFO     | eval_model | Processing 70 unique images...
+2026-02-02 23:58:52 | INFO     | eval_model |   (1025 total GT mask evaluations)
+2026-02-02 23:58:52 | INFO     | eval_model |   [1/70] 11_eo (20 GT masks)
+2026-02-03 00:02:07 | INFO     | eval_model |   [10/70] 24_fo (13 GT masks)
+2026-02-03 00:05:04 | INFO     | eval_model |   [20/70] 30_fo (15 GT masks)

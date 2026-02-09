@@ -1,0 +1,167 @@
+# SAM2 Data Preparation Configuration
+# ====================================
+# Format: Folder-based video structure for SAM2 video segmentation
+# Output: img_folder/{sample}/0000.png + gt_folder/{sample}/0000.png
+# Processing: FITS → Flux → Asinh Stretch → 8-bit RGB
+
+# ============================================================================
+# PATH CONFIGURATION
+# ============================================================================
+paths:
+  # Root directory for FIREbox-DR1 data (stellar streams)
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  
+  # Root directory for fbox data (satellites)
+  fbox_root: "data/01_raw/LSB_and_Satellites/fbox"
+  
+  # Satellite metadata pickle file (absolute path - 13GB file)
+  satellite_pickle: "/shares/feldmann.ics.mnf.uzh/Lucas/pNbody/satellites/fbox/props_gals_Fbox_new.pkl"
+  
+  # Output directory for SAM2 format dataset
+  output_root: "data/02_processed/sam2_prepared"
+
+# ============================================================================
+# IMAGE PROCESSING PARAMETERS
+# ============================================================================
+processing:
+  # Target image resolution (width, height) - SAM2 uses 1072x1072
+  target_size: [1072, 1072]
+  
+  # PREPROCESSING METHOD SELECTION
+  # Choose between three astrophysical preprocessing approaches:
+  #
+  # 1. "asinh_stretch" (Default - Maximum Dynamic Range)
+  #    - Pipeline: Magnitude → Flux → Background Sub → Percentile Norm → Asinh Stretch
+  #    - Preserves both faint streams AND bright galaxy cores in a single image
+  #    - Per-image adaptive normalization (each galaxy optimized independently)
+  #    - Best for: Maximum detail within individual images
+  #
+  # 2. "linear_magnitude" (Global Photometric Consistency)
+  #    - Pipeline: Magnitude → Clip [20,35] → Linear Normalize
+  #    - Direct linear mapping from magnitude to pixel intensity
+  #    - Global fixed range ensures same magnitude = same pixel value across ALL galaxies
+  #    - Best for: Cross-galaxy brightness comparisons, simpler processing
+  #
+  # 3. "multi_exposure" (Multi-Channel Feature Encoding)
+  #    - Pipeline: 3-channel RGB with different stretches per channel
+  #    - R: Linear magnitude mapping (global range)
+  #    - G: Asinh stretch (preserves faint + bright)
+  #    - B: Gamma from G channel (boosts faint features)
+  #    - Best for: Dense feature encoding, multi-exposure visualization
+  #
+  # ⚠️  IMPORTANT: Use the SAME method that was used during model training!
+  # If model was trained with asinh_stretch, inference must also use asinh_stretch.
+  preprocessing_method: "linear_magnitude"
+  
+  # --------------------------------------------------------------------------
+  # PARAMETERS FOR "asinh_stretch" METHOD
+  # (Only used when preprocessing_method = "asinh_stretch")
+  # --------------------------------------------------------------------------
+  
+  # Magnitude zeropoint for flux conversion: flux = 10^((zp - mag) / 2.5)
+  zeropoint: 22.5
+  
+  # Asinh stretch parameter (higher = more contrast for faint features)
+  # Range: 10-50. SAM2 uses higher nonlinearity (300.0) for better stream visibility.
+  nonlinearity: 50.0
+  
+  # Percentile for vmax normalization reference
+  clip_percentile: 99.5
+  
+  # --------------------------------------------------------------------------
+  # PARAMETERS FOR "linear_magnitude" METHOD
+  # (Only used when preprocessing_method = "linear_magnitude")
+  # --------------------------------------------------------------------------
+  
+  # Global magnitude range for linear normalization
+  # These define the physical limits mapped to [0, 255] pixel values
+  global_mag_min: 20.0    # Saturation point (brightest) → White (255)
+  global_mag_max: 35.0    # Background noise (faintest) → Black (0)
+  
+  # Interpolation mode for resizing: "linear", "cubic", or "nearest"
+  # "cubic" provides sharpest results for astronomical images
+  interpolation: "cubic"
+  
+  # --------------------------------------------------------------------------
+  # PARAMETERS FOR "multi_exposure" METHOD
+  # (Only used when preprocessing_method = "multi_exposure")
+  # --------------------------------------------------------------------------
+  
+  # B channel mode - determines how B channel is computed:
+  #   "gamma"        : B = G^gamma (default, gamma < 1 boosts faint features)
+  #   "zscale"       : ZScaleInterval from astropy (astronomy display standard)
+  #   "zscale_asinh" : ZScaleInterval + AsinhStretch (astronomy + faint boost)
+  #   "none"         : B = G (debug mode, produces grayscale-ish RGB)
+  b_mode: "zscale_asinh"
+  
+  # Contrast for ZScaleInterval (only used when b_mode="zscale" or "zscale_asinh")
+  # Higher values = more aggressive stretch, 0.25 is astropy default
+  zscale_contrast: 0.25
+  
+  # Gamma for B channel (only used when b_mode="gamma")
+  # Values < 1 boost faint features (0.5-0.7 recommended)
+  gamma: 0.7
+  
+  # Color balance gains (applied AFTER channel computation)
+  # Use to correct purple/blue tint or boost red features
+  r_gain: 1.0   # Default 1.0 (no change)
+  b_gain: 0.8   # Slightly reduce B to prevent purple tint
+
+
+# ============================================================================
+# DATA SELECTION
+# ============================================================================
+data_selection:
+  # Surface brightness thresholds (mag/arcsec²)
+  #sb_thresholds: [27, 27.5, 28, 28.5, 29, 29.5, 30, 30.5, 31, 31.5, 32]
+  sb_thresholds: [31, 31.5, 32]
+  # Galaxy IDs to process
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36, 
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56, 
+               63, 64, 66, 68, 72]
+  
+  # Orientation views
+  orientations: ["eo", "fo"]
+  
+  # Feature types to process
+  feature_types: ["streams", "satellites"]
+
+# ============================================================================
+# DATA SOURCES (FITS Files)
+# ============================================================================
+data_sources:
+  # Streams use VIS2 images from FIREbox-DR1
+  streams:
+    image_subdir: "SB_maps"
+    image_pattern: "magnitudes-Fbox-{galaxy_id}-{orientation}-VIS2.fits.gz"
+    mask_subdir_eo: "MASKS_EO"
+    mask_subdir_fo: "MASKS_FO"
+    mask_pattern: "ark_features-{galaxy_id}-{orientation}-SBlim{threshold}.fits.gz"
+  
+  # Satellites use VIS images from fbox
+  satellites:
+    image_subdir: "sb_maps"
+    image_pattern: "magnitudes-Fbox-{galaxy_id}-{orientation}-VIS.fits.gz"
+
+# ============================================================================
+# OUTPUT FORMAT (SAM2 Video Structure)
+# ============================================================================
+output_format:
+  # Format type: "folder_based" (SAM2) or "coco_instances" (SAM3)
+  format_type: "folder_based"
+  
+  # Folder naming: {galaxy_id}_{orientation}_SB{threshold}_{type}
+  folder_template: "{galaxy_id:05d}_{orientation}_SB{threshold}_{type}"
+  
+  # Frame file name (SAM2 expects single frame as 0000.png)
+  frame_filename: "0000.png"
+  
+  # Subfolder names
+  image_folder: "img_folder"
+  gt_folder: "gt_folder"
+
+# ============================================================================
+# REPRODUCIBILITY
+# ============================================================================
+reproducibility:
+  random_seed: 42

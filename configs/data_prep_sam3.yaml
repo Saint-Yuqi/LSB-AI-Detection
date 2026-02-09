@@ -1,0 +1,152 @@
+# SAM3 Data Preparation Configuration
+# ====================================
+# Format: COCO JSON with flat image/mask structure for SAM3 instance segmentation
+# Output: images/*.png + masks/*.png + annotations.json
+# Processing: FITS → Flux → Asinh Stretch → 8-bit RGB
+
+# ============================================================================
+# PATH CONFIGURATION
+# ============================================================================
+paths:
+  # Root directory for FIREbox-DR1 data (stellar streams)
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  
+  # Root directory for fbox data (satellites)
+  fbox_root: "data/01_raw/LSB_and_Satellites/fbox"
+  
+  # Satellite metadata pickle file (absolute path - 13GB file)
+  satellite_pickle: "/shares/feldmann.ics.mnf.uzh/Lucas/pNbody/satellites/fbox/props_gals_Fbox_new.pkl"
+  
+  # Output directory for processed dataset
+  output_root: "data/02_processed/sam3_prepared"
+
+# ============================================================================
+# IMAGE PROCESSING PARAMETERS
+# ============================================================================
+processing:
+  # Target image resolution (width, height) - SAM3 uses 1024x1024
+  target_size: [1024, 1024]
+  
+  # PREPROCESSING METHOD SELECTION
+  # Choose between two astrophysical preprocessing approaches:
+  #
+  # 1. "asinh_stretch" (Default - Maximum Dynamic Range)
+  #    - Pipeline: Magnitude → Flux → Background Sub → Percentile Norm → Asinh Stretch
+  #    - Preserves both faint streams AND bright galaxy cores in a single image
+  #    - Per-image adaptive normalization (each galaxy optimized independently)
+  #    - Best for: Maximum detail within individual images
+  #
+  # 2. "linear_magnitude" (Global Photometric Consistency)
+  #    - Pipeline: Magnitude → Clip [20,35] → Linear Normalize
+  #    - Direct linear mapping from magnitude to pixel intensity
+  #    - Global fixed range ensures same magnitude = same pixel value across ALL galaxies
+  #    - Best for: Cross-galaxy brightness comparisons, simpler processing
+  preprocessing_method: "linear_magnitude"
+  
+  # --------------------------------------------------------------------------
+  # PARAMETERS FOR "asinh_stretch" METHOD
+  # (Only used when preprocessing_method = "asinh_stretch")
+  # --------------------------------------------------------------------------
+  
+  # Magnitude zeropoint for flux conversion: flux = 10^((zp - mag) / 2.5)
+  zeropoint: 22.5
+  
+  # Asinh stretch parameter (higher = more contrast for faint features)
+  # Range: 10-50. Lower values preserve linearity, higher enhance faint streams.
+  nonlinearity: 200.0
+  
+  # Percentile for vmax normalization reference
+  clip_percentile: 99.5
+  
+  # --------------------------------------------------------------------------
+  # PARAMETERS FOR "linear_magnitude" METHOD
+  # (Only used when preprocessing_method = "linear_magnitude")
+  # --------------------------------------------------------------------------
+  
+  # Global magnitude range for linear normalization
+  # These define the physical limits mapped to [0, 255] pixel values
+  global_mag_min: 20.0    # Saturation point (brightest) → White (255)
+  global_mag_max: 35.0    # Background noise (faintest) → Black (0)
+  
+  # Interpolation mode for resizing: "linear", "cubic", or "nearest"
+  # "cubic" provides sharpest results for astronomical images
+  interpolation: "cubic"
+
+
+# ============================================================================
+# DATA SELECTION
+# ============================================================================
+data_selection:
+  # Surface brightness thresholds (mag/arcsec²)
+  sb_thresholds: [27, 27.5, 28, 28.5, 29, 29.5, 30, 30.5, 31, 31.5, 32]
+  
+  # Galaxy IDs to process
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36, 
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56, 
+               63, 64, 66, 68, 72]
+  
+  # Orientation views
+  orientations: ["eo", "fo"]
+  
+  # Feature types to process
+  feature_types: ["streams", "satellites"]
+
+# ============================================================================
+# DATA SOURCES (FITS Files)
+# ============================================================================
+data_sources:
+  # Streams use VIS2 images from FIREbox-DR1
+  streams:
+    image_subdir: "SB_maps"
+    image_pattern: "magnitudes-Fbox-{galaxy_id}-{orientation}-VIS2.fits.gz"
+    mask_subdir_eo: "MASKS_EO"
+    mask_subdir_fo: "MASKS_FO"
+    mask_pattern: "ark_features-{galaxy_id}-{orientation}-SBlim{threshold}.fits.gz"
+  
+  # Satellites use VIS images from fbox
+  satellites:
+    image_subdir: "sb_maps"
+    image_pattern: "magnitudes-Fbox-{galaxy_id}-{orientation}-VIS.fits.gz"
+
+# ============================================================================
+# OUTPUT FORMAT (COCO JSON)
+# ============================================================================
+output_format:
+  # Format type: "folder_based" (SAM2) or "coco_instances" (SAM3)
+  format_type: "coco_instances"
+  
+  # Image naming template
+  image_template: "Fbox-{galaxy_id}-{orientation}_{type}.png"
+  
+  # Mask naming template
+  mask_template: "Fbox-{galaxy_id}-{orientation}_SB{threshold}_{type}.png"
+  
+  # Annotation file
+  annotations_file: "annotations.json"
+  
+  # Subfolder names
+  image_folder: "images"
+  mask_folder: "masks"
+
+# ============================================================================
+# ANNOTATION SETTINGS (SAM3 Semantic Categories)
+# ============================================================================
+annotation:
+  # Minimum area in pixels to include an instance
+  min_instance_area: 10
+  
+  # SAM3 uses category 'name' as text prompts for detection.
+  # Semantic names mapping:
+  #   streams    -> "stellar stream"
+  #   satellites -> "satellite galaxy"
+  
+  # Whether to include SB threshold in category name
+  # - false: Clean names like "stellar stream" (recommended for SAM3)
+  # - true: Detailed names like "stellar stream at SB 27"
+  include_threshold_in_name: true
+
+# ============================================================================
+# REPRODUCIBILITY
+# ============================================================================
+reproducibility:
+  random_seed: 42

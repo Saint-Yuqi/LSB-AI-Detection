@@ -1,0 +1,45 @@
+2026-02-04 17:23:15 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 17:23:15 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 17:23:15 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 17:23:15 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.png
+2026-02-04 17:23:15 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.json
+2026-02-04 17:34:25 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 17:34:25 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 17:34:25 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 17:34:25 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.png
+2026-02-04 17:34:25 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.json
+2026-02-04 18:22:13 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:22:13 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:22:13 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:22:13 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.png
+2026-02-04 18:22:13 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams_SB27.0.json
+2026-02-04 18:23:02 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:23:02 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:23:02 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:23:02 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:23:02 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-04 18:25:04 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:25:04 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:25:04 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:25:04 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:25:04 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-04 18:26:26 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:26:26 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:26:26 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:26:26 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:26:26 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-04 18:30:51 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:30:51 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:30:51 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:30:51 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:30:51 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-04 18:31:44 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:31:44 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:31:44 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:31:44 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:31:44 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-04 18:32:07 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-04.log
+2026-02-04 18:32:07 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-04 18:32:07 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-04 18:32:07 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-04 18:32:07 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json

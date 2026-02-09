@@ -1,0 +1,73 @@
+# SAM2 Evaluation Configuration
+# Used by: scripts/eval_model.py
+# Note: CLI arguments override these values
+
+# ============================================================================
+# MODEL CONFIGURATION
+# ============================================================================
+model:
+  # Path to SAM2 checkpoint file
+  checkpoint: /home/yuqyan/Yuqi/sam2/scratch/sam2_finetuning_20260205_210313/checkpoints/checkpoint.pt # Required: override via CLI or set here
+  
+  # SAM2 model config file (relative to sam2 repo)
+  model_cfg: "configs/sam2.1/sam2.1_hiera_b+.yaml"
+  
+  # Device for inference
+  device: "cuda"
+
+# ============================================================================
+# DATA PATHS
+# ============================================================================
+data:
+  # Input dataset directory (full range: SB 27-32)
+  data_dir: "data/02_processed/sam2_prepared_linear_full"
+  
+  # Output directory for evaluation results
+  output_dir: "data/03_results/sam2_eval"
+
+# ============================================================================
+# MASK GENERATION PARAMETERS (Unified Benchmark Config)
+# ============================================================================
+# Parameters used for evaluation benchmarking. Same config for both types.
+
+generation_streams:
+  points_per_side: 64
+  points_per_batch: 64
+  pred_iou_thresh: 0.2
+  stability_score_thresh: 0.95
+  box_nms_thresh: 0.3
+  crop_n_layers: 1
+  crop_overlap_ratio: 0.4
+  min_mask_region_area: 10
+  use_m2m: true
+
+generation_satellites:
+  points_per_side: 64
+  points_per_batch: 64
+  pred_iou_thresh: 0.2
+  stability_score_thresh: 0.95
+  box_nms_thresh: 0.3
+  crop_n_layers: 1
+  crop_overlap_ratio: 0.4
+  min_mask_region_area: 10
+  use_m2m: true
+
+# ============================================================================
+# EVALUATION OPTIONS
+# ============================================================================
+evaluation:
+  # Filter by surface brightness threshold (null = all)
+  sb_threshold: null
+  
+  # Filter by type: "streams", "satellites", or null for all
+  sample_type: null
+  
+  # Maximum samples to process (null = all)
+  max_samples: null
+  
+  # Save visualization images
+  save_visualizations: true 
+  
+  # IoU threshold for instance matching (Recall calculation)
+  match_iou_thresh: 0.5
+

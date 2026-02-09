@@ -1,0 +1,21 @@
+2026-02-05 20:49:28 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-05.log
+2026-02-05 20:49:28 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-05 20:49:28 | INFO     | build_dataset | Preprocessing: Linear magnitude [20.0, 35.0] mag/arcsec²
+2026-02-05 20:49:28 | INFO     | build_dataset | ============================================================
+2026-02-05 20:49:28 | INFO     | build_dataset | Dataset Build Started
+2026-02-05 20:49:28 | INFO     | build_dataset | Format: folder_based
+2026-02-05 20:49:28 | INFO     | build_dataset | Galaxies: 35
+2026-02-05 20:49:28 | INFO     | build_dataset | Thresholds: 3
+2026-02-05 20:49:28 | INFO     | build_dataset | ============================================================
+2026-02-05 20:49:28 | INFO     | build_dataset | SAM2 output: data/02_processed/sam2_prepared
+2026-02-05 20:49:28 | INFO     | build_dataset | Total samples to process: 420
+2026-02-05 20:49:28 | INFO     | build_dataset | Unique images: 140
+2026-02-05 20:53:02 | WARNING  | build_dataset | Image not found: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-72-eo-VIS2.fits.gz
+2026-02-05 20:53:02 | WARNING  | build_dataset | Image not found: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-72-fo-VIS2.fits.gz
+2026-02-05 20:53:03 | INFO     | build_dataset | ============================================================
+2026-02-05 20:53:03 | INFO     | build_dataset | Build Complete
+2026-02-05 20:53:03 | INFO     | build_dataset |   Processed: 311
+2026-02-05 20:53:03 | INFO     | build_dataset |   Skipped (no image): 6
+2026-02-05 20:53:03 | INFO     | build_dataset |   Skipped (no mask): 74
+2026-02-05 20:53:03 | INFO     | build_dataset |   Skipped (empty mask): 29
+2026-02-05 20:53:03 | INFO     | build_dataset | ============================================================
