@@ -1,7 +1,7 @@
 # Project Context Summary
 
 > Auto-generated project structure and code skeleton for LSB-AI-Detection.
-> Last updated: 2026-02-04
+> Last updated: 2026-02-09
 
 ## Project Overview
 
@@ -16,7 +16,8 @@ LSB-AI-Detection/
 ├── configs/                          # Configuration files
 │   ├── data_prep_sam2.yaml           # SAM2 dataset config (folder-based, 1072×1072)
 │   ├── data_prep_sam3.yaml           # SAM3 dataset config (COCO JSON, 1024×1024)
-│   └── eval_sam2.yaml                # Model evaluation config
+│   ├── eval_sam2.yaml                # Model evaluation config
+│   └── automask_sweep.yaml           # AutoMask config sweep definitions
 │
 ├── data/
 │   ├── 01_raw/                       # Raw FITS data (symlinked)
@@ -37,19 +38,30 @@ LSB-AI-Detection/
 ├── scripts/                          # Entry point scripts
 │   ├── build_dataset.py              # Dataset preparation (SAM2/SAM3)
 │   ├── eval_model.py                 # Model evaluation
+│   ├── sweep_automask_configs.py     # AutoMask config sweep & ranking
+│   ├── analyze_mask_stats.py         # GT mask statistics analysis
 │   └── visualize_sam3.py             # Visualization for SAM3 dataset
 │
 ├── src/                              # Source code package
 │   ├── data/                         # Data loading & preprocessing
 │   │   ├── io.py
 │   │   └── preprocessing.py
-│   ├── evaluation/                   # Metrics
+│   ├── inference/                    # Model inference wrappers
+│   │   └── sam2_automask_runner.py   # SAM2 AutoMask generator wrapper
+│   ├── postprocess/                  # Mask post-processing filters
+│   │   ├── satellite_prior_filter.py # Area/solidity/aspect_sym rules
+│   │   └── core_exclusion_filter.py  # Centre-radius exclusion
+│   ├── analysis/                     # Metrics & scoring
+│   │   ├── mask_metrics.py           # Per-mask geometry computation
+│   │   └── sweep_scoring.py          # Config ranking & aggregation
+│   ├── evaluation/                   # Evaluation metrics
 │   │   └── metrics.py
 │   ├── utils/                        # Utilities
 │   │   ├── coco_utils.py
 │   │   └── logger.py
 │   └── visualization/                # Plotting
-│       └── plotting.py
+│       ├── plotting.py
+│       └── overlay.py                # Multi-layer contour overlays
 │
 ├── logs/                             # Runtime logs (auto-generated)
 ├── notebooks/                        # Jupyter notebooks
@@ -190,6 +202,88 @@ def calculate_instance_iou(pred_masks: List[Dict], gt_mask: np.ndarray) -> Dict:
     Returns: {'binary_iou': float, 'mean_instance_iou': float, 
               'num_gt_instances': int, 'num_pred_masks': int}
     """
+
+def calculate_matched_metrics(pred_masks: List[Dict], gt_mask: np.ndarray, iou_threshold: float = 0.5) -> Dict:
+    """Instance-level Recall with per-GT matching."""
+```
+
+---
+
+### `src/inference/sam2_automask_runner.py`
+```python
+class AutoMaskRunner:
+    """Wrapper for SAM2AutomaticMaskGenerator with CUDA sync timing.
+    
+    Args:
+        checkpoint: Path to SAM2 checkpoint (.pt)
+        model_cfg: SAM2 config yaml (e.g., 'configs/sam2.1/sam2.1_hiera_b+.yaml')
+        device: 'cuda' or 'cpu'
+    """
+    def run(self, image: np.ndarray, config: Dict | None = None) -> Tuple[List[Dict], float]:
+        """Generate masks. Returns (masks, time_ms)."""
+    
+    def warmup(self, image: np.ndarray, n: int = 2):
+        """JIT warmup passes."""
+```
+
+---
+
+### `src/postprocess/satellite_prior_filter.py`
+```python
+def load_filter_cfg(stats_json: Path, feature_type: str = "satellites") -> Dict:
+    """Load thresholds from mask_stats_summary.json (data-driven)."""
+
+class SatellitePriorFilter:
+    """Filter masks by area/solidity/aspect_sym rules."""
+    def filter(self, masks: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
+        """Returns (kept, rejected)."""
+```
+
+---
+
+### `src/postprocess/core_exclusion_filter.py`
+```python
+class CoreExclusionFilter:
+    """Exclude masks with centroid inside R_exclude = radius_frac * min(H,W)."""
+    def filter(self, masks: List[Dict], H: int, W: int) -> Tuple[List[Dict], List[Dict], Dict]:
+        """Returns (kept, core_hits, diagnostics)."""
+```
+
+---
+
+### `src/analysis/mask_metrics.py`
+```python
+def compute_mask_metrics(seg: np.ndarray, H: int, W: int, compute_hull: bool = True) -> Dict:
+    """Vectorised per-mask geometry: area, bbox, aspect_sym, solidity, centroid, dist_to_center."""
+
+def append_metrics_to_masks(masks: List[Dict], H: int, W: int, compute_hull: bool = True):
+    """In-place add geometry metrics to each mask dict."""
+```
+
+---
+
+### `src/analysis/sweep_scoring.py`
+```python
+def summarise_config(config_dir: Path) -> Dict:
+    """Aggregate per_image_metrics.csv → summary with CV, core_rate, stability, score."""
+
+def aggregate_and_rank(output_root: Path) -> List[Dict]:
+    """Walk config dirs, compute summaries, write ranking.json."""
+```
+
+---
+
+### `src/visualization/overlay.py`
+```python
+def save_overlay(
+    image: np.ndarray,
+    kept: List[Dict],
+    core_rejected: List[Dict] | None = None,
+    prior_rejected: List[Dict] | None = None,
+    out_path: Path = "overlay.png",
+    draw_prior: bool = False,
+):
+    """Multi-layer contours: kept (green), core (red), prior (gray)."""
 ```
 
 ---
@@ -247,11 +341,12 @@ def save_visualization(
 
 ## Configuration Reference
 
-| Config File           | Format       | Image Size | Processing          |
-| --------------------- | ------------ | ---------- | ------------------- |
-| `data_prep_sam2.yaml` | Folder-based | 1072×1072  | FITS → Flux → Asinh |
-| `data_prep_sam3.yaml` | COCO JSON    | 1024×1024  | FITS → Flux → Asinh |
-| `eval_sam2.yaml`      | -            | -          | Model evaluation    |
+| Config File           | Format       | Image Size | Processing               |
+| --------------------- | ------------ | ---------- | ------------------------ |
+| `data_prep_sam2.yaml` | Folder-based | 1072×1072  | FITS → Flux → Asinh      |
+| `data_prep_sam3.yaml` | COCO JSON    | 1024×1024  | FITS → Flux → Asinh      |
+| `eval_sam2.yaml`      | -            | -          | Model evaluation         |
+| `automask_sweep.yaml` | Config list  | -          | AutoMask sweep & ranking |
 
 ---
 

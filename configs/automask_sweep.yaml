@@ -1,0 +1,82 @@
+# AutoMask Sweep - Dense-Tuned Variants
+# Base: dense_tuned (proven best in smoke test)
+# Variations: core_radius_frac, crop settings, thresholds
+
+configs:
+  # V1: Dense-tuned baseline (proven config)
+  - name: dense_v1_base
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.08
+
+  # V2: Smaller core exclusion (keep more near-center masks)
+  - name: dense_v2_core06
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.06
+
+  # V3: Larger core exclusion (stricter core rejection)
+  - name: dense_v3_core10
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.10
+
+  # V4: Lower IoU threshold (more lenient, more masks)
+  - name: dense_v4_iou60
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.60
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.08
+
+  # V5: Higher stability (stricter quality, fewer masks)
+  - name: dense_v5_stab96
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.96
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.08
+
+  # V6: Tighter NMS (less overlap, fewer duplicates)
+  - name: dense_v6_nms35
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.35
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.08

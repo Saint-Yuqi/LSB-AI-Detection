@@ -1,0 +1,7 @@
+# Small subset for quick smoke test (5 images)
+folders:
+  - 00011_eo_SB32_streams
+  - 00013_fo_SB32_streams
+  - 00019_eo_SB32_streams
+  - 00022_fo_SB32_streams
+  - 00024_eo_SB32_streams

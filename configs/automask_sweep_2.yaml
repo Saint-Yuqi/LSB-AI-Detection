@@ -1,0 +1,22 @@
+# Two configs for quick test
+configs:
+  - name: baseline
+    generator:
+      points_per_side: 32
+      pred_iou_thresh: 0.8
+      stability_score_thresh: 0.9
+      box_nms_thresh: 0.7
+      crop_n_layers: 0
+    core_radius_frac: 0.08
+
+  - name: dense_tuned
+    generator:
+      points_per_side: 64
+      points_per_batch: 64
+      pred_iou_thresh: 0.65
+      stability_score_thresh: 0.95
+      box_nms_thresh: 0.4
+      crop_n_layers: 1
+      crop_overlap_ratio: 0.4
+      min_mask_region_area: 10
+    core_radius_frac: 0.08
