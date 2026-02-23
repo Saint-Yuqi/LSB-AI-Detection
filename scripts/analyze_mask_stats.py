@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """
-Analyze instance mask statistics from SAM2 GT masks.
+Analyze instance mask statistics from canonical GT masks (unified pipeline).
 
 Usage:
-    python scripts/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
+    conda run -n sam2 --no-capture-output python scripts/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
 
 Args:
-    --gt_root: Root directory of GT masks (default: data/02_processed/sam2_prepared/gt_folder)
+    --gt_root: Root directory of canonical GT (default: data/02_processed/gt_canonical/current)
     --output_dir: Output directory for stats files (default: outputs/mask_stats)
 
 Outputs:
     - mask_instance_stats.csv: Per-instance statistics
     - mask_stats_summary.json: Quantile summary by feature_type + SB threshold
 
-Dependencies: numpy, PIL, scipy (for convex hull), tqdm
+Dependencies: numpy, PIL, scipy, opencv-python-headless, scikit-image
+
+Aspect ratio fields:
+    aspect_sym_moment:   cov-eigenvalue axis ratio (rotation-invariant, global shape)
+    aspect_sym_boundary: cv2.fitEllipse axis ratio (boundary-aware)
+    curvature_ratio:     skeleton_len / ellipse_major (>1 = curved/bent)
+    aspect_sym:          alias for aspect_sym_moment (backward compat)
 """
 import argparse
 import csv
@@ -27,13 +33,13 @@ from scipy.ndimage import label as ndimage_label
 from scipy.spatial import ConvexHull
 
 
-def parse_folder_name(folder_name: str) -> tuple | None:
-    """Parse folder name: {galaxy_id}_{orientation}_SB{threshold}_{feature_type}"""
-    pattern = r"^(\d+)_(eo|fo)_SB([\d.]+)_(streams|satellites)$"
+def parse_base_key(folder_name: str) -> tuple | None:
+    """Parse BaseKey folder: {galaxy_id:05d}_{orientation} e.g. '00011_eo'."""
+    pattern = r"^(\d+)_(eo|fo)$"
     match = re.match(pattern, folder_name)
     if not match:
         return None
-    return (match.group(1), match.group(2), float(match.group(3)), match.group(4))
+    return (match.group(1).lstrip("0") or "0", match.group(2))
 
 
 def compute_perimeter(binary: np.ndarray) -> float:
@@ -77,17 +83,52 @@ def compute_instance_stats(mask: np.ndarray, instance_id: int) -> dict | None:
     if area == 0:
         return None
 
-    # Bounding box
+    # Bounding box (kept for extent computation)
     rows, cols = np.where(binary)
     y_min, y_max = rows.min(), rows.max()
     x_min, x_max = cols.min(), cols.max()
     bbox_h = int(y_max - y_min + 1)
     bbox_w = int(x_max - x_min + 1)
-
-    aspect_ratio = bbox_w / bbox_h if bbox_h > 0 else 0.0
-    aspect_sym = max(bbox_w / bbox_h, bbox_h / bbox_w) if min(bbox_w, bbox_h) > 0 else 1.0
     bbox_area = bbox_w * bbox_h
     extent = area / bbox_area if bbox_area > 0 else 0.0
+
+    # Ellipse axis ratio: 2nd-order central moments (rotation-invariant)
+    coords = np.column_stack((rows.astype(np.float64), cols.astype(np.float64)))
+    if len(coords) >= 3:
+        cov = np.cov(coords, rowvar=False)
+        eigvals = np.linalg.eigvalsh(cov)
+        eigvals = np.clip(eigvals, 1e-12, None)
+        aspect_sym_moment = float(np.sqrt(eigvals[1] / eigvals[0]))  # major/minor
+    else:
+        aspect_sym_moment = 1.0
+
+    # Ellipse axis ratio: cv2.fitEllipse on contour (boundary-aware)
+    aspect_sym_boundary = None
+    try:
+        import cv2
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if contours:
+            cnt = max(contours, key=len)
+            if len(cnt) >= 5:
+                (_, (w_ell, h_ell), _) = cv2.fitEllipse(cnt)
+                if min(w_ell, h_ell) > 1e-6:
+                    aspect_sym_boundary = float(max(w_ell, h_ell) / min(w_ell, h_ell))
+    except ImportError:
+        pass
+
+    # Curvature: skeleton_length / ellipse_major_axis
+    curvature_ratio = None
+    try:
+        from skimage.morphology import skeletonize
+        if area >= 20:
+            skel = skeletonize(binary.astype(bool))
+            skel_len = float(np.sum(skel))
+            if skel_len >= 1 and len(coords) >= 3:
+                major_axis = 2.0 * np.sqrt(max(eigvals.max(), 1e-12))
+                if major_axis >= 1:
+                    curvature_ratio = float(skel_len / major_axis)
+    except ImportError:
+        pass
 
     perimeter = compute_perimeter(binary)
     convex_area = compute_convex_area(binary)
@@ -98,8 +139,10 @@ def compute_instance_stats(mask: np.ndarray, instance_id: int) -> dict | None:
         "area": area,
         "bbox_w": bbox_w,
         "bbox_h": bbox_h,
-        "aspect_ratio": round(aspect_ratio, 4),
-        "aspect_sym": round(aspect_sym, 4),
+        "aspect_sym_moment": round(aspect_sym_moment, 4),
+        "aspect_sym_boundary": round(aspect_sym_boundary, 4) if aspect_sym_boundary is not None else None,
+        "curvature_ratio": round(curvature_ratio, 4) if curvature_ratio is not None else None,
+        "aspect_sym": round(aspect_sym_moment, 4),  # backward compat
         "extent": round(extent, 4),
         "perimeter": round(perimeter, 2),
         "solidity": round(solidity, 4),
@@ -108,26 +151,51 @@ def compute_instance_stats(mask: np.ndarray, instance_id: int) -> dict | None:
 
 
 def scan_masks(gt_root: Path) -> list[dict]:
-    """Scan all masks and extract per-instance statistics."""
+    """Scan canonical GT dirs and extract per-instance statistics.
+
+    Expects gt_root/{BaseKey}/instance_map_uint8.png + instances.json + manifest.json.
+    """
     records = []
-    mask_paths = sorted(gt_root.glob("*/0000.png"))
+    # Find all BaseKey dirs that contain the canonical merged mask
+    mask_paths = sorted(gt_root.glob("*/instance_map_uint8.png"))
     total = len(mask_paths)
 
     for i, mask_path in enumerate(mask_paths):
-        if i % 50 == 0:
+        if i % 20 == 0:
             print(f"Processing {i}/{total}...")
-        folder_name = mask_path.parent.name
-        parsed = parse_folder_name(folder_name)
+        base_dir = mask_path.parent
+        parsed = parse_base_key(base_dir.name)
         if not parsed:
             continue
 
-        galaxy_id, orientation, sb_threshold, feature_type = parsed
+        galaxy_id, orientation = parsed
+
+        # Read instances.json for feature_type lookup
+        instances_path = base_dir / "instances.json"
+        if not instances_path.exists():
+            continue
+        with open(instances_path) as f:
+            instances_list = json.load(f)
+        # Build inst_id → feature_type map
+        id_to_type = {inst["id"]: inst["type"] for inst in instances_list}
+
+        # Read manifest.json for sb_threshold
+        manifest_path = base_dir / "manifest.json"
+        sb_threshold = 32.0  # fallback
+        if manifest_path.exists():
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            sb_threshold = manifest.get("sb_threshold_used", 32.0)
+
         mask = np.array(Image.open(mask_path))
 
         instance_ids = np.unique(mask)
         instance_ids = instance_ids[instance_ids > 0]
 
         for inst_id in instance_ids:
+            feature_type = id_to_type.get(int(inst_id))
+            if feature_type is None:
+                continue  # unknown instance, skip
             stats = compute_instance_stats(mask, int(inst_id))
             if stats:
                 records.append({
@@ -144,7 +212,9 @@ def scan_masks(gt_root: Path) -> list[dict]:
 def compute_summary(records: list[dict]) -> dict:
     """Compute quantile summary grouped by (feature_type, sb_threshold)."""
     quantiles = [0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99]
-    metrics = ["area", "bbox_w", "bbox_h", "aspect_ratio", "aspect_sym", "extent", "perimeter", "solidity", "circularity"]
+    metrics = ["area", "bbox_w", "bbox_h",
+               "aspect_sym_moment", "aspect_sym_boundary", "curvature_ratio",
+               "extent", "perimeter", "solidity", "circularity"]
 
     # Group by (feature_type, sb_threshold)
     groups = {}
@@ -157,7 +227,10 @@ def compute_summary(records: list[dict]) -> dict:
         key = f"{ft}_SB{sb}"
         summary[key] = {"count": len(grp), "quantiles": {}}
         for metric in metrics:
-            vals = np.array([r[metric] for r in grp])
+            vals_raw = [r[metric] for r in grp]
+            vals = np.array([v for v in vals_raw if v is not None])
+            if len(vals) == 0:
+                continue
             summary[key]["quantiles"][metric] = {
                 f"p{int(q*100):02d}": round(float(np.percentile(vals, q * 100)), 4)
                 for q in quantiles
@@ -171,7 +244,10 @@ def compute_summary(records: list[dict]) -> dict:
         key = f"{ft}_global"
         summary[key] = {"count": len(ft_records), "quantiles": {}}
         for metric in metrics:
-            vals = np.array([r[metric] for r in ft_records])
+            vals_raw = [r[metric] for r in ft_records]
+            vals = np.array([v for v in vals_raw if v is not None])
+            if len(vals) == 0:
+                continue
             summary[key]["quantiles"][metric] = {
                 f"p{int(q*100):02d}": round(float(np.percentile(vals, q * 100)), 4)
                 for q in quantiles
@@ -188,8 +264,11 @@ def compute_summary(records: list[dict]) -> dict:
             "min_area": q["area"]["p01"],
             "max_area": q["area"]["p99"],
             "min_solidity": q["solidity"]["p01"],
-            "aspect_ratio_range": [q["aspect_ratio"]["p01"], q["aspect_ratio"]["p99"]],
-            "aspect_sym_max": q["aspect_sym"]["p99"],
+            "aspect_sym_moment_max": q.get("aspect_sym_moment", {}).get("p99", 999.0),
+            "aspect_sym_boundary_max": q.get("aspect_sym_boundary", {}).get("p99", 999.0),
+            "curvature_ratio_p99": q.get("curvature_ratio", {}).get("p99", 999.0),
+            # backward compat alias
+            "aspect_sym_max": q.get("aspect_sym_moment", {}).get("p99", 999.0),
             "comment": f"Based on p01/p99 of {summary[key]['count']} instances",
         }
     summary["filter_recommendations"] = recommendations
@@ -199,7 +278,7 @@ def compute_summary(records: list[dict]) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze instance mask statistics")
-    parser.add_argument("--gt_root", type=Path, default=Path("data/02_processed/sam2_prepared/gt_folder"))
+    parser.add_argument("--gt_root", type=Path, default=Path("data/02_processed/gt_canonical/current"))
     parser.add_argument("--output_dir", type=Path, default=Path("outputs/mask_stats"))
     args = parser.parse_args()
 
@@ -222,7 +301,9 @@ def main():
     # CSV output
     csv_path = output_dir / "mask_instance_stats.csv"
     fieldnames = ["galaxy_id", "orientation", "sb_threshold", "feature_type", "instance_id",
-                  "area", "bbox_w", "bbox_h", "aspect_ratio", "aspect_sym", "extent", "perimeter", "solidity", "circularity"]
+                  "area", "bbox_w", "bbox_h",
+                  "aspect_sym_moment", "aspect_sym_boundary", "curvature_ratio", "aspect_sym",
+                  "extent", "perimeter", "solidity", "circularity"]
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -243,8 +324,9 @@ def main():
         print(f"  min_area: {rec['min_area']}")
         print(f"  max_area: {rec['max_area']}")
         print(f"  min_solidity: {rec['min_solidity']}")
-        print(f"  aspect_sym_max: {rec['aspect_sym_max']}")
-        print(f"  aspect_ratio: {rec['aspect_ratio_range']}")
+        print(f"  aspect_sym_moment_max: {rec['aspect_sym_moment_max']}")
+        print(f"  aspect_sym_boundary_max: {rec['aspect_sym_boundary_max']}")
+        print(f"  curvature_ratio_p99: {rec['curvature_ratio_p99']}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+# [Data Pipeline / Efficiency Baseline] Intercept any commit that might break isomorphic documentation
+import os
+import sys
+import ast
+import subprocess
+from pathlib import Path
+
+def get_staged_files():
+    result = subprocess.run(['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'], capture_output=True, text=True)
+    return [f for f in result.stdout.splitlines() if f.endswith('.py')]
+
+def get_file_content(commit_ref, filepath):
+    if commit_ref == 'STAGED':
+        result = subprocess.run(['git', 'show', f':{filepath}'], capture_output=True, text=True)
+    else:
+        result = subprocess.run(['git', 'show', f'{commit_ref}:{filepath}'], capture_output=True, text=True)
+    if result.returncode != 0:
+        return ""
+    return result.stdout
+
+def get_signatures(source_code):
+    try:
+        tree = ast.parse(source_code)
+    except SyntaxError:
+        return set()
+    
+    signatures = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            try:
+                sig_str = f"{node.name}({ast.unparse(node.args)})"
+                if node.returns:
+                    sig_str += f" -> {ast.unparse(node.returns)}"
+                signatures.add(sig_str)
+            except AttributeError:
+                args = [a.arg for a in node.args.args]
+                signatures.add(f"def {node.name}({','.join(args)})")
+        elif isinstance(node, ast.ClassDef):
+            signatures.add(f"class {node.name}")
+    return signatures
+
+def find_nearest_module_doc(filepath):
+    current_dir = Path(filepath).parent.resolve()
+    repo_root_output = subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()
+    if not repo_root_output:
+        return None
+    repo_root = Path(repo_root_output).resolve()
+    
+    while current_dir >= repo_root:
+        doc_path = current_dir / 'MODULE_DOC.md'
+        if doc_path.exists():
+            return doc_path
+        if current_dir == repo_root:
+            break
+        current_dir = current_dir.parent
+    return None
+
+def is_module_doc_staged(doc_path):
+    repo_root = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()).resolve()
+    rel_path = str(doc_path.relative_to(repo_root))
+    result = subprocess.run(['git', 'diff', '--cached', '--name-only'], capture_output=True, text=True)
+    return rel_path in result.stdout.splitlines()
+
+def check_symlinks():
+    errors = 0
+    repo_root = Path(subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()).resolve()
+    
+    # Check Cursor Rules
+    cursor_rule_dir = repo_root / '.cursor' / 'rules'
+    if cursor_rule_dir.exists():
+        for item in cursor_rule_dir.iterdir():
+            if item.is_file() and not item.is_symlink():
+                print(f"❌ [Rule Drift] {item.relative_to(repo_root)} is a hard file, not a symlink to .agent_rules payload.")
+                errors += 1
+                
+    # Check Agent Rules
+    agent_rule_dir = repo_root / '.agent' / 'rules'
+    if agent_rule_dir.exists():
+        for item in agent_rule_dir.iterdir():
+            if item.is_file() and not item.is_symlink():
+                print(f"❌ [Rule Drift] {item.relative_to(repo_root)} is a hard file, not a symlink to .agent_rules payload.")
+                errors += 1
+                
+    if errors > 0:
+        print("   ACTION: Delete the files and run: ln -sr .agent_rules/your_rule.md .cursor/rules/your_rule.mdc")
+        sys.exit(1)
+
+def main():
+    check_symlinks()
+    staged_files = get_staged_files()
+    errors = 0
+    
+    has_head = subprocess.run(['git', 'rev-parse', '--verify', 'HEAD'], capture_output=True).returncode == 0
+    head_ref = 'HEAD' if has_head else '4b825dc642cb6eb9a060e54bf8d69288fbee4904'
+    
+    for filepath in staged_files:
+        head_content = get_file_content(head_ref, filepath)
+        staged_content = get_file_content('STAGED', filepath)
+        
+        head_sigs = get_signatures(head_content)
+        staged_sigs = get_signatures(staged_content)
+        
+        if head_sigs != staged_sigs:
+            doc_path = find_nearest_module_doc(filepath)
+            if doc_path:
+                if not is_module_doc_staged(doc_path):
+                    print(f"❌ [Isomorphic Sync Error] Public API signature changed in {filepath} but {doc_path.name} is unchanged.")
+                    print(f"   ACTION: Update {doc_path} to reflect API changes or carefully check your diff.")
+                    errors += 1
+            else:
+                if filepath.startswith('src/') or filepath.startswith('scripts/'):
+                    print(f"❌ [Isomorphic Sync Error] Public API signature changed in {filepath} but no MODULE_DOC.md found.")
+                    print(f"   ACTION: MODULE_DOC.md missing; create it for this module.")
+                    errors += 1
+                    
+    if errors > 0:
+        sys.exit(1)
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main()

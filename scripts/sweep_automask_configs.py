@@ -8,7 +8,11 @@ Usage:
         --configs_yaml configs/automask_sweep.yaml \
         --output_dir outputs/automask_sweep \
         [--subset_yaml configs/sweep_subset.yaml] \
-        [--overlay_n 5]
+        [--overlay_n 5] \
+        [--stats_json outputs/mask_stats/mask_stats_summary.json]
+
+Pipeline:
+    AutoMask → metrics(cheap) → grouping → selection → metrics(hull) → prior → core → overlay
 
 Env:
     CUDA, PyTorch with bf16 support.
@@ -34,6 +38,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.inference.sam2_automask_runner import AutoMaskRunner
 from src.postprocess.satellite_prior_filter import SatellitePriorFilter, load_filter_cfg
 from src.postprocess.core_exclusion_filter import CoreExclusionFilter
+from src.postprocess.candidate_grouping import group_by_centroid
+from src.postprocess.representative_selection import select_representatives, load_area_target
 from src.analysis.mask_metrics import append_metrics_to_masks
 from src.analysis.sweep_scoring import aggregate_and_rank
 from src.visualization.overlay import save_overlay
@@ -66,12 +72,22 @@ def _parse_folder_name(name: str) -> tuple[str, str] | None:
     return None
 
 
-def _write_config_snapshot(config_dir: Path, gen_config: dict, filter_cfg: dict, core_cfg: dict, checkpoint: str):
+def _write_config_snapshot(
+    config_dir: Path,
+    gen_config: dict,
+    filter_cfg: dict,
+    core_cfg: dict,
+    grouping_cfg: dict,
+    selection_cfg: dict,
+    checkpoint: str,
+):
     """Save reproducibility snapshot."""
     snapshot = {
         "generator": gen_config,
         "prior_filter": filter_cfg,
         "core_exclusion": core_cfg,
+        "grouping": grouping_cfg,
+        "selection": selection_cfg,
         "checkpoint": checkpoint,
         "checkpoint_md5": _md5_first_1mb(checkpoint),
     }
@@ -91,9 +107,10 @@ def run_sweep(
     configs: list[dict[str, Any]],
     output_dir: Path,
     subset_yaml: Path | None,
+    stats_json: Path,
     overlay_n: int = 5,
 ):
-    """Main sweep loop."""
+    """Main sweep loop with grouping/selection pipeline."""
     image_folders = _collect_images(image_root, subset_yaml)
     if not image_folders:
         print("No images found!")
@@ -112,23 +129,49 @@ def run_sweep(
     first_img = np.array(Image.open(first_img_path).convert("RGB"))
     runner.warmup(first_img, n=2)
 
+    # Load area_target from stats_json
+    area_target = load_area_target(stats_json)
+    print(f"Loaded area_target={area_target:.1f} from {stats_json}")
+
     for cfg_entry in configs:
         cfg_name = cfg_entry.get("name", "default")
         gen_config: dict = cfg_entry.get("generator", {})
         radius_frac = cfg_entry.get("core_radius_frac", 0.08)
+
+        # Grouping config
+        grouping_cfg = cfg_entry.get("grouping", {})
+        centroid_dist_px = grouping_cfg.get("centroid_dist_px", 15.0)
+
+        # Selection config (inject area_target)
+        selection_cfg = cfg_entry.get("selection", {})
+        if "area_target" not in selection_cfg:
+            selection_cfg["area_target"] = area_target
+
+        # Prior config
+        prior_cfg_entry = cfg_entry.get("prior", {})
+        ambiguous_factor = prior_cfg_entry.get("ambiguous_factor", 0.25)
+
         print(f"\n=== Config: {cfg_name} ===")
 
         config_dir = output_dir / cfg_name
         config_dir.mkdir(parents=True, exist_ok=True)
         (config_dir / "overlays").mkdir(exist_ok=True)
 
-        # Load filters
-        prior_cfg = load_filter_cfg()
+        # Load prior filter config from stats
+        prior_cfg = load_filter_cfg(stats_json)
+        prior_cfg["ambiguous_factor"] = ambiguous_factor
+        prior_cfg["core_radius_frac"] = radius_frac
+
         prior_flt = SatellitePriorFilter(prior_cfg)
         core_flt = CoreExclusionFilter(radius_frac=radius_frac)
 
         # Snapshot
-        _write_config_snapshot(config_dir, gen_config, prior_cfg, {"radius_frac": radius_frac}, runner.checkpoint.as_posix())
+        _write_config_snapshot(
+            config_dir, gen_config, prior_cfg,
+            {"radius_frac": radius_frac},
+            grouping_cfg, selection_cfg,
+            runner.checkpoint.as_posix()
+        )
 
         per_image_rows: list[dict[str, Any]] = []
 
@@ -142,18 +185,63 @@ def run_sweep(
             parsed = _parse_folder_name(folder.name)
             gal_id, ori = parsed if parsed else (folder.name, "unk")
 
-            # Run AutoMask
+            # === PIPELINE ===
+
+            # 1. Run AutoMask
             masks, time_ms = runner.run(image, gen_config)
             n_raw = len(masks)
 
-            # Prior filter
-            kept_prior, rej_prior = prior_flt.filter(masks)
+            if n_raw == 0:
+                per_image_rows.append({
+                    "galaxy_id": gal_id,
+                    "orientation": ori,
+                    "N_raw": 0,
+                    "N_groups": 0,
+                    "N_dup_rejected": 0,
+                    "dup_reject_rate": 0.0,
+                    "N_reps": 0,
+                    "N_keep_prior": 0,
+                    "N_ambiguous": 0,
+                    "ambiguous_rate": 0.0,
+                    "N_core_rejected": 0,
+                    "N_keep_final": 0,
+                    "time_ms": round(time_ms, 2),
+                    "mean_stability_score_kept": 0.0,
+                    # core_diag keys (must match non-empty rows)
+                    "R_exclude": None,
+                    "dist_p05": None,
+                    "dist_p50": None,
+                    "dist_p95": None,
+                    "core_area_min": None,
+                    "core_area_max": None,
+                    "core_area_mean": None,
+                    "core_solidity_mean": None,
+                })
+                continue
+
+            # 2. Cheap metrics (no hull)
+            append_metrics_to_masks(masks, H, W, compute_hull=False)
+
+            # 3. Grouping
+            group_by_centroid(masks, dist_px=centroid_dist_px)
+            n_groups = len(set(m.get("group_id", 0) for m in masks))
+
+            # 4. Representative selection (no solidity in score)
+            reps, dups = select_representatives(masks, selection_cfg)
+            n_dup_rejected = len(dups)
+            dup_reject_rate = n_dup_rejected / n_raw if n_raw > 0 else 0.0
+
+            # 5. Hull metrics for reps only
+            append_metrics_to_masks(reps, H, W, compute_hull=True)
+
+            # 6. Prior filter (uses solidity now)
+            kept_prior, rej_prior, ambig = prior_flt.filter(reps)
             n_keep_prior = len(kept_prior)
+            n_ambiguous = len(ambig)
+            n_reps = len(reps)
+            ambiguous_rate = n_ambiguous / n_reps if n_reps > 0 else 0.0
 
-            # Append geometry (skip hull for rejected to save time)
-            append_metrics_to_masks(kept_prior, H, W, compute_hull=True)
-
-            # Core exclusion
+            # 7. Core exclusion
             kept_final, core_hits, core_diag = core_flt.filter(kept_prior, H, W)
             n_keep_final = len(kept_final)
             n_core_rej = len(core_hits)
@@ -166,7 +254,13 @@ def run_sweep(
                 "galaxy_id": gal_id,
                 "orientation": ori,
                 "N_raw": n_raw,
+                "N_groups": n_groups,
+                "N_dup_rejected": n_dup_rejected,
+                "dup_reject_rate": round(dup_reject_rate, 4),
+                "N_reps": n_reps,
                 "N_keep_prior": n_keep_prior,
+                "N_ambiguous": n_ambiguous,
+                "ambiguous_rate": round(ambiguous_rate, 4),
                 "N_core_rejected": n_core_rej,
                 "N_keep_final": n_keep_final,
                 "time_ms": round(time_ms, 2),
@@ -177,7 +271,17 @@ def run_sweep(
             # Overlay (subset)
             if idx in overlay_indices:
                 ov_path = config_dir / "overlays" / f"{gal_id}_{ori}_overlay.png"
-                save_overlay(image, kept_final, core_hits, rej_prior, ov_path, draw_prior=True)
+                save_overlay(
+                    image, kept_final,
+                    core_rejected=core_hits,
+                    prior_rejected=rej_prior,
+                    duplicate_rejected=dups,
+                    ambiguous=ambig,
+                    out_path=ov_path,
+                    draw_prior=True,
+                    draw_duplicate=True,
+                    draw_ambiguous=True,
+                )
 
             if (idx + 1) % 20 == 0:
                 print(f"  Processed {idx + 1}/{len(image_folders)}")
@@ -204,6 +308,7 @@ def main():
     parser.add_argument("--configs_yaml", type=Path, default=PROJECT_ROOT / "configs/automask_sweep.yaml")
     parser.add_argument("--output_dir", type=Path, default=PROJECT_ROOT / "outputs/automask_sweep")
     parser.add_argument("--subset_yaml", type=Path, default=None)
+    parser.add_argument("--stats_json", type=Path, default=PROJECT_ROOT / "outputs/mask_stats/mask_stats_summary.json")
     parser.add_argument("--overlay_n", type=int, default=5, help="Number of overlay samples per config")
     args = parser.parse_args()
 
@@ -211,7 +316,7 @@ def main():
     if isinstance(configs, dict):
         configs = configs.get("configs", [])
 
-    run_sweep(args.image_root, configs, args.output_dir, args.subset_yaml, args.overlay_n)
+    run_sweep(args.image_root, configs, args.output_dir, args.subset_yaml, args.stats_json, args.overlay_n)
 
 
 if __name__ == "__main__":

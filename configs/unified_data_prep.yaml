@@ -1,0 +1,89 @@
+# Unified Data Preparation Config
+# ================================
+# 4-Phase Pipeline: render → gt → satellites → export
+#
+# Usage:
+#   python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+#   python scripts/prepare_unified_dataset.py --config ... --phase render
+#   python scripts/prepare_unified_dataset.py --config ... --galaxies 11,13
+
+paths:
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  output_root: "data/02_processed"
+
+data_selection:
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36, 
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56, 
+               63, 64, 66, 68, 72]
+  orientations: ["eo", "fo"]
+  canonical_sb_threshold: 32.0
+
+# Data sources (FITS paths)
+data_sources:
+  streams:
+    image_subdir: "SB_maps"
+    image_pattern: "magnitudes-Fbox-{galaxy_id}-{orientation}-VIS2.fits.gz"
+    mask_subdir_eo: "MASKS_EO"
+    mask_subdir_fo: "MASKS_FO"
+    mask_pattern: "ark_features-{galaxy_id}-{orientation}-SBlim{threshold}.fits.gz"
+
+processing:
+  target_size: [1024, 1024]
+  infer_preprocessing: "linear_magnitude"
+
+# Preprocessing variants (names must match src/data/preprocessing.py)
+preprocessing_variants:
+  - name: "asinh_stretch"
+    params:
+      nonlinearity: 200.0
+      zeropoint: 22.5
+      clip_percentile: 99.5
+  - name: "linear_magnitude"
+    params:
+      global_mag_min: 20.0
+      global_mag_max: 35.0
+  # - name: "multi_exposure"        # Temporarily excluded
+  #   params:
+  #     b_mode: "zscale_asinh"
+  #     gamma: 0.7
+  #     zeropoint: 22.5
+  #     nonlinearity: 300.0
+  #     clip_percentile: 99.5
+
+# Satellites pipeline (AutoMask + filters)
+satellites:
+  enabled: true
+  automask_config_name: "dense_v2_grp10"
+  input_image_variant: "linear_magnitude"
+  
+  # Deterministic ordering for reproducibility
+  satellite_sort_policy: ["area_desc", "centroid_x_asc", "centroid_y_asc"]
+  
+  # Overlap handling: satellites only fill where streams==0
+  overlap_policy: "keep_streams"
+  
+  generator:
+    points_per_side: 64
+    points_per_batch: 64
+    pred_iou_thresh: 0.65
+    stability_score_thresh: 0.95
+    box_nms_thresh: 0.4
+    crop_n_layers: 1
+    crop_overlap_ratio: 0.4
+    min_mask_region_area: 10
+  
+  grouping:
+    centroid_dist_px: 10.0
+  
+  prior:
+    ambiguous_factor: 0.25
+    stats_json: "outputs/mask_stats/mask_stats_summary.json"
+    # Filter uses aspect_sym_moment (cov-eigenvalue) for aspect_sym_max threshold.
+    # Stats JSON should contain aspect_sym_moment_max from analyze_mask_stats.py.
+  
+  core_exclusion:
+    radius_frac: 0.08
+
+# Reproducibility
+reproducibility:
+  random_seed: 42

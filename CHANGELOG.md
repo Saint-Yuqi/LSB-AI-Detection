@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-02-18
+
+### Changed
+
+- **Aspect ratio: dual-method + curvature metric**
+  - `aspect_sym_moment`: covariance-eigenvalue axis ratio (rotation-invariant, global shape)
+  - `aspect_sym_boundary`: `cv2.fitEllipse` axis ratio (boundary-aware)
+  - `curvature_ratio`: skeleton_length / ellipse_major (>1 = curved/bent structure)
+  - `aspect_sym`: kept as backward-compat alias for `aspect_sym_moment`
+  - Updated in `src/analysis/mask_metrics.py`, `scripts/analyze_mask_stats.py`, `src/postprocess/satellite_prior_filter.py`
+  - Filter reads `aspect_sym_moment` first, falls back to `aspect_sym` for legacy compat
+  - New deps: `opencv-python-headless`, `scikit-image` (lazy-imported)
+
+## [0.4.0] - 2026-02-09
+
+### Added
+
+- **Unified Data Pipeline** for canonical ground truth generation
+  - `scripts/prepare_unified_dataset.py` - 4-phase pipeline (Render → GT → Satellites → Export)
+  - `configs/unified_data_prep.yaml` - Centralized configuration for all phases
+  - **Phased Architecture**:
+    - **Render**: Caches preprocessed images (linear, asinh, multi-exposure)
+    - **GT**: Preserves original streams IDs from FITS masks
+    - **Satellites**: AutoMask integration with `satellites_cache.npz` (RLE encoded)
+    - **Export**: Generates SAM2 symlinks and SAM3 COCO attributes from single source
+
+- **Traceability & Reproducibility**
+  - `manifest.json` per sample: Configs, processing stats, inference time, overlap rates
+  - `id_map.json`: Explicit mapping of instance IDs (streams vs satellites)
+  - `overlay.png`: Visual QA for every generated ground truth
+  - **Deterministic Sorting**: Logic to ensure stable instance IDs across runs
+
+- **Satellite Integration Features**
+  - `overlap_policy`: Support for "keep_streams" (satellites don't overwrite streams)
+  - `satellite_sort_policy`: Configurable sorting (e.g., area descending) before ID assignment
+  - **Merged GT**: `instance_map_uint8.png` combining streams + satellites
+
+### Changed
+
+- **SAM3 Output Format**: Enforced COCO-only structure (no `masks/` folder) for compatibility
+- **AutoMask Workflow**: Integrated directly into data prep pipeline (replacing standalone sweep for production generation)
+
+
 ## [0.3.0] - 2026-02-04
 
 ### Added

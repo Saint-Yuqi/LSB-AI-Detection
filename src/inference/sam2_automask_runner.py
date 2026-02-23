@@ -22,6 +22,19 @@ import torch
 from sam2.automatic_mask_generator import SAM2AutomaticMaskGenerator
 from sam2.build_sam import build_sam2
 
+# MONKEYPATCH: Fix IndexError in torchvision box_area when boxes is empty/has size 0
+import torchvision.ops.boxes as box_ops
+
+_orig_box_area = box_ops.box_area
+
+def _safe_box_area(boxes: torch.Tensor) -> torch.Tensor:
+    if boxes.numel() == 0 or boxes.shape[-1] < 4:
+        return torch.zeros(boxes.shape[0], dtype=boxes.dtype, device=boxes.device)
+    return _orig_box_area(boxes)
+
+box_ops.box_area = _safe_box_area
+
+
 # Default SAM2 checkpoint & config ---------------------------------
 DEFAULT_CHECKPOINT = "/home/yuqyan/Yuqi/sam2/scratch/sam2_finetuning_20260205_210313/checkpoints/checkpoint.pt"
 DEFAULT_MODEL_CFG = "configs/sam2.1/sam2.1_hiera_b+.yaml"

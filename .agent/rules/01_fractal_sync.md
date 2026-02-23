@@ -1,0 +1,1 @@
+../../.agent_rules/01_fractal_sync.md
