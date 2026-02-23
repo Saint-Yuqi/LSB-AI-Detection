@@ -89,3 +89,4 @@
 - `yaml.YAMLError`: Raised when the `.yaml` config file cannot be parsed (syntax error).
 - `KeyError`: Raised when the parsed config dict is missing a required key (e.g., `output_dir`, `sb_thresholds`, `model_cfg`, `iou_threshold`).
 - `RuntimeError`: Raised when GPU memory is exhausted during inference (OOM).
+ 

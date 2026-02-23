@@ -8,24 +8,48 @@ extracting bounding boxes, and generating COCO annotations.
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
-from pycocotools import mask as mask_util
 
 
 def mask_to_rle(binary_mask: np.ndarray) -> Dict[str, Any]:
     """
-    Convert a binary mask to COCO RLE (Run-Length Encoding) format.
+    Convert a binary mask to COCO compressed RLE format.
     
     Args:
         binary_mask: Binary mask array (0 = background, 1 = foreground)
         
     Returns:
-        RLE dictionary with 'size' and 'counts' keys.
-        The 'counts' is decoded to UTF-8 string for JSON serialization.
+        RLE dict {'size': [H,W], 'counts': str}.
+        counts is a compressed byte-string decoded to UTF-8 for JSON serialization.
+        
+    Raises:
+        ImportError: If pycocotools is not installed.
     """
+    from pycocotools import mask as mask_util  # lazy import
     mask_fortran = np.asfortranarray(binary_mask.astype(np.uint8))
     rle = mask_util.encode(mask_fortran)
     rle['counts'] = rle['counts'].decode('utf-8')
     return rle
+
+
+def decode_rle(rle: Dict[str, Any]) -> np.ndarray:
+    """
+    Decode a COCO RLE dict back to a binary mask.
+    
+    Args:
+        rle: RLE dict {'size': [H,W], 'counts': str}
+        
+    Returns:
+        Binary mask array (H, W), dtype uint8.
+        
+    Raises:
+        ImportError: If pycocotools is not installed.
+    """
+    from pycocotools import mask as mask_util  # lazy import
+    if isinstance(rle['counts'], str):
+        rle_input = {'size': rle['size'], 'counts': rle['counts'].encode('utf-8')}
+    else:
+        rle_input = rle
+    return mask_util.decode(rle_input)
 
 
 def get_bbox_from_mask(binary_mask: np.ndarray) -> List[float]:

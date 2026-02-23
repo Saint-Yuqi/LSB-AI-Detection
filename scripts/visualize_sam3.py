@@ -1,242 +1,188 @@
 #!/usr/bin/env python3
 """
-SAM3 Dataset Visualization Script (16:9 Layout)
+SAM3 Dataset Visualization Script (Grid Layout)
 
-Creates a combined image per galaxy optimized for 16:9 screens.
-Layout: 6 Columns grid.
-- Streams section (2 rows)
-- Satellites section (2 rows)
-Center-aligned on a 16:9 black canvas.
+Creates a combined image per galaxy/orientation optimized for the refactored data pipeline.
+Layout: 4 Columns grid.
+- Columns: Original, Streams, Satellites, Combined
+- Rows: Preprocessing variants (e.g., asinh_stretch, linear_magnitude)
+
+Usage:
+    python scripts/visualize_sam3.py [--max N] [--galaxy NAME] [--num_proc N]
+
+Environment:
+    Requires PIL, numpy, multiprocessing.
 """
 
 import argparse
 import json
 import os
+import multiprocessing as mp
+import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-import re
 from collections import defaultdict
-import math
+
+# Add project root to path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+import sys
+sys.path.insert(0, str(PROJECT_ROOT))
+from src.utils.coco_utils import decode_rle
 
 # ================= Configuration =================
-BASE_DIR = Path("/home/yuqyan/Yuqi/LSB-AI-Detection/data/02_processed/sam3_unified")
+BASE_DIR = Path("/home/yuqyan/Yuqi/LSB-AI-Detection/data/02_processed/sam3_prepared")
 JSON_PATH = BASE_DIR / "annotations.json"
 IMAGES_DIR = BASE_DIR / "images"
-MASKS_DIR = BASE_DIR / "masks"
-OUTPUT_DIR = BASE_DIR / "visualizations_16_9"
-
-# Color palette for instances
-INSTANCE_COLORS = [
-    (255, 0, 0),      # Red
-    (0, 255, 0),      # Green
-    (0, 0, 255),      # Blue
-    (255, 255, 0),    # Yellow
-    (255, 0, 255),    # Magenta
-    (0, 255, 255),    # Cyan
-    (255, 128, 0),    # Orange
-    (128, 0, 255),    # Purple
-    (0, 255, 128),    # Spring green
-    (255, 0, 128),    # Rose
-    (128, 255, 0),    # Lime
-    (0, 128, 255),    # Sky blue
-]
-
-# SB thresholds to display
-SB_THRESHOLDS = ['27.0', '27.5', '28.0', '28.5', '29.0', '29.5', '30.0', '30.5', '31.0', '31.5', '32.0']
+OUTPUT_DIR = BASE_DIR / "visualizations_grid"
 # =================================================
 
-
-def decode_rle_simple(counts, size):
-    """Simple RLE decoder for COCO format."""
-    h, w = size
-    if isinstance(counts, str):
-        m = 0
-        p = 0
-        decoded = []
-        while p < len(counts):
-            x = 0
-            k = 0
-            more = True
-            while more:
-                c = ord(counts[p]) - 48
-                x |= (c & 0x1f) << (5 * k)
-                more = c & 0x20
-                p += 1
-                k += 1
-                if not more and (c & 0x10):
-                    x |= (-1) << (5 * k)
-            if m > 2:
-                x += decoded[m - 2]
-            decoded.append(x)
-            m += 1
-        counts = decoded
-    
-    if isinstance(counts, list):
-        mask = np.zeros(h * w, dtype=np.uint8)
-        pos = 0
-        val = 0
-        for count in counts:
-            count = int(count)
-            if pos + count > h * w:
-                count = h * w - pos
-            if count > 0:
-                mask[pos:pos + count] = val
-            pos += count
-            val = 1 - val
-        return mask.reshape((h, w), order='F')
-    else:
-        raise ValueError(f"Unknown counts format: {type(counts)}")
-
-
-def normalize_16bit_to_8bit(img_16bit):
-    if img_16bit.dtype == np.uint8:
-        return img_16bit
-    min_val, max_val = img_16bit.min(), img_16bit.max()
-    if max_val == min_val:
-        return np.zeros_like(img_16bit, dtype=np.uint8)
-    return ((img_16bit - min_val) / (max_val - min_val) * 255).astype(np.uint8)
-
-
 def draw_rectangle(img, x, y, w, h, color, thickness=2):
+    """Draw a rectangle inside img array inplace."""
     x, y, w, h = int(x), int(y), int(w), int(h)
     img[max(0,y):min(img.shape[0],y+thickness), max(0,x):min(img.shape[1],x+w)] = color
     img[max(0,y+h-thickness):min(img.shape[0],y+h), max(0,x):min(img.shape[1],x+w)] = color
     img[max(0,y):min(img.shape[0],y+h), max(0,x):min(img.shape[1],x+thickness)] = color
     img[max(0,y):min(img.shape[0],y+h), max(0,x+w-thickness):min(img.shape[1],x+w)] = color
 
-
-def parse_category_info(cat_name):
-    if 'stream' in cat_name:
-        simple_type = 'streams'
-    elif 'satellite' in cat_name:
-        simple_type = 'satellites'
-    else:
-        simple_type = 'unknown'
-    
-    match = re.search(r'SB\s*(\d+\.?\d*)', cat_name)
-    if match:
-        sb_str = match.group(1)
-        if '.' not in sb_str:
-            sb_str += ".0"
-    else:
-        sb_str = "0.0"
-    
-    return simple_type, sb_str
-
-
-def get_clean_base_name(file_name):
-    base = os.path.splitext(file_name)[0]
-    base = base.replace("_streams", "").replace("_satellites", "")
-    return base
-
-
 def add_text_label(img_array, text, position=(10, 10), font_size=20, color=(255, 255, 255), bg_color=None):
-    """
-    Adds text to image.
-    If bg_color is provided (e.g. (0,0,0)), draws a small background box behind text.
-    """
+    """Adds text to an image array."""
     img = Image.fromarray(img_array)
     draw = ImageDraw.Draw(img)
     try:
-        # Try to use a better font if available
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
     except:
         font = ImageFont.load_default()
     
     x, y = position
-    
-    # Calculate text size for background box
     if bg_color:
         bbox = draw.textbbox((x, y), text, font=font)
-        # Add slight padding
         draw.rectangle((bbox[0]-2, bbox[1]-2, bbox[2]+2, bbox[3]+2), fill=bg_color)
 
-    # Shadow/Outline for readability
+    # Shadow
     for dx, dy in [(-1,-1), (-1,1), (1,-1), (1,1)]:
         draw.text((x+dx, y+dy), text, font=font, fill=(0, 0, 0))
     
     draw.text(position, text, font=font, fill=color)
     return np.array(img)
 
-
-def create_mask_visualization(original_img, anns, cat_id_to_info, target_type, target_sb):
+def create_mask_visualization(original_img, anns, cat_id_to_info, target_type):
+    """
+    target_type: 'streams', 'satellites', or 'combined'
+    """
     h, w = original_img.shape[:2]
     overlay = original_img.copy()
     mask_layer = np.zeros((h, w, 3), dtype=np.uint8)
     
     instance_count = 0
-    # 1. Draw Masks
+    cmap = plt.get_cmap('tab20')
+    
     for ann in anns:
-        cat = cat_id_to_info[ann['category_id']]
-        simple_type, sb_str = parse_category_info(cat['name'])
+        cat_name = cat_id_to_info[ann['category_id']]['name']
+        is_stream = 'stream' in cat_name
+        is_sat = 'satellite' in cat_name
         
-        if simple_type != target_type or sb_str != target_sb:
-            continue
+        if target_type == 'streams' and not is_stream: continue
+        if target_type == 'satellites' and not is_sat: continue
         
-        color = INSTANCE_COLORS[instance_count % len(INSTANCE_COLORS)]
+        # Get color from colormap and convert to 8-bit RGB
+        color = np.array(cmap(instance_count % 20)[:3]) * 255
+        color = color.astype(np.uint8)
         
         if 'segmentation' in ann and ann['segmentation']:
             seg = ann['segmentation']
-            if isinstance(seg, dict) and 'counts' in seg:
-                rle_size = seg.get('size', [h, w])
-                mask_binary = decode_rle_simple(seg['counts'], rle_size)
-                
-                if np.sum(mask_binary > 0) > 0:
-                    for c in range(3):
-                        mask_layer[:, :, c][mask_binary > 0] = color[c]
-                    instance_count += 1
+            mask_binary = decode_rle(seg)
+            
+            mask_region = mask_binary > 0
+            # Broadcast color fast
+            mask_layer[mask_region] = color
+            instance_count += 1
+            
+            bbox = ann.get('bbox')
+            if bbox:
+                draw_rectangle(overlay, *bbox, color, thickness=2)
     
     alpha = 0.6
     mask_region = np.any(mask_layer > 0, axis=-1)
     overlay[mask_region] = (overlay[mask_region] * (1-alpha) + mask_layer[mask_region] * alpha).astype(np.uint8)
     
-    # 2. Draw Bboxes
-    idx = 0
-    for ann in anns:
-        cat = cat_id_to_info[ann['category_id']]
-        simple_type, sb_str = parse_category_info(cat['name'])
-        if simple_type != target_type or sb_str != target_sb:
-            continue
-        bbox = ann['bbox']
-        x, y, bw, bh = bbox
-        color = INSTANCE_COLORS[idx % len(INSTANCE_COLORS)]
-        draw_rectangle(overlay, x, y, bw, bh, color, thickness=2)
-        idx += 1
-    
     return overlay, instance_count
 
-
-def generate_tile(img_type, label, original_img, anns, cat_id_to_info, sb_val=None, thumb_size=180):
-    """Generates a single square tile with label overlay."""
-    if sb_val is None:
-        # Original Image Tile
-        img_array = original_img.copy()
-        inst_count = 0
-    else:
-        # Visualization Tile
-        img_array, inst_count = create_mask_visualization(original_img, anns, cat_id_to_info, img_type, sb_val)
-
-    pil_img = Image.fromarray(img_array)
-    pil_thumb = pil_img.resize((thumb_size, thumb_size), Image.Resampling.LANCZOS)
-    vis_array = np.array(pil_thumb)
-
-    # Add Labels
-    # Top Left: Tile Name (e.g., SB27.0)
-    vis_array = add_text_label(vis_array, label, position=(5, 5), font_size=14, color=(255, 255, 255))
+def process_galaxy_orient(args):
+    """Multiprocessing worker for a single galaxy_orient."""
+    galaxy_orient, variants, images_map, img_to_anns, cat_id_to_info, thumb_size = args
     
-    # Bottom Left: Instance Count (if > 0)
-    if inst_count > 0:
-        vis_array = add_text_label(vis_array, f"N={inst_count}", position=(5, thumb_size-20), font_size=12, color=(255, 255, 0))
+    sorted_variants = sorted(variants.keys())
+    
+    cols = ['Original', 'Streams', 'Satellites', 'Combined']
+    rows = len(sorted_variants)
+    if rows == 0:
+        return True
         
-    return vis_array
+    gap = 5
+    title_height = 40
+    header_height = 30
+    
+    canvas_w = len(cols) * thumb_size + (len(cols) - 1) * gap + 40
+    canvas_h = title_height + header_height + rows * thumb_size + (rows - 1) * gap + 20
+    
+    canvas = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
+    canvas = add_text_label(canvas, f"Galaxy: {galaxy_orient}", position=(20, 10), font_size=24)
+    
+    start_x = 20
+    start_y = title_height
+    
+    # Draw headers
+    for c_idx, col_name in enumerate(cols):
+        px = start_x + c_idx * (thumb_size + gap)
+        canvas = add_text_label(canvas, col_name, position=(px + 10, start_y + 5), font_size=18, color=(100, 200, 255))
+        
+    start_y += header_height
+    
+    for r_idx, variant_name in enumerate(sorted_variants):
+        img_id = variants[variant_name]
+        img_file = BASE_DIR / images_map[img_id]['file_name']
+        
+        if not img_file.exists():
+            continue
+            
+        orig_img = np.array(Image.open(img_file))
+        if len(orig_img.shape) == 2:
+            orig_img = np.stack([orig_img]*3, axis=-1)
+            
+        anns = img_to_anns.get(img_id, [])
+        
+        for c_idx, col_name in enumerate(cols):
+            px = start_x + c_idx * (thumb_size + gap)
+            py = start_y + r_idx * (thumb_size + gap)
+            
+            if col_name == 'Original':
+                tile_arr = orig_img.copy()
+                inst_count = 0
+            else:
+                target_map = {'Streams': 'streams', 'Satellites': 'satellites', 'Combined': 'combined'}
+                tile_arr, inst_count = create_mask_visualization(orig_img, anns, cat_id_to_info, target_map[col_name])
+                
+            pil_tile = Image.fromarray(tile_arr).resize((thumb_size, thumb_size), Image.Resampling.LANCZOS)
+            tile_vis = np.array(pil_tile)
+            
+            # Label
+            tile_vis = add_text_label(tile_vis, variant_name, position=(5, 5), font_size=14)
+            if inst_count > 0:
+                tile_vis = add_text_label(tile_vis, f"N={inst_count}", position=(5, thumb_size-20), font_size=12, color=(255, 255, 0))
+                
+            canvas[py:py+thumb_size, px:px+thumb_size] = tile_vis
 
+    out_path = OUTPUT_DIR / f"{galaxy_orient}_grid.jpg"
+    Image.fromarray(canvas).save(str(out_path), quality=95)
+    return True
 
 def main():
-    parser = argparse.ArgumentParser(description="Visualize SAM3 dataset - 16:9 Grid Layout")
+    parser = argparse.ArgumentParser(description="Visualize SAM3 dataset - Grid Layout")
     parser.add_argument("--max", type=int, default=None, help="Maximum number of galaxies")
-    parser.add_argument("--galaxy", type=str, help="Filter by galaxy name")
-    parser.add_argument("--thumb_size", type=int, default=240, help="Thumbnail size (larger for 16:9)")
+    parser.add_argument("--galaxy", type=str, help="Filter by galaxy name/orient (e.g., 00011_eo)")
+    parser.add_argument("--thumb_size", type=int, default=320, help="Thumbnail size")
+    parser.add_argument("--num_proc", type=int, default=max(1, os.cpu_count() - 1), help="Number of parallel processes")
     args = parser.parse_args()
 
     OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
@@ -252,132 +198,49 @@ def main():
     for ann in coco_data['annotations']:
         img_to_anns[ann['image_id']].append(ann)
 
-    galaxy_to_images = defaultdict(dict)
+    galaxy_orient_to_variants = defaultdict(dict)
     for img_id, img_info in images_map.items():
         file_name = img_info['file_name']
-        base_name = get_clean_base_name(file_name)
-        if '_streams' in file_name:
-            galaxy_to_images[base_name]['streams'] = img_id
-        elif '_satellites' in file_name:
-            galaxy_to_images[base_name]['satellites'] = img_id
+        base_name = Path(file_name).stem
+        parts = base_name.split('_')
+        if len(parts) >= 3:
+            go = f"{parts[0]}_{parts[1]}"
+            var = "_".join(parts[2:])
+            galaxy_orient_to_variants[go][var] = img_id
+        else:
+            galaxy_orient_to_variants[base_name]["default"] = img_id
 
-    all_galaxies = list(galaxy_to_images.keys())
+    all_go = list(galaxy_orient_to_variants.keys())
     if args.galaxy:
-        all_galaxies = [g for g in all_galaxies if args.galaxy in g]
+        all_go = [go for go in all_go if args.galaxy in go]
     if args.max:
-        all_galaxies = all_galaxies[:args.max]
+        all_go = all_go[:args.max]
 
-    print(f"Processing {len(all_galaxies)} galaxies...")
-    thumb = args.thumb_size
+    if not all_go:
+        print("No matching records found. Exit.")
+        return
+
+    print(f"Processing {len(all_go)} galaxy orientations using {args.num_proc} workers...")
     
-    # Layout Constants
-    GRID_COLS = 6
-    GRID_GAP = 5
-    SECTION_HEADER_HEIGHT = 40
-    TITLE_HEIGHT = 60
-    
-    for galaxy_name in all_galaxies:
-        print(f"  Processing {galaxy_name}...")
-        img_ids = galaxy_to_images[galaxy_name]
+    tasks = []
+    for go in all_go:
+        tasks.append((
+            go, 
+            galaxy_orient_to_variants[go], 
+            images_map, 
+            img_to_anns, 
+            cat_id_to_info, 
+            args.thumb_size
+        ))
         
-        # Load Originals
-        original_images = {}
-        for t in ['streams', 'satellites']:
-            if t in img_ids:
-                img_path = IMAGES_DIR / images_map[img_ids[t]]['file_name']
-                if img_path.exists():
-                    img = np.array(Image.open(img_path))
-                    if img.dtype == np.uint16: img = normalize_16bit_to_8bit(img)
-                    if len(img.shape) == 2: img = np.stack([img]*3, axis=-1)
-                    original_images[t] = img[:,:,:3]
+    if args.num_proc > 1:
+        with mp.Pool(args.num_proc) as pool:
+            pool.map(process_galaxy_orient, tasks)
+    else:
+        for t in tasks:
+            process_galaxy_orient(t)
 
-        # Prepare Tile Lists
-        sections = [] # List of (Section Title, [Tile Arrays])
-        
-        for img_type in ['streams', 'satellites']:
-            if img_type not in original_images:
-                continue
-            
-            tiles = []
-            orig_img = original_images[img_type]
-            anns = img_to_anns[img_ids[img_type]]
-            
-            # 1. Original
-            tiles.append(generate_tile(img_type, "Original", orig_img, anns, cat_id_to_info, None, thumb))
-            
-            # 2. Thresholds
-            for sb in SB_THRESHOLDS:
-                tiles.append(generate_tile(img_type, f"SB{sb}", orig_img, anns, cat_id_to_info, sb, thumb))
-            
-            sections.append((img_type.capitalize(), tiles))
-
-        if not sections:
-            continue
-
-        # --- Calculate Dimensions for 16:9 Canvas ---
-        
-        # Calculate Content Height
-        content_width = GRID_COLS * thumb + (GRID_COLS - 1) * GRID_GAP
-        current_y = TITLE_HEIGHT
-        
-        for _, tiles in sections:
-            rows = math.ceil(len(tiles) / GRID_COLS)
-            section_h = SECTION_HEADER_HEIGHT + rows * thumb + (rows - 1) * GRID_GAP
-            current_y += section_h + 20 # 20px padding between sections
-        
-        total_content_height = current_y
-        
-        # Determine 16:9 Dimensions
-        # Target Width based on 16:9 ratio
-        target_aspect = 16 / 9
-        calculated_width = int(total_content_height * target_aspect)
-        
-        # Ensure canvas is at least as wide as the grid content
-        final_width = max(calculated_width, content_width + 40) # 40px side padding minimum
-        final_height = total_content_height
-        
-        # If the grid is wider than 16:9 (unlikely with 6 cols), adjust height to maintain ratio
-        if final_width < content_width + 40:
-             final_width = content_width + 40
-             final_height = int(final_width / target_aspect)
-
-        # Create Black Canvas
-        canvas = np.zeros((final_height, final_width, 3), dtype=np.uint8)
-        
-        # Draw Title
-        canvas = add_text_label(canvas, f"Galaxy: {galaxy_name}", 
-                                position=(final_width//2 - 100, 15), font_size=24, color=(255, 255, 255))
-
-        # Draw Grid
-        start_x = (final_width - content_width) // 2
-        cursor_y = TITLE_HEIGHT
-        
-        for section_title, tiles in sections:
-            # Draw Section Header
-            canvas = add_text_label(canvas, section_title, 
-                                    position=(start_x, cursor_y + 10), font_size=18, color=(100, 200, 255))
-            cursor_y += SECTION_HEADER_HEIGHT
-            
-            # Draw Tiles
-            for i, tile in enumerate(tiles):
-                r = i // GRID_COLS
-                c = i % GRID_COLS
-                
-                px = start_x + c * (thumb + GRID_GAP)
-                py = cursor_y + r * (thumb + GRID_GAP)
-                
-                canvas[py:py+thumb, px:px+thumb] = tile
-            
-            # Update cursor for next section
-            rows = math.ceil(len(tiles) / GRID_COLS)
-            cursor_y += rows * (thumb + GRID_GAP) + 20
-
-        # Save
-        out_path = OUTPUT_DIR / f"{galaxy_name}_16_9.jpg"
-        Image.fromarray(canvas).save(str(out_path), quality=95)
-
-    print(f"\nDone! Output saved to: {OUTPUT_DIR}")
-
+    print(f"Done! Output saved to: {OUTPUT_DIR}")
 
 if __name__ == "__main__":
     main()

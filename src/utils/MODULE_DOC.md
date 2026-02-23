@@ -65,3 +65,4 @@
 - `TypeError`: Raised by `mask_to_rle` if `binary_mask` dtype is not `np.uint8`.
 - `ValueError`: Raised by `mask_to_rle` if `binary_mask` is not C-contiguous (non-standard memory layout).
 - `ValueError`: Raised by `get_bbox_from_mask` if `binary_mask` contains no foreground pixels (empty mask returns no valid bounding box).
+ 
