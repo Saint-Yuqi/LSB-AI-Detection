@@ -2,17 +2,16 @@
 Astrophysics-standard preprocessing for Low Surface Brightness (LSB) data.
 
 Implements the proper astronomical pipeline for FITS magnitude maps:
-    Raw FITS (mag/arcsec²) → Flux Conversion → Asinh Stretch → 8-bit RGB
+    Raw FITS (mag/arcsec²) → Flux Conversion → Asinh Stretch → Resize (Bicubic) → 8-bit RGB
 
 This approach preserves dynamic range much better than linear magnitude scaling,
 allowing both faint streams and bright galaxy cores to be visible simultaneously.
 
 Pipeline Details:
 1. Magnitude → Flux: flux = 10^((zeropoint - mag) / 2.5)
-2. Background subtraction (median)
-3. Percentile normalization
-4. Asinh stretch: arcsinh(x * nonlinearity) / arcsinh(nonlinearity)
-5. Convert to 8-bit RGB
+2. Percentile normalization
+3. Asinh stretch: arcsinh(x * nonlinearity) / arcsinh(nonlinearity)
+4. Convert to 8-bit RGB
 """
 
 from typing import Any, Dict, Tuple
@@ -101,7 +100,7 @@ class LSBPreprocessor:
         """
         Process a surface brightness MAGNITUDE map to 8-bit RGB.
         
-        Complete pipeline: Mag → Flux → Background Sub → Normalize → Asinh → 8-bit
+        Complete pipeline: Mag → Flux → Normalize → Asinh → Resize (Bicubic) → 8-bit
         
         Args:
             sb_map: Surface brightness map in mag/arcsec² (LOWER = BRIGHTER)
@@ -117,38 +116,37 @@ class LSBPreprocessor:
         # This inverts the scale: lower mag → higher flux
         flux = self.mag_to_flux(sb_clean)
         
-        # 3. Background Subtraction (using median)
-        bg = np.median(flux)
-        flux_sub = np.maximum(flux - bg, 0)
-        
-        # 4. Normalize by percentile (use as scaling reference)
-        vmax = np.percentile(flux_sub, self.clip_percentile)
+        # 3. Normalize by percentile (use as scaling reference)
+        vmax = np.percentile(flux, self.clip_percentile)
         if vmax <= 0:
-            vmax = flux_sub.max()
+            vmax = flux.max()
         if vmax <= 0:
             vmax = 1.0  # Avoid division by zero for empty images
         
         # Normalize to 0~1 range (can exceed 1 for very bright cores)
-        flux_norm = flux_sub / (vmax + 1e-10)
+        flux_norm = flux / (vmax + 1e-10)
         
-        # 5. Asinh Stretch (THE KEY STEP)
+        # 4. Asinh Stretch (THE KEY STEP)
         # This preserves both faint streams and bright cores
         flux_stretched = self.asinh_stretch(flux_norm)
+        
+        # 5. Resize in float domain (Bicubic for edge-preserving interpolation)
+        # Done BEFORE 8-bit quantization to avoid interpolation artifacts on
+        # discrete values and to let bicubic operate on continuous data.
+        h, w = flux_stretched.shape[:2]
+        if (w, h) != self.target_size:
+            flux_stretched = cv2.resize(
+                flux_stretched,
+                self.target_size,
+                interpolation=cv2.INTER_CUBIC
+            )
+            flux_stretched = np.clip(flux_stretched, 0, None)  # bicubic can ring negative
         
         # 6. Convert to 8-bit
         img_8bit = (flux_stretched * 255).clip(0, 255).astype(np.uint8)
         
         # 7. Convert to 3-channel RGB (grayscale duplicated)
         img_rgb = np.stack([img_8bit] * 3, axis=-1)
-        
-        # 8. Resize if needed (Bilinear for smooth interpolation)
-        h, w = img_rgb.shape[:2]
-        if (w, h) != self.target_size:
-            img_rgb = cv2.resize(
-                img_rgb,
-                self.target_size,
-                interpolation=cv2.INTER_LINEAR
-            )
         
         return img_rgb
     
@@ -308,7 +306,7 @@ class MultiExposurePreprocessor:
     
     B Channel Modes:
         - "gamma": B = G^gamma (default, gamma < 1 boosts faint)
-        - "zscale": ZScaleInterval on flux_sub (astronomy display standard)
+        - "zscale": ZScaleInterval (astronomy display standard)
         - "zscale_asinh": ZScale + our asinh formula (aligned with G channel)
         - "none": B = G (debug mode)
     
@@ -378,98 +376,96 @@ class MultiExposurePreprocessor:
         self._zscale_interval = None
     
     def _compute_r_channel(self, sb_clean: np.ndarray) -> np.ndarray:
-        """R channel: Linear magnitude mapping [global_mag_min, global_mag_max] → [255, 0]."""
+        """R channel: Linear magnitude mapping [global_mag_min, global_mag_max] → [1.0, 0.0] float32."""
         sb_clipped = np.clip(sb_clean, self.global_mag_min, self.global_mag_max)
         r_norm = (self.global_mag_max - sb_clipped) / (
             self.global_mag_max - self.global_mag_min
         )
-        return (r_norm * 255).astype(np.uint8)
+        return r_norm.astype(np.float32)
     
     def _compute_g_channel(self, sb_clean: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
         """
-        G channel: Asinh stretch (mag → flux → background sub → asinh).
+        G channel: Asinh stretch (mag → flux → percentile norm → asinh).
         
         Returns:
-            g_8bit: uint8 G channel
-            flux_sub: Background-subtracted flux (for B channel reuse)
+            g_stretched: float32 asinh-stretched values [0, ~1]
+            flux: raw flux array (for B channel zscale)
             vmax_ref_flux: The computed vmax used for normalization (for metadata)
         """
         # Mag → Flux
         flux = np.power(10.0, (self.zeropoint - sb_clean) / 2.5)
         
-        # Background subtraction
-        bg = np.median(flux)
-        flux_sub = np.maximum(flux - bg, 0)
-        
-        # Percentile normalization
-        vmax = np.percentile(flux_sub, self.clip_percentile)
+        # Percentile normalization (no background subtraction for simulated data)
+        vmax = np.percentile(flux, self.clip_percentile)
         if vmax <= 0:
-            vmax = flux_sub.max()
+            vmax = flux.max()
         if vmax <= 0:
             vmax = 1.0
         
-        flux_norm = flux_sub / (vmax + 1e-10)
+        flux_norm = flux / (vmax + 1e-10)
         
         # Asinh stretch (our formula, aligned with nonlinearity param)
         g_stretched = np.arcsinh(flux_norm * self.nonlinearity) / np.arcsinh(self.nonlinearity)
-        g_8bit = (g_stretched * 255).clip(0, 255).astype(np.uint8)
         
-        return g_8bit, flux_sub, float(vmax)
+        return g_stretched.astype(np.float32), flux, float(vmax)
     
     def _compute_b_channel(
-        self, 
-        g_channel: np.ndarray, 
-        flux_sub: np.ndarray
+        self,
+        g_stretched: np.ndarray,
+        flux: np.ndarray,
     ) -> np.ndarray:
         """
-        B channel: Computed based on b_mode.
+        B channel: Computed based on b_mode. Returns float32 [0, ~1].
+        
+        Args:
+            g_stretched: float32 asinh-stretched G values [0, ~1]
+            flux: raw flux array (for zscale modes)
         
         Modes:
-            - "gamma": B = G^gamma (faint boost)
-            - "zscale": ZScaleInterval on flux_sub (physically meaningful)
+            - "gamma": B = g_stretched^gamma (faint boost)
+            - "zscale": ZScaleInterval on flux (physically meaningful)
             - "zscale_asinh": ZScale + our asinh (same nonlinearity as G)
             - "none": B = G (debug)
         """
         if self.b_mode == "gamma":
-            g_norm = g_channel.astype(np.float32) / 255.0
-            g_norm = np.clip(g_norm, 0.0, 1.0)  # Defensive clip
-            b_norm = np.power(g_norm, self.gamma)
-            return (b_norm * 255).astype(np.uint8)
+            return np.power(np.clip(g_stretched, 0.0, None), self.gamma).astype(np.float32)
         
         elif self.b_mode == "none":
-            return g_channel.copy()
+            return g_stretched.copy()
         
         elif self.b_mode in ("zscale", "zscale_asinh"):
-            # Lazy import astropy ZScaleInterval only
             from astropy.visualization import ZScaleInterval
             
             if self._zscale_interval is None:
                 self._zscale_interval = ZScaleInterval(contrast=self.zscale_contrast)
             
-            # Defensive nan_to_num on flux_sub (should be non-negative, but be safe)
+            # Defensive: only feed physically meaningful pixels to ZScale
             flux_safe = np.nan_to_num(
-                flux_sub, nan=0.0, posinf=np.nanmax(flux_sub), neginf=0.0
+                flux, nan=0.0, posinf=np.nanmax(flux), neginf=0.0
             )
+            valid_mask = flux_safe > 1e-4
+            if valid_mask.any():
+                vmin, vmax = self._zscale_interval.get_limits(flux_safe[valid_mask])
+            else:
+                vmin, vmax = 0.0, 1.0
             
-            # ZScale on flux_sub (physically meaningful, already background-subtracted)
-            vmin, vmax = self._zscale_interval.get_limits(flux_safe)
             b_norm = (flux_safe - vmin) / (vmax - vmin + 1e-10)
             b_norm = np.clip(b_norm, 0, 1)
             
             if self.b_mode == "zscale_asinh":
-                # Use OUR asinh formula (same nonlinearity as G channel)
-                # This ensures consistent stretch behavior across channels
                 b_norm = np.arcsinh(b_norm * self.nonlinearity) / np.arcsinh(self.nonlinearity)
             
-            return (b_norm * 255).astype(np.uint8)
+            return b_norm.astype(np.float32)
         
         else:
-            # Fallback (should not reach due to validation)
-            return g_channel.copy()
+            return g_stretched.copy()
     
     def process(self, sb_map: np.ndarray) -> np.ndarray:
         """
         Process surface brightness map to 3-channel multi-exposure RGB.
+        
+        All channel computation stays in float32 [0, ~1].
+        Quantization to uint8 happens once at the very end after resize.
         
         Args:
             sb_map: Surface brightness in mag/arcsec² (LOWER = BRIGHTER)
@@ -484,42 +480,44 @@ class MultiExposurePreprocessor:
         finite_mask = np.isfinite(sb_map)
         finite_ratio = float(finite_mask.sum()) / sb_map.size
         
-        # Compute channels (G also returns flux_sub for B channel reuse)
-        r_channel = self._compute_r_channel(sb_clean)
-        g_channel, flux_sub, vmax_ref_flux = self._compute_g_channel(sb_clean)
-        b_channel = self._compute_b_channel(g_channel, flux_sub)
+        # Compute channels — all float32 [0, ~1]
+        r_float = self._compute_r_channel(sb_clean)
+        g_float, flux, vmax_ref_flux = self._compute_g_channel(sb_clean)
+        b_float = self._compute_b_channel(g_float, flux)
         
-        # Apply gain (color balance)
+        # Apply gain in float domain (color balance)
         if self.r_gain != 1.0:
-            r_channel = np.clip(r_channel.astype(np.float32) * self.r_gain, 0, 255).astype(np.uint8)
+            r_float = r_float * self.r_gain
         if self.b_gain != 1.0:
-            b_channel = np.clip(b_channel.astype(np.float32) * self.b_gain, 0, 255).astype(np.uint8)
+            b_float = b_float * self.b_gain
         
-        # Stack RGB
-        img_rgb = np.stack([r_channel, g_channel, b_channel], axis=-1)
+        # Stack RGB — still float32
+        img_float = np.stack([r_float, g_float, b_float], axis=-1)
         
-        # Resize if needed
-        h, w = img_rgb.shape[:2]
+        # === Terminal guardrail: Resize → Clip → Quantize ===
+        h, w = img_float.shape[:2]
         if (w, h) != self.target_size:
-            img_rgb = cv2.resize(
-                img_rgb,
+            img_float = cv2.resize(
+                img_float,
                 self.target_size,
-                interpolation=cv2.INTER_LINEAR
+                interpolation=cv2.INTER_CUBIC
             )
+        img_float = np.clip(img_float, 0.0, 1.0)  # clamp ringing + gain overflow
+        img_rgb = (img_float * 255).astype(np.uint8)
         
-        # Store per-image stats for metadata
+        # Store per-image stats for metadata (computed from final uint8)
         self.last_stats = {
             'vmax_ref_flux': vmax_ref_flux,
-            'raw_finite_pixel_ratio': finite_ratio,  # Reflects original input, not cleaned
-            'r_min': int(r_channel.min()),
-            'r_max': int(r_channel.max()),
-            'r_mean': float(r_channel.mean()),
-            'g_min': int(g_channel.min()),
-            'g_max': int(g_channel.max()),
-            'g_mean': float(g_channel.mean()),
-            'b_min': int(b_channel.min()),
-            'b_max': int(b_channel.max()),
-            'b_mean': float(b_channel.mean()),
+            'raw_finite_pixel_ratio': finite_ratio,
+            'r_min': int(img_rgb[:, :, 0].min()),
+            'r_max': int(img_rgb[:, :, 0].max()),
+            'r_mean': float(img_rgb[:, :, 0].mean()),
+            'g_min': int(img_rgb[:, :, 1].min()),
+            'g_max': int(img_rgb[:, :, 1].max()),
+            'g_mean': float(img_rgb[:, :, 1].mean()),
+            'b_min': int(img_rgb[:, :, 2].min()),
+            'b_max': int(img_rgb[:, :, 2].max()),
+            'b_mean': float(img_rgb[:, :, 2].mean()),
         }
         
         return img_rgb

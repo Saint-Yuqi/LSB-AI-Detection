@@ -50,11 +50,38 @@ preprocessing_variants:
   #     nonlinearity: 300.0
   #     clip_percentile: 99.5
 
-# Satellites pipeline (AutoMask + filters)
+# Inference Phase (Phase 3) – engine selector
+# engine: "sam2" uses the satellites block below (AutoMask pipeline)
+# engine: "sam3" uses SAM3 text-prompt grounding
+inference_phase:
+  engine: "sam2"          # "sam2" or "sam3"
+  run_mode: "evaluate"    # "evaluate" = save predictions + QA overlay, no merge
+  input_image_variant: "linear_magnitude"
+  
+  sam3:
+    checkpoint: "/home/yuqyan/Yuqi/sam3/scratch/sam3_finetuning/checkpoints/checkpoint_best.pt"
+    bpe_path: "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
+    confidence_threshold: 0.55
+    resolution: 1008
+    prompts:
+      - text: "stellar stream"
+        type_label: "streams"
+      - text: "satellite galaxy"
+        type_label: "satellites"
+    streams_sanity:
+      min_area: 50
+      max_area_frac: 0.5
+      edge_touch_frac: 0.8
+
+# Satellites pipeline (AutoMask + filters) – used when engine: "sam2"
 satellites:
   enabled: true
   automask_config_name: "dense_v2_grp10"
   input_image_variant: "linear_magnitude"
+  
+  # SAM2 Model Configuration
+  checkpoint: "/home/yuqyan/Yuqi/sam2/scratch/sam2_finetuning_20260205_210313/checkpoints/checkpoint.pt"
+  model_cfg: "configs/sam2.1/sam2.1_hiera_b+.yaml"
   
   # Deterministic ordering for reproducibility
   satellite_sort_policy: ["area_desc", "centroid_x_asc", "centroid_y_asc"]

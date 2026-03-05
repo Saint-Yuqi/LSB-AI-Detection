@@ -1,0 +1,38 @@
+# Noise Injection Profiles
+# ========================
+# Forward observation model: SB(mag) → flux → counts → Poisson → read → −sky → mag
+#
+# Usage:
+#   python scripts/generate_noisy_fits.py --config configs/noise_profiles.yaml
+#   python scripts/generate_noisy_fits.py --config ... --galaxies 11,13 --profiles snr10
+
+paths:
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  output_root: "data/04_noise"
+
+data_selection:
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36,
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56,
+               63, 64, 66, 68, 72]
+  orientations: ["eo", "fo"]
+
+noise_model:
+  zeropoint: 22.5
+  sky_level: 200.0
+  read_noise: 5.0
+  # Quantile-based SNR region selection (GT-free)
+  signal_quantile: 0.90      # top 10% brightest pixels = "signal"
+  background_quantile: 0.20  # bottom 20% faintest pixels = "background"
+
+profiles:
+  - name: "snr05"
+    target_snr: 5
+  - name: "snr10"
+    target_snr: 10
+  - name: "snr20"
+    target_snr: 20
+  - name: "snr50"
+    target_snr: 50
+
+reproducibility:
+  random_seed: 42

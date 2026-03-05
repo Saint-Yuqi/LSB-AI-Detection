@@ -2,6 +2,7 @@
 
 ## Responsibilities
 - Filter raw predicted masks using astrophysical priors.
+- Apply lightweight sanity filtering for stream masks before metric aggregation.
 - Identify and reject masks located in the excluded core region of the main galaxy.
 - Cluster duplicate masks pointing to the same physical object.
 - Select the single best representative mask per cluster.
@@ -83,6 +84,24 @@
   - Element 2 (ambiguous): each dict retains the full input schema plus:
     - `reject_reason: str` — rejection reason string tag (e.g., `'core_rejected'`)
 
+### `StreamsSanityFilter.__init__(min_area, max_area_frac, edge_touch_frac)`
+- **Input:**
+  - `min_area: int`
+  - `max_area_frac: float`
+  - `edge_touch_frac: float`
+- **Output:** Initialized lightweight stream-filter object.
+
+### `StreamsSanityFilter.filter(masks, H, W)`
+- **Input:**
+  - `masks: List[MaskDict]` (requires `segmentation`; uses `area` if provided)
+  - `H: int`, `W: int`
+- **Output:** `Tuple[List[MaskDict], List[MaskDict]]`
+  - Element 0: kept masks
+  - Element 1: rejected masks with `reject_reason` in:
+    - `sanity_area_low`
+    - `sanity_area_high`
+    - `sanity_edge`
+
 ## Invariants
 - **Uniqueness:** The kept list from `select_representatives` contains at most one dict per distinct `group_id`.
 - **Ambiguous Zone:** The ambiguous output list contains masks that belong to neither the kept nor the rejected partition; each carries a `reject_reason: str` tag.
@@ -94,3 +113,4 @@
 - `KeyError`: Raised by `group_by_centroid` if any mask dict is missing `centroid_xy` or `dist_px`.
 - `KeyError`: Raised by `select_representatives` if any mask dict is missing `group_id`, `stability_score`, `predicted_iou`, `area_clean`, `aspect_sym_moment`, or `aspect_sym`.
 - `KeyError`: Raised by `SatellitePriorFilter.filter` if any mask dict is missing `area_clean`, `solidity`, `aspect_sym_moment`, `aspect_sym`, or `dist_to_center`.
+- `KeyError`: Raised by `StreamsSanityFilter.filter` if any mask dict is missing `segmentation`.

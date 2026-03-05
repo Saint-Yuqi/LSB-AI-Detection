@@ -1,0 +1,835 @@
+2026-03-03 22:33:31 | INFO     | evaluate_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/evaluate_model_2026-03-03.log
+2026-03-03 22:33:31 | INFO     | evaluate_model | Config: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam3.yaml
+2026-03-03 22:33:31 | INFO     | evaluate_model | Render dir: data/02_processed/renders/current/asinh_stretch
+2026-03-03 22:33:31 | INFO     | evaluate_model | GT dir:     data/02_processed/gt_canonical/current
+2026-03-03 22:33:31 | INFO     | evaluate_model | Discovered 70 render/GT pairs
+2026-03-03 22:34:15 | INFO     | evaluate_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/evaluate_model_2026-03-03.log
+2026-03-03 22:34:15 | INFO     | evaluate_model | Config: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam3.yaml
+2026-03-03 22:34:15 | INFO     | evaluate_model | Render dir: data/02_processed/renders/noisy/asinh_stretch/snr05
+2026-03-03 22:34:15 | INFO     | evaluate_model | GT dir:     data/02_processed/gt_canonical/current
+2026-03-03 22:34:15 | INFO     | evaluate_model | Discovered 70 render/GT pairs
+2026-03-03 22:36:03 | INFO     | evaluate_model | [1/70] 00011_eo
+2026-03-03 22:36:03 | INFO     | evaluate_model | [1/70] 00011_eo
+2026-03-03 22:36:06 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:06 | INFO     | evaluate_model | [2/70] 00011_fo
+2026-03-03 22:36:07 | INFO     | evaluate_model |   raw:  dice=0.7139 matched_iou=0.6828 recall=0.5000 n_pred=11
+2026-03-03 22:36:07 | INFO     | evaluate_model | [2/70] 00011_fo
+2026-03-03 22:36:07 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:07 | INFO     | evaluate_model | [3/70] 00013_eo
+2026-03-03 22:36:08 | INFO     | evaluate_model |   raw:  dice=0.5926 matched_iou=0.6661 recall=0.3571 n_pred=21
+2026-03-03 22:36:08 | INFO     | evaluate_model |   raw:  dice=0.1211 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:36:09 | INFO     | evaluate_model | [3/70] 00013_eo
+2026-03-03 22:36:09 | INFO     | evaluate_model | [4/70] 00013_fo
+2026-03-03 22:36:10 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:10 | INFO     | evaluate_model | [5/70] 00019_eo
+2026-03-03 22:36:10 | INFO     | evaluate_model |   raw:  dice=0.3105 matched_iou=0.7276 recall=0.3333 n_pred=1
+2026-03-03 22:36:10 | INFO     | evaluate_model | [4/70] 00013_fo
+2026-03-03 22:36:11 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:11 | INFO     | evaluate_model | [6/70] 00019_fo
+2026-03-03 22:36:12 | INFO     | evaluate_model |   raw:  dice=0.8306 matched_iou=0.7341 recall=0.8000 n_pred=7
+2026-03-03 22:36:12 | INFO     | evaluate_model | [5/70] 00019_eo
+2026-03-03 22:36:12 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:12 | INFO     | evaluate_model | [7/70] 00022_eo
+2026-03-03 22:36:13 | INFO     | evaluate_model |   raw:  dice=0.5498 matched_iou=0.6040 recall=0.3125 n_pred=8
+2026-03-03 22:36:14 | INFO     | evaluate_model |   raw:  dice=0.3164 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:36:14 | INFO     | evaluate_model | [6/70] 00019_fo
+2026-03-03 22:36:14 | INFO     | evaluate_model | [8/70] 00022_fo
+2026-03-03 22:36:15 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:15 | INFO     | evaluate_model | [9/70] 00024_eo
+2026-03-03 22:36:15 | INFO     | evaluate_model |   raw:  dice=0.6086 matched_iou=0.6553 recall=0.3333 n_pred=4
+2026-03-03 22:36:15 | INFO     | evaluate_model | [7/70] 00022_eo
+2026-03-03 22:36:16 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:16 | INFO     | evaluate_model | [10/70] 00024_fo
+2026-03-03 22:36:17 | INFO     | evaluate_model |   raw:  dice=0.7265 matched_iou=0.7597 recall=0.5000 n_pred=4
+2026-03-03 22:36:17 | INFO     | evaluate_model | [8/70] 00022_fo
+2026-03-03 22:36:17 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:17 | INFO     | evaluate_model | [11/70] 00025_eo
+2026-03-03 22:36:18 | INFO     | evaluate_model |   raw:  dice=0.8753 matched_iou=0.7346 recall=1.0000 n_pred=14
+2026-03-03 22:36:18 | INFO     | evaluate_model | [9/70] 00024_eo
+2026-03-03 22:36:19 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:36:19 | INFO     | evaluate_model | [12/70] 00025_fo
+2026-03-03 22:36:20 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:20 | INFO     | evaluate_model | [13/70] 00027_eo
+2026-03-03 22:36:20 | INFO     | evaluate_model |   raw:  dice=0.7832 matched_iou=0.7248 recall=0.8000 n_pred=7
+2026-03-03 22:36:20 | INFO     | evaluate_model | [10/70] 00024_fo
+2026-03-03 22:36:21 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:21 | INFO     | evaluate_model | [14/70] 00027_fo
+2026-03-03 22:36:22 | INFO     | evaluate_model |   raw:  dice=0.7620 matched_iou=0.6196 recall=0.7500 n_pred=4
+2026-03-03 22:36:22 | INFO     | evaluate_model | [11/70] 00025_eo
+2026-03-03 22:36:23 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:23 | INFO     | evaluate_model | [15/70] 00028_eo
+2026-03-03 22:36:23 | INFO     | evaluate_model |   raw:  dice=0.8272 matched_iou=0.6991 recall=0.8333 n_pred=6
+2026-03-03 22:36:23 | INFO     | evaluate_model | [12/70] 00025_fo
+2026-03-03 22:36:23 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:24 | INFO     | evaluate_model | [16/70] 00028_fo
+2026-03-03 22:36:25 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:25 | INFO     | evaluate_model | [17/70] 00029_eo
+2026-03-03 22:36:25 | INFO     | evaluate_model |   raw:  dice=0.8853 matched_iou=0.7954 recall=1.0000 n_pred=5
+2026-03-03 22:36:25 | INFO     | evaluate_model | [13/70] 00027_eo
+2026-03-03 22:36:26 | INFO     | evaluate_model |   raw:  dice=0.1990 matched_iou=0.6111 recall=0.3333 n_pred=2
+2026-03-03 22:36:26 | INFO     | evaluate_model | [18/70] 00029_fo
+2026-03-03 22:36:26 | INFO     | evaluate_model |   raw:  dice=0.8496 matched_iou=0.7000 recall=0.8750 n_pred=9
+2026-03-03 22:36:27 | INFO     | evaluate_model | [14/70] 00027_fo
+2026-03-03 22:36:27 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:27 | INFO     | evaluate_model | [19/70] 00030_eo
+2026-03-03 22:36:28 | INFO     | evaluate_model |   raw:  dice=0.6509 matched_iou=0.6806 recall=0.6000 n_pred=6
+2026-03-03 22:36:28 | INFO     | evaluate_model | [15/70] 00028_eo
+2026-03-03 22:36:28 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:28 | INFO     | evaluate_model | [20/70] 00030_fo
+2026-03-03 22:36:29 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:29 | INFO     | evaluate_model | [16/70] 00028_fo
+2026-03-03 22:36:29 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:30 | INFO     | evaluate_model | [21/70] 00032_eo
+2026-03-03 22:36:30 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:30 | INFO     | evaluate_model | [17/70] 00029_eo
+2026-03-03 22:36:31 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:31 | INFO     | evaluate_model | [22/70] 00032_fo
+2026-03-03 22:36:32 | INFO     | evaluate_model |   raw:  dice=0.8561 matched_iou=0.6976 recall=1.0000 n_pred=3
+2026-03-03 22:36:32 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:32 | INFO     | evaluate_model | [18/70] 00029_fo
+2026-03-03 22:36:32 | INFO     | evaluate_model | [23/70] 00033_eo
+2026-03-03 22:36:33 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:33 | INFO     | evaluate_model | [24/70] 00033_fo
+2026-03-03 22:36:34 | INFO     | evaluate_model |   raw:  dice=0.7878 matched_iou=0.6833 recall=0.8571 n_pred=12
+2026-03-03 22:36:34 | INFO     | evaluate_model | [19/70] 00030_eo
+2026-03-03 22:36:34 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:34 | INFO     | evaluate_model | [25/70] 00034_eo
+2026-03-03 22:36:35 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:35 | INFO     | evaluate_model | [20/70] 00030_fo
+2026-03-03 22:36:36 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:36 | INFO     | evaluate_model | [26/70] 00034_fo
+2026-03-03 22:36:36 | INFO     | evaluate_model |   raw:  dice=0.8073 matched_iou=0.7119 recall=1.0000 n_pred=5
+2026-03-03 22:36:36 | INFO     | evaluate_model | [21/70] 00032_eo
+2026-03-03 22:36:36 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:37 | INFO     | evaluate_model | [27/70] 00035_eo
+2026-03-03 22:36:38 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:38 | INFO     | evaluate_model | [28/70] 00035_fo
+2026-03-03 22:36:38 | INFO     | evaluate_model |   raw:  dice=0.6606 matched_iou=0.6815 recall=0.6667 n_pred=10
+2026-03-03 22:36:38 | INFO     | evaluate_model | [22/70] 00032_fo
+2026-03-03 22:36:39 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:39 | INFO     | evaluate_model | [29/70] 00036_eo
+2026-03-03 22:36:40 | INFO     | evaluate_model |   raw:  dice=0.7957 matched_iou=0.7806 recall=0.7143 n_pred=7
+2026-03-03 22:36:40 | INFO     | evaluate_model | [23/70] 00033_eo
+2026-03-03 22:36:40 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:40 | INFO     | evaluate_model | [30/70] 00036_fo
+2026-03-03 22:36:41 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:41 | INFO     | evaluate_model | [24/70] 00033_fo
+2026-03-03 22:36:42 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:42 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:42 | INFO     | evaluate_model | [25/70] 00034_eo
+2026-03-03 22:36:42 | INFO     | evaluate_model | [31/70] 00037_eo
+2026-03-03 22:36:44 | INFO     | evaluate_model |   raw:  dice=0.8225 matched_iou=0.7106 recall=1.0000 n_pred=2
+2026-03-03 22:36:44 | INFO     | evaluate_model |   raw:  dice=0.2847 matched_iou=0.5090 recall=0.5000 n_pred=2
+2026-03-03 22:36:44 | INFO     | evaluate_model | [26/70] 00034_fo
+2026-03-03 22:36:44 | INFO     | evaluate_model | [32/70] 00037_fo
+2026-03-03 22:36:45 | INFO     | evaluate_model |   raw:  dice=0.8316 matched_iou=0.7360 recall=0.8000 n_pred=4
+2026-03-03 22:36:45 | INFO     | evaluate_model |   raw:  dice=0.2526 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:36:45 | INFO     | evaluate_model | [27/70] 00035_eo
+2026-03-03 22:36:45 | INFO     | evaluate_model | [33/70] 00038_eo
+2026-03-03 22:36:47 | INFO     | evaluate_model |   raw:  dice=0.2727 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:36:47 | INFO     | evaluate_model |   raw:  dice=0.8957 matched_iou=0.8003 recall=1.0000 n_pred=4
+2026-03-03 22:36:47 | INFO     | evaluate_model | [28/70] 00035_fo
+2026-03-03 22:36:47 | INFO     | evaluate_model | [34/70] 00038_fo
+2026-03-03 22:36:49 | INFO     | evaluate_model |   raw:  dice=0.2642 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:36:49 | INFO     | evaluate_model |   raw:  dice=0.8328 matched_iou=0.6942 recall=1.0000 n_pred=4
+2026-03-03 22:36:49 | INFO     | evaluate_model | [35/70] 00039_eo
+2026-03-03 22:36:49 | INFO     | evaluate_model | [29/70] 00036_eo
+2026-03-03 22:36:50 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:50 | INFO     | evaluate_model | [36/70] 00039_fo
+2026-03-03 22:36:51 | INFO     | evaluate_model |   raw:  dice=0.8489 matched_iou=0.7656 recall=1.0000 n_pred=2
+2026-03-03 22:36:51 | INFO     | evaluate_model | [30/70] 00036_fo
+2026-03-03 22:36:52 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:52 | INFO     | evaluate_model | [37/70] 00041_eo
+2026-03-03 22:36:52 | INFO     | evaluate_model |   raw:  dice=0.9062 matched_iou=0.7982 recall=1.0000 n_pred=4
+2026-03-03 22:36:52 | INFO     | evaluate_model | [31/70] 00037_eo
+2026-03-03 22:36:53 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:53 | INFO     | evaluate_model | [38/70] 00041_fo
+2026-03-03 22:36:54 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:54 | INFO     | evaluate_model |   raw:  dice=0.8424 matched_iou=0.7222 recall=1.0000 n_pred=2
+2026-03-03 22:36:54 | INFO     | evaluate_model | [39/70] 00042_eo
+2026-03-03 22:36:54 | INFO     | evaluate_model | [32/70] 00037_fo
+2026-03-03 22:36:55 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:55 | INFO     | evaluate_model | [40/70] 00042_fo
+2026-03-03 22:36:55 | INFO     | evaluate_model |   raw:  dice=0.8221 matched_iou=0.7727 recall=0.5000 n_pred=3
+2026-03-03 22:36:56 | INFO     | evaluate_model | [33/70] 00038_eo
+2026-03-03 22:36:56 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:36:57 | INFO     | evaluate_model | [41/70] 00043_eo
+2026-03-03 22:36:57 | INFO     | evaluate_model |   raw:  dice=0.7342 matched_iou=0.6420 recall=1.0000 n_pred=3
+2026-03-03 22:36:57 | INFO     | evaluate_model | [34/70] 00038_fo
+2026-03-03 22:36:57 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:58 | INFO     | evaluate_model | [42/70] 00043_fo
+2026-03-03 22:36:58 | INFO     | evaluate_model |   raw:  dice=0.7190 matched_iou=0.5613 recall=1.0000 n_pred=1
+2026-03-03 22:36:58 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:36:59 | INFO     | evaluate_model | [35/70] 00039_eo
+2026-03-03 22:36:59 | INFO     | evaluate_model | [43/70] 00044_eo
+2026-03-03 22:37:00 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:00 | INFO     | evaluate_model | [44/70] 00044_fo
+2026-03-03 22:37:00 | INFO     | evaluate_model |   raw:  dice=0.8060 matched_iou=0.7077 recall=0.8000 n_pred=6
+2026-03-03 22:37:00 | INFO     | evaluate_model | [36/70] 00039_fo
+2026-03-03 22:37:01 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:01 | INFO     | evaluate_model | [45/70] 00045_eo
+2026-03-03 22:37:02 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:02 | INFO     | evaluate_model |   raw:  dice=0.7958 matched_iou=0.6998 recall=0.5625 n_pred=20
+2026-03-03 22:37:02 | INFO     | evaluate_model | [46/70] 00045_fo
+2026-03-03 22:37:02 | INFO     | evaluate_model | [37/70] 00041_eo
+2026-03-03 22:37:03 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:04 | INFO     | evaluate_model | [47/70] 00046_eo
+2026-03-03 22:37:04 | INFO     | evaluate_model |   raw:  dice=0.8894 matched_iou=0.8009 recall=1.0000 n_pred=1
+2026-03-03 22:37:04 | INFO     | evaluate_model | [38/70] 00041_fo
+2026-03-03 22:37:05 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:05 | INFO     | evaluate_model | [48/70] 00046_fo
+2026-03-03 22:37:05 | INFO     | evaluate_model |   raw:  dice=0.6833 matched_iou=0.8270 recall=1.0000 n_pred=2
+2026-03-03 22:37:05 | INFO     | evaluate_model | [39/70] 00042_eo
+2026-03-03 22:37:06 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:06 | INFO     | evaluate_model | [49/70] 00047_eo
+2026-03-03 22:37:07 | INFO     | evaluate_model |   raw:  dice=0.8334 matched_iou=0.7080 recall=1.0000 n_pred=4
+2026-03-03 22:37:07 | INFO     | evaluate_model | [40/70] 00042_fo
+2026-03-03 22:37:07 | INFO     | evaluate_model |   raw:  dice=0.2428 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:37:07 | INFO     | evaluate_model | [50/70] 00047_fo
+2026-03-03 22:37:08 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:08 | INFO     | evaluate_model |   raw:  dice=0.8353 matched_iou=0.7155 recall=1.0000 n_pred=5
+2026-03-03 22:37:08 | INFO     | evaluate_model | [51/70] 00048_eo
+2026-03-03 22:37:08 | INFO     | evaluate_model | [41/70] 00043_eo
+2026-03-03 22:37:10 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:10 | INFO     | evaluate_model | [42/70] 00043_fo
+2026-03-03 22:37:10 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:10 | INFO     | evaluate_model | [52/70] 00048_fo
+2026-03-03 22:37:11 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:11 | INFO     | evaluate_model | [43/70] 00044_eo
+2026-03-03 22:37:11 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:11 | INFO     | evaluate_model | [53/70] 00049_eo
+2026-03-03 22:37:12 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:12 | INFO     | evaluate_model |   raw:  dice=0.8462 matched_iou=0.7488 recall=1.0000 n_pred=2
+2026-03-03 22:37:12 | INFO     | evaluate_model | [54/70] 00049_fo
+2026-03-03 22:37:12 | INFO     | evaluate_model | [44/70] 00044_fo
+2026-03-03 22:37:14 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:14 | INFO     | evaluate_model | [55/70] 00050_eo
+2026-03-03 22:37:14 | INFO     | evaluate_model |   raw:  dice=0.6439 matched_iou=0.6365 recall=0.6667 n_pred=10
+2026-03-03 22:37:14 | INFO     | evaluate_model | [45/70] 00045_eo
+2026-03-03 22:37:15 | INFO     | evaluate_model |   raw:  dice=0.1925 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:37:15 | INFO     | evaluate_model | [56/70] 00050_fo
+2026-03-03 22:37:16 | INFO     | evaluate_model |   raw:  dice=0.7449 matched_iou=0.7239 recall=0.4444 n_pred=7
+2026-03-03 22:37:16 | INFO     | evaluate_model | [46/70] 00045_fo
+2026-03-03 22:37:17 | INFO     | evaluate_model |   raw:  dice=0.4015 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:37:17 | INFO     | evaluate_model | [57/70] 00053_eo
+2026-03-03 22:37:17 | INFO     | evaluate_model |   raw:  dice=0.7864 matched_iou=0.7761 recall=0.8000 n_pred=6
+2026-03-03 22:37:17 | INFO     | evaluate_model | [47/70] 00046_eo
+2026-03-03 22:37:18 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:18 | INFO     | evaluate_model | [58/70] 00053_fo
+2026-03-03 22:37:19 | INFO     | evaluate_model |   raw:  dice=0.7218 matched_iou=0.6962 recall=1.0000 n_pred=3
+2026-03-03 22:37:19 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:19 | INFO     | evaluate_model | [48/70] 00046_fo
+2026-03-03 22:37:19 | INFO     | evaluate_model | [59/70] 00056_eo
+2026-03-03 22:37:20 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:20 | INFO     | evaluate_model | [60/70] 00056_fo
+2026-03-03 22:37:20 | INFO     | evaluate_model |   raw:  dice=0.8456 matched_iou=0.7166 recall=1.0000 n_pred=2
+2026-03-03 22:37:20 | INFO     | evaluate_model | [49/70] 00047_eo
+2026-03-03 22:37:22 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:22 | INFO     | evaluate_model | [61/70] 00063_eo
+2026-03-03 22:37:22 | INFO     | evaluate_model |   raw:  dice=0.8995 matched_iou=0.7245 recall=0.6667 n_pred=4
+2026-03-03 22:37:22 | INFO     | evaluate_model | [50/70] 00047_fo
+2026-03-03 22:37:23 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:23 | INFO     | evaluate_model | [62/70] 00063_fo
+2026-03-03 22:37:23 | INFO     | evaluate_model |   raw:  dice=0.8939 matched_iou=0.7367 recall=1.0000 n_pred=4
+2026-03-03 22:37:23 | INFO     | evaluate_model | [51/70] 00048_eo
+2026-03-03 22:37:24 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:24 | INFO     | evaluate_model | [63/70] 00064_eo
+2026-03-03 22:37:25 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:25 | INFO     | evaluate_model |   raw:  dice=0.6711 matched_iou=0.6444 recall=0.5000 n_pred=4
+2026-03-03 22:37:25 | INFO     | evaluate_model | [64/70] 00064_fo
+2026-03-03 22:37:25 | INFO     | evaluate_model | [52/70] 00048_fo
+2026-03-03 22:37:26 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:26 | INFO     | evaluate_model | [65/70] 00066_eo
+2026-03-03 22:37:27 | INFO     | evaluate_model |   raw:  dice=0.2198 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:37:27 | INFO     | evaluate_model | [53/70] 00049_eo
+2026-03-03 22:37:28 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:28 | INFO     | evaluate_model | [66/70] 00066_fo
+2026-03-03 22:37:28 | INFO     | evaluate_model |   raw:  dice=0.9292 matched_iou=0.8538 recall=1.0000 n_pred=2
+2026-03-03 22:37:28 | INFO     | evaluate_model | [54/70] 00049_fo
+2026-03-03 22:37:29 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:29 | INFO     | evaluate_model | [67/70] 00068_eo
+2026-03-03 22:37:30 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:30 | INFO     | evaluate_model |   raw:  dice=0.8871 matched_iou=0.7841 recall=1.0000 n_pred=2
+2026-03-03 22:37:30 | INFO     | evaluate_model | [55/70] 00050_eo
+2026-03-03 22:37:30 | INFO     | evaluate_model | [68/70] 00068_fo
+2026-03-03 22:37:31 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:31 | INFO     | evaluate_model | [69/70] 00072_eo
+2026-03-03 22:37:31 | INFO     | evaluate_model |   raw:  dice=0.8695 matched_iou=0.7579 recall=0.5000 n_pred=3
+2026-03-03 22:37:31 | INFO     | evaluate_model | [56/70] 00050_fo
+2026-03-03 22:37:32 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:37:32 | INFO     | evaluate_model | [70/70] 00072_fo
+2026-03-03 22:37:33 | INFO     | evaluate_model |   raw:  dice=0.8641 matched_iou=0.8139 recall=0.6667 n_pred=2
+2026-03-03 22:37:33 | INFO     | evaluate_model | [57/70] 00053_eo
+2026-03-03 22:37:33 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:33 | INFO     | evaluate_model | Results saved to outputs/eval_sam3_snr05/eval_results_20260303_223733.json
+2026-03-03 22:37:33 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:37:33 | INFO     | evaluate_model | SUMMARY (macro-averaged, null-skipping)
+2026-03-03 22:37:33 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:37:33 | INFO     | evaluate_model |   RAW:
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Dice:      0.0432 ± 0.1001
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Precision: 0.3925 ± 0.2034
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Recall:    0.0329 ± 0.0780
+2026-03-03 22:37:33 | INFO     | evaluate_model |     HD95:      1202.8898 ± 512.9308
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Match IoU: 0.0190 ± 0.1018
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Inst Rec:  0.0141 ± 0.0769
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Micro D/P/R: 0.0572/0.4131/0.0307
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Empty: pred=48 gt=0 both=11
+2026-03-03 22:37:33 | INFO     | evaluate_model |   POST:
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Dice:      0.0432 ± 0.1001
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Precision: 0.3925 ± 0.2034
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Recall:    0.0329 ± 0.0780
+2026-03-03 22:37:33 | INFO     | evaluate_model |     HD95:      1202.8898 ± 512.9308
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Match IoU: 0.0190 ± 0.1018
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Inst Rec:  0.0141 ± 0.0769
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Micro D/P/R: 0.0572/0.4131/0.0307
+2026-03-03 22:37:33 | INFO     | evaluate_model |     Empty: pred=48 gt=0 both=11
+2026-03-03 22:37:34 | INFO     | evaluate_model |   raw:  dice=0.8672 matched_iou=0.7992 recall=0.7500 n_pred=4
+2026-03-03 22:37:34 | INFO     | evaluate_model | [58/70] 00053_fo
+2026-03-03 22:37:35 | INFO     | evaluate_model |   raw:  dice=0.9000 matched_iou=0.7460 recall=1.0000 n_pred=4
+2026-03-03 22:37:35 | INFO     | evaluate_model | [59/70] 00056_eo
+2026-03-03 22:37:36 | INFO     | evaluate_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/evaluate_model_2026-03-03.log
+2026-03-03 22:37:36 | INFO     | evaluate_model | Config: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam3.yaml
+2026-03-03 22:37:36 | INFO     | evaluate_model | Render dir: data/02_processed/renders/noisy/asinh_stretch/snr10
+2026-03-03 22:37:36 | INFO     | evaluate_model | GT dir:     data/02_processed/gt_canonical/current
+2026-03-03 22:37:36 | INFO     | evaluate_model | Discovered 70 render/GT pairs
+2026-03-03 22:37:36 | INFO     | evaluate_model |   raw:  dice=0.8516 matched_iou=0.7404 recall=1.0000 n_pred=4
+2026-03-03 22:37:36 | INFO     | evaluate_model | [60/70] 00056_fo
+2026-03-03 22:37:37 | INFO     | evaluate_model |   raw:  dice=0.8218 matched_iou=0.7316 recall=1.0000 n_pred=5
+2026-03-03 22:37:38 | INFO     | evaluate_model | [61/70] 00063_eo
+2026-03-03 22:37:39 | INFO     | evaluate_model |   raw:  dice=0.8590 matched_iou=0.7717 recall=1.0000 n_pred=2
+2026-03-03 22:37:39 | INFO     | evaluate_model | [62/70] 00063_fo
+2026-03-03 22:37:40 | INFO     | evaluate_model |   raw:  dice=0.8575 matched_iou=0.7773 recall=1.0000 n_pred=5
+2026-03-03 22:37:40 | INFO     | evaluate_model | [63/70] 00064_eo
+2026-03-03 22:37:41 | INFO     | evaluate_model |   raw:  dice=0.8628 matched_iou=0.7209 recall=1.0000 n_pred=3
+2026-03-03 22:37:41 | INFO     | evaluate_model | [64/70] 00064_fo
+2026-03-03 22:37:42 | INFO     | evaluate_model |   raw:  dice=0.8526 matched_iou=0.7662 recall=1.0000 n_pred=3
+2026-03-03 22:37:42 | INFO     | evaluate_model | [65/70] 00066_eo
+2026-03-03 22:37:43 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:43 | INFO     | evaluate_model | [66/70] 00066_fo
+2026-03-03 22:37:43 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:43 | INFO     | evaluate_model | [67/70] 00068_eo
+2026-03-03 22:37:44 | INFO     | evaluate_model |   raw:  dice=0.9063 matched_iou=0.8286 recall=1.0000 n_pred=1
+2026-03-03 22:37:44 | INFO     | evaluate_model | [68/70] 00068_fo
+2026-03-03 22:37:45 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:45 | INFO     | evaluate_model | [69/70] 00072_eo
+2026-03-03 22:37:46 | INFO     | evaluate_model |   raw:  dice=0.8645 matched_iou=0.7431 recall=1.0000 n_pred=3
+2026-03-03 22:37:46 | INFO     | evaluate_model | [70/70] 00072_fo
+2026-03-03 22:37:47 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:37:47 | INFO     | evaluate_model | Results saved to outputs/eval_sam3/eval_results_20260303_223747.json
+2026-03-03 22:37:47 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:37:47 | INFO     | evaluate_model | SUMMARY (macro-averaged, null-skipping)
+2026-03-03 22:37:47 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:37:47 | INFO     | evaluate_model |   RAW:
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Dice:      0.7871 ± 0.1303
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Precision: 0.8106 ± 0.1120
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Recall:    0.7890 ± 0.1637
+2026-03-03 22:37:47 | INFO     | evaluate_model |     HD95:      54.2932 ± 52.7689
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Match IoU: 0.7159 ± 0.1099
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Inst Rec:  0.8117 ± 0.2438
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Micro D/P/R: 0.7913/0.8228/0.7622
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Empty: pred=0 gt=0 both=11
+2026-03-03 22:37:47 | INFO     | evaluate_model |   POST:
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Dice:      0.7871 ± 0.1303
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Precision: 0.8106 ± 0.1120
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Recall:    0.7890 ± 0.1637
+2026-03-03 22:37:47 | INFO     | evaluate_model |     HD95:      54.2932 ± 52.7689
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Match IoU: 0.7159 ± 0.1099
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Inst Rec:  0.8117 ± 0.2438
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Micro D/P/R: 0.7913/0.8228/0.7622
+2026-03-03 22:37:47 | INFO     | evaluate_model |     Empty: pred=0 gt=0 both=11
+2026-03-03 22:38:00 | INFO     | evaluate_model | [1/70] 00011_eo
+2026-03-03 22:38:01 | INFO     | evaluate_model |   raw:  dice=0.2758 matched_iou=0.5718 recall=0.0714 n_pred=2
+2026-03-03 22:38:01 | INFO     | evaluate_model | [2/70] 00011_fo
+2026-03-03 22:38:02 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:02 | INFO     | evaluate_model | [3/70] 00013_eo
+2026-03-03 22:38:03 | INFO     | evaluate_model |   raw:  dice=0.1240 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:38:03 | INFO     | evaluate_model | [4/70] 00013_fo
+2026-03-03 22:38:04 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:04 | INFO     | evaluate_model | [5/70] 00019_eo
+2026-03-03 22:38:05 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:05 | INFO     | evaluate_model | [6/70] 00019_fo
+2026-03-03 22:38:06 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:06 | INFO     | evaluate_model | [7/70] 00022_eo
+2026-03-03 22:38:07 | INFO     | evaluate_model |   raw:  dice=0.4211 matched_iou=0.0000 recall=0.0000 n_pred=5
+2026-03-03 22:38:07 | INFO     | evaluate_model | [8/70] 00022_fo
+2026-03-03 22:38:08 | INFO     | evaluate_model |   raw:  dice=0.2715 matched_iou=0.5606 recall=0.1250 n_pred=2
+2026-03-03 22:38:08 | INFO     | evaluate_model | [9/70] 00024_eo
+2026-03-03 22:38:09 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:09 | INFO     | evaluate_model | [10/70] 00024_fo
+2026-03-03 22:38:09 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:10 | INFO     | evaluate_model | [11/70] 00025_eo
+2026-03-03 22:38:10 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:10 | INFO     | evaluate_model | [12/70] 00025_fo
+2026-03-03 22:38:11 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:11 | INFO     | evaluate_model | [13/70] 00027_eo
+2026-03-03 22:38:12 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:12 | INFO     | evaluate_model | [14/70] 00027_fo
+2026-03-03 22:38:13 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:13 | INFO     | evaluate_model | [15/70] 00028_eo
+2026-03-03 22:38:13 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:13 | INFO     | evaluate_model | [16/70] 00028_fo
+2026-03-03 22:38:14 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:14 | INFO     | evaluate_model | [17/70] 00029_eo
+2026-03-03 22:38:15 | INFO     | evaluate_model |   raw:  dice=0.2019 matched_iou=0.6522 recall=0.3333 n_pred=2
+2026-03-03 22:38:15 | INFO     | evaluate_model | [18/70] 00029_fo
+2026-03-03 22:38:16 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:16 | INFO     | evaluate_model | [19/70] 00030_eo
+2026-03-03 22:38:17 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:17 | INFO     | evaluate_model | [20/70] 00030_fo
+2026-03-03 22:38:17 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:17 | INFO     | evaluate_model | [21/70] 00032_eo
+2026-03-03 22:38:18 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:18 | INFO     | evaluate_model | [22/70] 00032_fo
+2026-03-03 22:38:19 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:19 | INFO     | evaluate_model | [23/70] 00033_eo
+2026-03-03 22:38:20 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:20 | INFO     | evaluate_model | [24/70] 00033_fo
+2026-03-03 22:38:20 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:20 | INFO     | evaluate_model | [25/70] 00034_eo
+2026-03-03 22:38:21 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:21 | INFO     | evaluate_model | [26/70] 00034_fo
+2026-03-03 22:38:22 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:22 | INFO     | evaluate_model | [27/70] 00035_eo
+2026-03-03 22:38:23 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:23 | INFO     | evaluate_model | [28/70] 00035_fo
+2026-03-03 22:38:23 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:24 | INFO     | evaluate_model | [29/70] 00036_eo
+2026-03-03 22:38:24 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:24 | INFO     | evaluate_model | [30/70] 00036_fo
+2026-03-03 22:38:25 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:25 | INFO     | evaluate_model | [31/70] 00037_eo
+2026-03-03 22:38:26 | INFO     | evaluate_model |   raw:  dice=0.2949 matched_iou=0.5338 recall=0.5000 n_pred=2
+2026-03-03 22:38:26 | INFO     | evaluate_model | [32/70] 00037_fo
+2026-03-03 22:38:27 | INFO     | evaluate_model |   raw:  dice=0.2760 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:27 | INFO     | evaluate_model | [33/70] 00038_eo
+2026-03-03 22:38:28 | INFO     | evaluate_model |   raw:  dice=0.3046 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:38:28 | INFO     | evaluate_model | [34/70] 00038_fo
+2026-03-03 22:38:29 | INFO     | evaluate_model |   raw:  dice=0.2952 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:29 | INFO     | evaluate_model | [35/70] 00039_eo
+2026-03-03 22:38:30 | INFO     | evaluate_model |   raw:  dice=0.1683 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:31 | INFO     | evaluate_model | [36/70] 00039_fo
+2026-03-03 22:38:32 | INFO     | evaluate_model |   raw:  dice=0.2064 matched_iou=0.6786 recall=0.1250 n_pred=4
+2026-03-03 22:38:32 | INFO     | evaluate_model | [37/70] 00041_eo
+2026-03-03 22:38:32 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:33 | INFO     | evaluate_model | [38/70] 00041_fo
+2026-03-03 22:38:33 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:33 | INFO     | evaluate_model | [39/70] 00042_eo
+2026-03-03 22:38:34 | INFO     | evaluate_model |   raw:  dice=0.3093 matched_iou=0.6042 recall=0.2500 n_pred=2
+2026-03-03 22:38:34 | INFO     | evaluate_model | [40/70] 00042_fo
+2026-03-03 22:38:35 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:35 | INFO     | evaluate_model | [41/70] 00043_eo
+2026-03-03 22:38:36 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:36 | INFO     | evaluate_model | [42/70] 00043_fo
+2026-03-03 22:38:37 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:37 | INFO     | evaluate_model | [43/70] 00044_eo
+2026-03-03 22:38:37 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:37 | INFO     | evaluate_model | [44/70] 00044_fo
+2026-03-03 22:38:38 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:38 | INFO     | evaluate_model | [45/70] 00045_eo
+2026-03-03 22:38:39 | INFO     | evaluate_model |   raw:  dice=0.6085 matched_iou=0.0000 recall=0.0000 n_pred=4
+2026-03-03 22:38:39 | INFO     | evaluate_model | [46/70] 00045_fo
+2026-03-03 22:38:40 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:40 | INFO     | evaluate_model | [47/70] 00046_eo
+2026-03-03 22:38:41 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:41 | INFO     | evaluate_model | [48/70] 00046_fo
+2026-03-03 22:38:42 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:42 | INFO     | evaluate_model | [49/70] 00047_eo
+2026-03-03 22:38:43 | INFO     | evaluate_model |   raw:  dice=0.3319 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:38:43 | INFO     | evaluate_model | [50/70] 00047_fo
+2026-03-03 22:38:43 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:44 | INFO     | evaluate_model | [51/70] 00048_eo
+2026-03-03 22:38:44 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:44 | INFO     | evaluate_model | [52/70] 00048_fo
+2026-03-03 22:38:45 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:45 | INFO     | evaluate_model | [53/70] 00049_eo
+2026-03-03 22:38:46 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:46 | INFO     | evaluate_model | [54/70] 00049_fo
+2026-03-03 22:38:47 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:47 | INFO     | evaluate_model | [55/70] 00050_eo
+2026-03-03 22:38:48 | INFO     | evaluate_model |   raw:  dice=0.3093 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:38:48 | INFO     | evaluate_model | [56/70] 00050_fo
+2026-03-03 22:38:49 | INFO     | evaluate_model |   raw:  dice=0.4318 matched_iou=0.5121 recall=0.3333 n_pred=3
+2026-03-03 22:38:49 | INFO     | evaluate_model | [57/70] 00053_eo
+2026-03-03 22:38:50 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:50 | INFO     | evaluate_model | [58/70] 00053_fo
+2026-03-03 22:38:50 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:50 | INFO     | evaluate_model | [59/70] 00056_eo
+2026-03-03 22:38:51 | INFO     | evaluate_model |   raw:  dice=0.4370 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:52 | INFO     | evaluate_model | [60/70] 00056_fo
+2026-03-03 22:38:52 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:52 | INFO     | evaluate_model | [61/70] 00063_eo
+2026-03-03 22:38:53 | INFO     | evaluate_model |   raw:  dice=0.4020 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:38:53 | INFO     | evaluate_model | [62/70] 00063_fo
+2026-03-03 22:38:54 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:38:54 | INFO     | evaluate_model | [63/70] 00064_eo
+2026-03-03 22:38:55 | INFO     | evaluate_model |   raw:  dice=0.2213 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:55 | INFO     | evaluate_model | [64/70] 00064_fo
+2026-03-03 22:38:56 | INFO     | evaluate_model |   raw:  dice=0.3331 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:38:56 | INFO     | evaluate_model | [65/70] 00066_eo
+2026-03-03 22:38:57 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:57 | INFO     | evaluate_model | [66/70] 00066_fo
+2026-03-03 22:38:58 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:58 | INFO     | evaluate_model | [67/70] 00068_eo
+2026-03-03 22:38:59 | INFO     | evaluate_model |   raw:  dice=0.4082 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:38:59 | INFO     | evaluate_model | [68/70] 00068_fo
+2026-03-03 22:38:59 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:38:59 | INFO     | evaluate_model | [69/70] 00072_eo
+2026-03-03 22:39:00 | INFO     | evaluate_model |   raw:  dice=0.2621 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:39:00 | INFO     | evaluate_model | [70/70] 00072_fo
+2026-03-03 22:39:01 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:01 | INFO     | evaluate_model | Results saved to outputs/eval_sam3_snr10/eval_results_20260303_223901.json
+2026-03-03 22:39:01 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:39:01 | INFO     | evaluate_model | SUMMARY (macro-averaged, null-skipping)
+2026-03-03 22:39:01 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:39:01 | INFO     | evaluate_model |   RAW:
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Dice:      0.1168 ± 0.1646
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Precision: 0.5292 ± 0.2219
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Recall:    0.0944 ± 0.1392
+2026-03-03 22:39:01 | INFO     | evaluate_model |     HD95:      966.8351 ± 628.1997
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Match IoU: 0.0697 ± 0.1910
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Inst Rec:  0.0295 ± 0.0939
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Micro D/P/R: 0.1470/0.5307/0.0853
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Empty: pred=37 gt=0 both=11
+2026-03-03 22:39:01 | INFO     | evaluate_model |   POST:
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Dice:      0.1168 ± 0.1646
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Precision: 0.5292 ± 0.2219
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Recall:    0.0944 ± 0.1392
+2026-03-03 22:39:01 | INFO     | evaluate_model |     HD95:      966.8351 ± 628.1997
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Match IoU: 0.0697 ± 0.1910
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Inst Rec:  0.0295 ± 0.0939
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Micro D/P/R: 0.1470/0.5307/0.0853
+2026-03-03 22:39:01 | INFO     | evaluate_model |     Empty: pred=37 gt=0 both=11
+2026-03-03 22:39:03 | INFO     | evaluate_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/evaluate_model_2026-03-03.log
+2026-03-03 22:39:03 | INFO     | evaluate_model | Config: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam3.yaml
+2026-03-03 22:39:03 | INFO     | evaluate_model | Render dir: data/02_processed/renders/noisy/asinh_stretch/snr20
+2026-03-03 22:39:03 | INFO     | evaluate_model | GT dir:     data/02_processed/gt_canonical/current
+2026-03-03 22:39:03 | INFO     | evaluate_model | Discovered 70 render/GT pairs
+2026-03-03 22:39:24 | INFO     | evaluate_model | [1/70] 00011_eo
+2026-03-03 22:39:25 | INFO     | evaluate_model |   raw:  dice=0.4650 matched_iou=0.5574 recall=0.1429 n_pred=5
+2026-03-03 22:39:25 | INFO     | evaluate_model | [2/70] 00011_fo
+2026-03-03 22:39:26 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:26 | INFO     | evaluate_model | [3/70] 00013_eo
+2026-03-03 22:39:27 | INFO     | evaluate_model |   raw:  dice=0.1570 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:39:27 | INFO     | evaluate_model | [4/70] 00013_fo
+2026-03-03 22:39:28 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:28 | INFO     | evaluate_model | [5/70] 00019_eo
+2026-03-03 22:39:29 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:29 | INFO     | evaluate_model | [6/70] 00019_fo
+2026-03-03 22:39:30 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:30 | INFO     | evaluate_model | [7/70] 00022_eo
+2026-03-03 22:39:31 | INFO     | evaluate_model |   raw:  dice=0.4771 matched_iou=0.0000 recall=0.0000 n_pred=4
+2026-03-03 22:39:31 | INFO     | evaluate_model | [8/70] 00022_fo
+2026-03-03 22:39:32 | INFO     | evaluate_model |   raw:  dice=0.5503 matched_iou=0.5608 recall=0.3750 n_pred=7
+2026-03-03 22:39:32 | INFO     | evaluate_model | [9/70] 00024_eo
+2026-03-03 22:39:33 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:33 | INFO     | evaluate_model | [10/70] 00024_fo
+2026-03-03 22:39:34 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:34 | INFO     | evaluate_model | [11/70] 00025_eo
+2026-03-03 22:39:34 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:35 | INFO     | evaluate_model | [12/70] 00025_fo
+2026-03-03 22:39:35 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:35 | INFO     | evaluate_model | [13/70] 00027_eo
+2026-03-03 22:39:36 | INFO     | evaluate_model |   raw:  dice=0.4484 matched_iou=0.6344 recall=0.1250 n_pred=6
+2026-03-03 22:39:37 | INFO     | evaluate_model | [14/70] 00027_fo
+2026-03-03 22:39:37 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:37 | INFO     | evaluate_model | [15/70] 00028_eo
+2026-03-03 22:39:38 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:38 | INFO     | evaluate_model | [16/70] 00028_fo
+2026-03-03 22:39:39 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:39 | INFO     | evaluate_model | [17/70] 00029_eo
+2026-03-03 22:39:40 | INFO     | evaluate_model |   raw:  dice=0.3261 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:39:40 | INFO     | evaluate_model | [18/70] 00029_fo
+2026-03-03 22:39:41 | INFO     | evaluate_model |   raw:  dice=0.3615 matched_iou=0.7462 recall=0.1429 n_pred=4
+2026-03-03 22:39:41 | INFO     | evaluate_model | [19/70] 00030_eo
+2026-03-03 22:39:42 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:42 | INFO     | evaluate_model | [20/70] 00030_fo
+2026-03-03 22:39:42 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:42 | INFO     | evaluate_model | [21/70] 00032_eo
+2026-03-03 22:39:43 | INFO     | evaluate_model |   raw:  dice=0.1697 matched_iou=0.5629 recall=0.1667 n_pred=1
+2026-03-03 22:39:43 | INFO     | evaluate_model | [22/70] 00032_fo
+2026-03-03 22:39:44 | INFO     | evaluate_model |   raw:  dice=0.5126 matched_iou=0.7068 recall=0.2857 n_pred=3
+2026-03-03 22:39:45 | INFO     | evaluate_model | [23/70] 00033_eo
+2026-03-03 22:39:45 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:45 | INFO     | evaluate_model | [24/70] 00033_fo
+2026-03-03 22:39:46 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:39:46 | INFO     | evaluate_model | [25/70] 00034_eo
+2026-03-03 22:39:47 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:47 | INFO     | evaluate_model | [26/70] 00034_fo
+2026-03-03 22:39:47 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:48 | INFO     | evaluate_model | [27/70] 00035_eo
+2026-03-03 22:39:48 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:48 | INFO     | evaluate_model | [28/70] 00035_fo
+2026-03-03 22:39:49 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:49 | INFO     | evaluate_model | [29/70] 00036_eo
+2026-03-03 22:39:50 | INFO     | evaluate_model |   raw:  dice=0.7145 matched_iou=0.5396 recall=0.5000 n_pred=3
+2026-03-03 22:39:50 | INFO     | evaluate_model | [30/70] 00036_fo
+2026-03-03 22:39:51 | INFO     | evaluate_model |   raw:  dice=0.5887 matched_iou=0.6695 recall=0.5000 n_pred=2
+2026-03-03 22:39:51 | INFO     | evaluate_model | [31/70] 00037_eo
+2026-03-03 22:39:52 | INFO     | evaluate_model |   raw:  dice=0.5340 matched_iou=0.6515 recall=0.5000 n_pred=2
+2026-03-03 22:39:52 | INFO     | evaluate_model | [32/70] 00037_fo
+2026-03-03 22:39:53 | INFO     | evaluate_model |   raw:  dice=0.5591 matched_iou=0.5094 recall=0.2500 n_pred=2
+2026-03-03 22:39:54 | INFO     | evaluate_model | [33/70] 00038_eo
+2026-03-03 22:39:54 | INFO     | evaluate_model |   raw:  dice=0.3403 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:39:55 | INFO     | evaluate_model | [34/70] 00038_fo
+2026-03-03 22:39:55 | INFO     | evaluate_model |   raw:  dice=0.3747 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:39:56 | INFO     | evaluate_model | [35/70] 00039_eo
+2026-03-03 22:39:57 | INFO     | evaluate_model |   raw:  dice=0.2995 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:39:57 | INFO     | evaluate_model | [36/70] 00039_fo
+2026-03-03 22:39:58 | INFO     | evaluate_model |   raw:  dice=0.2100 matched_iou=0.6814 recall=0.0625 n_pred=3
+2026-03-03 22:39:58 | INFO     | evaluate_model | [37/70] 00041_eo
+2026-03-03 22:39:59 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:39:59 | INFO     | evaluate_model | [38/70] 00041_fo
+2026-03-03 22:39:59 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:00 | INFO     | evaluate_model | [39/70] 00042_eo
+2026-03-03 22:40:01 | INFO     | evaluate_model |   raw:  dice=0.2555 matched_iou=0.6671 recall=0.2500 n_pred=3
+2026-03-03 22:40:01 | INFO     | evaluate_model | [40/70] 00042_fo
+2026-03-03 22:40:02 | INFO     | evaluate_model |   raw:  dice=0.3979 matched_iou=0.7177 recall=0.4000 n_pred=3
+2026-03-03 22:40:02 | INFO     | evaluate_model | [41/70] 00043_eo
+2026-03-03 22:40:02 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:03 | INFO     | evaluate_model | [42/70] 00043_fo
+2026-03-03 22:40:03 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:03 | INFO     | evaluate_model | [43/70] 00044_eo
+2026-03-03 22:40:04 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:04 | INFO     | evaluate_model | [44/70] 00044_fo
+2026-03-03 22:40:05 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:05 | INFO     | evaluate_model | [45/70] 00045_eo
+2026-03-03 22:40:06 | INFO     | evaluate_model |   raw:  dice=0.5430 matched_iou=0.0000 recall=0.0000 n_pred=4
+2026-03-03 22:40:06 | INFO     | evaluate_model | [46/70] 00045_fo
+2026-03-03 22:40:07 | INFO     | evaluate_model |   raw:  dice=0.5891 matched_iou=0.0000 recall=0.0000 n_pred=4
+2026-03-03 22:40:07 | INFO     | evaluate_model | [47/70] 00046_eo
+2026-03-03 22:40:08 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:08 | INFO     | evaluate_model | [48/70] 00046_fo
+2026-03-03 22:40:09 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:09 | INFO     | evaluate_model | [49/70] 00047_eo
+2026-03-03 22:40:10 | INFO     | evaluate_model |   raw:  dice=0.4004 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:10 | INFO     | evaluate_model | [50/70] 00047_fo
+2026-03-03 22:40:11 | INFO     | evaluate_model |   raw:  dice=0.7454 matched_iou=0.5740 recall=0.6667 n_pred=4
+2026-03-03 22:40:11 | INFO     | evaluate_model | [51/70] 00048_eo
+2026-03-03 22:40:12 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:12 | INFO     | evaluate_model | [52/70] 00048_fo
+2026-03-03 22:40:12 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:13 | INFO     | evaluate_model | [53/70] 00049_eo
+2026-03-03 22:40:13 | INFO     | evaluate_model |   raw:  dice=0.5903 matched_iou=0.5734 recall=0.5000 n_pred=3
+2026-03-03 22:40:14 | INFO     | evaluate_model | [54/70] 00049_fo
+2026-03-03 22:40:15 | INFO     | evaluate_model |   raw:  dice=0.5329 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:40:15 | INFO     | evaluate_model | [55/70] 00050_eo
+2026-03-03 22:40:16 | INFO     | evaluate_model |   raw:  dice=0.3844 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:16 | INFO     | evaluate_model | [56/70] 00050_fo
+2026-03-03 22:40:17 | INFO     | evaluate_model |   raw:  dice=0.6477 matched_iou=0.5994 recall=0.3333 n_pred=4
+2026-03-03 22:40:17 | INFO     | evaluate_model | [57/70] 00053_eo
+2026-03-03 22:40:18 | INFO     | evaluate_model |   raw:  dice=0.2898 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:18 | INFO     | evaluate_model | [58/70] 00053_fo
+2026-03-03 22:40:19 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:19 | INFO     | evaluate_model | [59/70] 00056_eo
+2026-03-03 22:40:20 | INFO     | evaluate_model |   raw:  dice=0.4131 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:40:20 | INFO     | evaluate_model | [60/70] 00056_fo
+2026-03-03 22:40:21 | INFO     | evaluate_model |   raw:  dice=0.6983 matched_iou=0.5808 recall=0.2500 n_pred=3
+2026-03-03 22:40:21 | INFO     | evaluate_model | [61/70] 00063_eo
+2026-03-03 22:40:22 | INFO     | evaluate_model |   raw:  dice=0.4135 matched_iou=0.0000 recall=0.0000 n_pred=2
+2026-03-03 22:40:22 | INFO     | evaluate_model | [62/70] 00063_fo
+2026-03-03 22:40:23 | INFO     | evaluate_model |   raw:  dice=0.4131 matched_iou=0.5856 recall=0.3333 n_pred=2
+2026-03-03 22:40:23 | INFO     | evaluate_model | [63/70] 00064_eo
+2026-03-03 22:40:24 | INFO     | evaluate_model |   raw:  dice=0.5503 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:24 | INFO     | evaluate_model | [64/70] 00064_fo
+2026-03-03 22:40:25 | INFO     | evaluate_model |   raw:  dice=0.6986 matched_iou=0.5715 recall=0.5000 n_pred=2
+2026-03-03 22:40:25 | INFO     | evaluate_model | [65/70] 00066_eo
+2026-03-03 22:40:26 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:26 | INFO     | evaluate_model | [66/70] 00066_fo
+2026-03-03 22:40:27 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:27 | INFO     | evaluate_model | [67/70] 00068_eo
+2026-03-03 22:40:28 | INFO     | evaluate_model |   raw:  dice=0.2645 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:28 | INFO     | evaluate_model | [68/70] 00068_fo
+2026-03-03 22:40:28 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:28 | INFO     | evaluate_model | [69/70] 00072_eo
+2026-03-03 22:40:29 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:40:29 | INFO     | evaluate_model | [70/70] 00072_fo
+2026-03-03 22:40:30 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:40:30 | INFO     | evaluate_model | Results saved to outputs/eval_sam3_snr20/eval_results_20260303_224030.json
+2026-03-03 22:40:30 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:40:30 | INFO     | evaluate_model | SUMMARY (macro-averaged, null-skipping)
+2026-03-03 22:40:30 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:40:30 | INFO     | evaluate_model |   RAW:
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Dice:      0.2698 ± 0.2531
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Precision: 0.6430 ± 0.2494
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Recall:    0.2202 ± 0.2146
+2026-03-03 22:40:30 | INFO     | evaluate_model |     HD95:      651.3304 ± 641.0099
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Match IoU: 0.1981 ± 0.2899
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Inst Rec:  0.1065 ± 0.1797
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Micro D/P/R: 0.3357/0.6534/0.2258
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Empty: pred=23 gt=0 both=11
+2026-03-03 22:40:30 | INFO     | evaluate_model |   POST:
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Dice:      0.2698 ± 0.2531
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Precision: 0.6430 ± 0.2494
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Recall:    0.2202 ± 0.2146
+2026-03-03 22:40:30 | INFO     | evaluate_model |     HD95:      651.3304 ± 641.0099
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Match IoU: 0.1981 ± 0.2899
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Inst Rec:  0.1065 ± 0.1797
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Micro D/P/R: 0.3357/0.6534/0.2258
+2026-03-03 22:40:30 | INFO     | evaluate_model |     Empty: pred=23 gt=0 both=11
+2026-03-03 22:40:32 | INFO     | evaluate_model | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/evaluate_model_2026-03-03.log
+2026-03-03 22:40:32 | INFO     | evaluate_model | Config: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/configs/eval_sam3.yaml
+2026-03-03 22:40:32 | INFO     | evaluate_model | Render dir: data/02_processed/renders/noisy/asinh_stretch/snr50
+2026-03-03 22:40:32 | INFO     | evaluate_model | GT dir:     data/02_processed/gt_canonical/current
+2026-03-03 22:40:32 | INFO     | evaluate_model | Discovered 70 render/GT pairs
+2026-03-03 22:40:53 | INFO     | evaluate_model | [1/70] 00011_eo
+2026-03-03 22:40:55 | INFO     | evaluate_model |   raw:  dice=0.5520 matched_iou=0.5872 recall=0.1429 n_pred=5
+2026-03-03 22:40:55 | INFO     | evaluate_model | [2/70] 00011_fo
+2026-03-03 22:40:56 | INFO     | evaluate_model |   raw:  dice=0.3609 matched_iou=0.6772 recall=0.0714 n_pred=4
+2026-03-03 22:40:56 | INFO     | evaluate_model | [3/70] 00013_eo
+2026-03-03 22:40:57 | INFO     | evaluate_model |   raw:  dice=0.1731 matched_iou=0.5235 recall=0.3333 n_pred=2
+2026-03-03 22:40:57 | INFO     | evaluate_model | [4/70] 00013_fo
+2026-03-03 22:40:58 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:58 | INFO     | evaluate_model | [5/70] 00019_eo
+2026-03-03 22:40:59 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:59 | INFO     | evaluate_model | [6/70] 00019_fo
+2026-03-03 22:40:59 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:40:59 | INFO     | evaluate_model | [7/70] 00022_eo
+2026-03-03 22:41:00 | INFO     | evaluate_model |   raw:  dice=0.5453 matched_iou=0.6893 recall=0.1667 n_pred=4
+2026-03-03 22:41:01 | INFO     | evaluate_model | [8/70] 00022_fo
+2026-03-03 22:41:02 | INFO     | evaluate_model |   raw:  dice=0.6960 matched_iou=0.5748 recall=0.7500 n_pred=8
+2026-03-03 22:41:02 | INFO     | evaluate_model | [9/70] 00024_eo
+2026-03-03 22:41:03 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:03 | INFO     | evaluate_model | [10/70] 00024_fo
+2026-03-03 22:41:03 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:03 | INFO     | evaluate_model | [11/70] 00025_eo
+2026-03-03 22:41:04 | INFO     | evaluate_model |   raw:  dice=0.6953 matched_iou=0.7344 recall=0.3333 n_pred=4
+2026-03-03 22:41:05 | INFO     | evaluate_model | [12/70] 00025_fo
+2026-03-03 22:41:06 | INFO     | evaluate_model |   raw:  dice=0.4652 matched_iou=0.5523 recall=0.2500 n_pred=4
+2026-03-03 22:41:06 | INFO     | evaluate_model | [13/70] 00027_eo
+2026-03-03 22:41:07 | INFO     | evaluate_model |   raw:  dice=0.6871 matched_iou=0.7294 recall=0.2500 n_pred=8
+2026-03-03 22:41:07 | INFO     | evaluate_model | [14/70] 00027_fo
+2026-03-03 22:41:08 | INFO     | evaluate_model |   raw:  dice=0.5554 matched_iou=0.0000 recall=0.0000 n_pred=6
+2026-03-03 22:41:08 | INFO     | evaluate_model | [15/70] 00028_eo
+2026-03-03 22:41:09 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:09 | INFO     | evaluate_model | [16/70] 00028_fo
+2026-03-03 22:41:09 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:10 | INFO     | evaluate_model | [17/70] 00029_eo
+2026-03-03 22:41:11 | INFO     | evaluate_model |   raw:  dice=0.4328 matched_iou=0.6609 recall=0.6667 n_pred=3
+2026-03-03 22:41:11 | INFO     | evaluate_model | [18/70] 00029_fo
+2026-03-03 22:41:12 | INFO     | evaluate_model |   raw:  dice=0.4280 matched_iou=0.6392 recall=0.2857 n_pred=4
+2026-03-03 22:41:12 | INFO     | evaluate_model | [19/70] 00030_eo
+2026-03-03 22:41:12 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:13 | INFO     | evaluate_model | [20/70] 00030_fo
+2026-03-03 22:41:13 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:13 | INFO     | evaluate_model | [21/70] 00032_eo
+2026-03-03 22:41:14 | INFO     | evaluate_model |   raw:  dice=0.3735 matched_iou=0.6213 recall=0.1667 n_pred=3
+2026-03-03 22:41:14 | INFO     | evaluate_model | [22/70] 00032_fo
+2026-03-03 22:41:16 | INFO     | evaluate_model |   raw:  dice=0.7344 matched_iou=0.6651 recall=0.7143 n_pred=7
+2026-03-03 22:41:16 | INFO     | evaluate_model | [23/70] 00033_eo
+2026-03-03 22:41:16 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:16 | INFO     | evaluate_model | [24/70] 00033_fo
+2026-03-03 22:41:17 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:17 | INFO     | evaluate_model | [25/70] 00034_eo
+2026-03-03 22:41:18 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:18 | INFO     | evaluate_model | [26/70] 00034_fo
+2026-03-03 22:41:18 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:19 | INFO     | evaluate_model | [27/70] 00035_eo
+2026-03-03 22:41:20 | INFO     | evaluate_model |   raw:  dice=0.6058 matched_iou=0.6276 recall=0.5000 n_pred=2
+2026-03-03 22:41:20 | INFO     | evaluate_model | [28/70] 00035_fo
+2026-03-03 22:41:20 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:21 | INFO     | evaluate_model | [29/70] 00036_eo
+2026-03-03 22:41:21 | INFO     | evaluate_model |   raw:  dice=0.6563 matched_iou=0.6904 recall=0.5000 n_pred=2
+2026-03-03 22:41:22 | INFO     | evaluate_model | [30/70] 00036_fo
+2026-03-03 22:41:23 | INFO     | evaluate_model |   raw:  dice=0.8070 matched_iou=0.6472 recall=1.0000 n_pred=4
+2026-03-03 22:41:23 | INFO     | evaluate_model | [31/70] 00037_eo
+2026-03-03 22:41:24 | INFO     | evaluate_model |   raw:  dice=0.6722 matched_iou=0.7245 recall=0.5000 n_pred=2
+2026-03-03 22:41:24 | INFO     | evaluate_model | [32/70] 00037_fo
+2026-03-03 22:41:25 | INFO     | evaluate_model |   raw:  dice=0.6602 matched_iou=0.5601 recall=0.5000 n_pred=3
+2026-03-03 22:41:25 | INFO     | evaluate_model | [33/70] 00038_eo
+2026-03-03 22:41:26 | INFO     | evaluate_model |   raw:  dice=0.3411 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:26 | INFO     | evaluate_model | [34/70] 00038_fo
+2026-03-03 22:41:27 | INFO     | evaluate_model |   raw:  dice=0.5672 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:27 | INFO     | evaluate_model | [35/70] 00039_eo
+2026-03-03 22:41:28 | INFO     | evaluate_model |   raw:  dice=0.3556 matched_iou=0.0000 recall=0.0000 n_pred=4
+2026-03-03 22:41:28 | INFO     | evaluate_model | [36/70] 00039_fo
+2026-03-03 22:41:29 | INFO     | evaluate_model |   raw:  dice=0.6312 matched_iou=0.7097 recall=0.0625 n_pred=8
+2026-03-03 22:41:30 | INFO     | evaluate_model | [37/70] 00041_eo
+2026-03-03 22:41:30 | INFO     | evaluate_model |   raw:  dice=0.4898 matched_iou=0.5412 recall=1.0000 n_pred=2
+2026-03-03 22:41:31 | INFO     | evaluate_model | [38/70] 00041_fo
+2026-03-03 22:41:32 | INFO     | evaluate_model |   raw:  dice=0.7007 matched_iou=0.7903 recall=1.0000 n_pred=2
+2026-03-03 22:41:32 | INFO     | evaluate_model | [39/70] 00042_eo
+2026-03-03 22:41:33 | INFO     | evaluate_model |   raw:  dice=0.2417 matched_iou=0.6996 recall=0.5000 n_pred=3
+2026-03-03 22:41:33 | INFO     | evaluate_model | [40/70] 00042_fo
+2026-03-03 22:41:34 | INFO     | evaluate_model |   raw:  dice=0.5555 matched_iou=0.7632 recall=0.4000 n_pred=3
+2026-03-03 22:41:34 | INFO     | evaluate_model | [41/70] 00043_eo
+2026-03-03 22:41:35 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:35 | INFO     | evaluate_model | [42/70] 00043_fo
+2026-03-03 22:41:35 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:35 | INFO     | evaluate_model | [43/70] 00044_eo
+2026-03-03 22:41:36 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:36 | INFO     | evaluate_model | [44/70] 00044_fo
+2026-03-03 22:41:37 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:37 | INFO     | evaluate_model | [45/70] 00045_eo
+2026-03-03 22:41:38 | INFO     | evaluate_model |   raw:  dice=0.7337 matched_iou=0.6167 recall=0.2222 n_pred=5
+2026-03-03 22:41:38 | INFO     | evaluate_model | [46/70] 00045_fo
+2026-03-03 22:41:39 | INFO     | evaluate_model |   raw:  dice=0.5998 matched_iou=0.5898 recall=0.2000 n_pred=3
+2026-03-03 22:41:39 | INFO     | evaluate_model | [47/70] 00046_eo
+2026-03-03 22:41:40 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:40 | INFO     | evaluate_model | [48/70] 00046_fo
+2026-03-03 22:41:41 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:41 | INFO     | evaluate_model | [49/70] 00047_eo
+2026-03-03 22:41:42 | INFO     | evaluate_model |   raw:  dice=0.5532 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:41:42 | INFO     | evaluate_model | [50/70] 00047_fo
+2026-03-03 22:41:43 | INFO     | evaluate_model |   raw:  dice=0.7957 matched_iou=0.6192 recall=0.6667 n_pred=3
+2026-03-03 22:41:43 | INFO     | evaluate_model | [51/70] 00048_eo
+2026-03-03 22:41:44 | INFO     | evaluate_model |   raw:  dice=0.6222 matched_iou=0.5212 recall=0.1667 n_pred=4
+2026-03-03 22:41:44 | INFO     | evaluate_model | [52/70] 00048_fo
+2026-03-03 22:41:45 | INFO     | evaluate_model |   raw:  dice=0.0000 matched_iou=0.0000 recall=0.0000 n_pred=0
+2026-03-03 22:41:45 | INFO     | evaluate_model | [53/70] 00049_eo
+2026-03-03 22:41:46 | INFO     | evaluate_model |   raw:  dice=0.6675 matched_iou=0.5994 recall=1.0000 n_pred=3
+2026-03-03 22:41:46 | INFO     | evaluate_model | [54/70] 00049_fo
+2026-03-03 22:41:47 | INFO     | evaluate_model |   raw:  dice=0.6513 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:47 | INFO     | evaluate_model | [55/70] 00050_eo
+2026-03-03 22:41:48 | INFO     | evaluate_model |   raw:  dice=0.4409 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:48 | INFO     | evaluate_model | [56/70] 00050_fo
+2026-03-03 22:41:49 | INFO     | evaluate_model |   raw:  dice=0.6803 matched_iou=0.6311 recall=0.3333 n_pred=2
+2026-03-03 22:41:50 | INFO     | evaluate_model | [57/70] 00053_eo
+2026-03-03 22:41:51 | INFO     | evaluate_model |   raw:  dice=0.4748 matched_iou=0.6621 recall=0.2500 n_pred=3
+2026-03-03 22:41:51 | INFO     | evaluate_model | [58/70] 00053_fo
+2026-03-03 22:41:52 | INFO     | evaluate_model |   raw:  dice=0.7834 matched_iou=0.6345 recall=0.7500 n_pred=4
+2026-03-03 22:41:52 | INFO     | evaluate_model | [59/70] 00056_eo
+2026-03-03 22:41:53 | INFO     | evaluate_model |   raw:  dice=0.2650 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:41:53 | INFO     | evaluate_model | [60/70] 00056_fo
+2026-03-03 22:41:54 | INFO     | evaluate_model |   raw:  dice=0.7337 matched_iou=0.6546 recall=0.7500 n_pred=5
+2026-03-03 22:41:54 | INFO     | evaluate_model | [61/70] 00063_eo
+2026-03-03 22:41:55 | INFO     | evaluate_model |   raw:  dice=0.4823 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:41:55 | INFO     | evaluate_model | [62/70] 00063_fo
+2026-03-03 22:41:56 | INFO     | evaluate_model |   raw:  dice=0.6507 matched_iou=0.5736 recall=0.6667 n_pred=4
+2026-03-03 22:41:56 | INFO     | evaluate_model | [63/70] 00064_eo
+2026-03-03 22:41:57 | INFO     | evaluate_model |   raw:  dice=0.4890 matched_iou=0.6351 recall=0.5000 n_pred=2
+2026-03-03 22:41:57 | INFO     | evaluate_model | [64/70] 00064_fo
+2026-03-03 22:41:58 | INFO     | evaluate_model |   raw:  dice=0.7845 matched_iou=0.6865 recall=0.5000 n_pred=1
+2026-03-03 22:41:58 | INFO     | evaluate_model | [65/70] 00066_eo
+2026-03-03 22:41:59 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:41:59 | INFO     | evaluate_model | [66/70] 00066_fo
+2026-03-03 22:42:00 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:42:00 | INFO     | evaluate_model | [67/70] 00068_eo
+2026-03-03 22:42:01 | INFO     | evaluate_model |   raw:  dice=0.4709 matched_iou=0.0000 recall=0.0000 n_pred=1
+2026-03-03 22:42:01 | INFO     | evaluate_model | [68/70] 00068_fo
+2026-03-03 22:42:01 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:42:02 | INFO     | evaluate_model | [69/70] 00072_eo
+2026-03-03 22:42:02 | INFO     | evaluate_model |   raw:  dice=0.2267 matched_iou=0.0000 recall=0.0000 n_pred=3
+2026-03-03 22:42:03 | INFO     | evaluate_model | [70/70] 00072_fo
+2026-03-03 22:42:03 | INFO     | evaluate_model |   raw:  dice=null matched_iou=null recall=null n_pred=0
+2026-03-03 22:42:03 | INFO     | evaluate_model | Results saved to outputs/eval_sam3_snr50/eval_results_20260303_224203.json
+2026-03-03 22:42:03 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:42:03 | INFO     | evaluate_model | SUMMARY (macro-averaged, null-skipping)
+2026-03-03 22:42:03 | INFO     | evaluate_model | ============================================================
+2026-03-03 22:42:03 | INFO     | evaluate_model |   RAW:
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Dice:      0.4252 ± 0.2758
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Precision: 0.6815 ± 0.2526
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Recall:    0.3828 ± 0.2549
+2026-03-03 22:42:03 | INFO     | evaluate_model |     HD95:      413.7839 ± 555.8779
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Match IoU: 0.3700 ± 0.3213
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Inst Rec:  0.2729 ± 0.3150
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Micro D/P/R: 0.5121/0.6940/0.4058
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Empty: pred=13 gt=0 both=11
+2026-03-03 22:42:03 | INFO     | evaluate_model |   POST:
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Dice:      0.4252 ± 0.2758
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Precision: 0.6815 ± 0.2526
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Recall:    0.3828 ± 0.2549
+2026-03-03 22:42:03 | INFO     | evaluate_model |     HD95:      413.7839 ± 555.8779
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Match IoU: 0.3700 ± 0.3213
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Inst Rec:  0.2729 ± 0.3150
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Micro D/P/R: 0.5121/0.6940/0.4058
+2026-03-03 22:42:03 | INFO     | evaluate_model |     Empty: pred=13 gt=0 both=11

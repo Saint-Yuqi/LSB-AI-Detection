@@ -1,0 +1,33 @@
+# SAM3 Evaluation Config
+# ======================
+# Usage:
+#   python scripts/evaluate_model.py --config configs/eval_sam3.yaml
+#   python scripts/evaluate_model.py --config configs/eval_sam3.yaml --max-samples 5
+
+paths:
+  render_dir: "data/02_processed/renders/current/asinh_stretch"
+  gt_dir: "data/02_processed/gt_canonical/current"
+  output_dir: "outputs/eval_sam3"
+
+target_size: [1024, 1024]
+
+sam3:
+  checkpoint: "/home/yuqyan/Yuqi/LSB-AI-Detection/sam3_finetuning_2026-02-24_19-04-51/checkpoints/checkpoint.pt"
+  bpe_path: "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
+  resolution: 1008
+
+prompts:
+  - text: "stellar stream"
+    type_label: "streams"
+    confidence_threshold: 0.55
+  - text: "satellite galaxy"
+    type_label: "satellites"
+    confidence_threshold: 0.45
+
+match_iou_thresh: 0.5
+
+# StreamsSanityFilter thresholds (post layer only)
+post_filter:
+  min_area: 50
+  max_area_frac: 0.5
+  edge_touch_frac: 0.8

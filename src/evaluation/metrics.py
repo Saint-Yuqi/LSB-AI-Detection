@@ -1,13 +1,26 @@
 """
 Segmentation evaluation metrics.
 
-Provides IoU (Intersection over Union) calculations for binary and
-instance segmentation tasks.
+Provides IoU, Dice, Precision, Recall, capped Hausdorff95, and
+optimal-matching instance metrics for binary and instance segmentation.
+
+New functions (v5):
+    calculate_pixel_metrics     – Dice, Precision, Recall, capped_hausdorff95
+    calculate_optimal_instance_metrics – Hungarian 1:1 matched IoU / recall
+
+Empty-mask conventions:
+    Both empty  → null (None) for all pixel metrics
+    One empty   → 0.0 for Dice; null for Precision/Recall; diagonal for HD95
+    See docstrings for rationale.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+import math
 
 import numpy as np
+from scipy.ndimage import distance_transform_edt, binary_erosion
+from scipy.optimize import linear_sum_assignment
 
 # Try importing regionprops; fallback to manual bbox extraction
 try:
@@ -240,4 +253,247 @@ def calculate_matched_metrics(
         'num_detected': detected_count,
         'num_gt_instances': num_gt,
         'per_instance_details': per_instance_details
+    }
+
+
+# =========================================================================== #
+#  v5 metrics: pixel-level + optimal-matched instance-level
+# =========================================================================== #
+
+
+def _boundary_pixels(mask: np.ndarray) -> np.ndarray:
+    """Extract boundary pixels: mask XOR erode(mask, 1px)."""
+    if mask.sum() == 0:
+        return mask
+    eroded = binary_erosion(mask, iterations=1)
+    return (mask & ~eroded).astype(bool)
+
+
+def calculate_pixel_metrics(
+    pred_binary: np.ndarray,
+    gt_binary: np.ndarray,
+) -> Dict[str, Optional[float]]:
+    """
+    Pixel-level segmentation metrics with null-aware empty-mask handling.
+
+    Args:
+        pred_binary: (H, W) bool/uint8 predicted foreground mask.
+        gt_binary:   (H, W) bool/uint8 ground-truth foreground mask.
+
+    Returns:
+        dice:               2·TP / (2·TP + FP + FN).  null if both empty.
+        precision:          TP / (TP + FP).            null if no pred pixels.
+        recall:             TP / (TP + FN).            null if no GT pixels.
+        capped_hausdorff95: symmetric 95th-pct boundary distance.
+                            null if both empty; diagonal if one empty.
+        tp, fp, fn:         raw pixel counts (int) for downstream micro-avg.
+    """
+    pred = pred_binary.astype(bool)
+    gt = gt_binary.astype(bool)
+
+    tp = int((pred & gt).sum())
+    fp = int((pred & ~gt).sum())
+    fn = int((~pred & gt).sum())
+
+    pred_empty = pred.sum() == 0
+    gt_empty = gt.sum() == 0
+
+    # --- Dice ---
+    if pred_empty and gt_empty:
+        dice: Optional[float] = None
+    else:
+        denom = 2 * tp + fp + fn
+        dice = (2.0 * tp / denom) if denom > 0 else 0.0
+
+    # --- Precision ---
+    if pred_empty:
+        precision: Optional[float] = None
+    else:
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+
+    # --- Recall ---
+    if gt_empty:
+        recall: Optional[float] = None
+    else:
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+    # --- capped_hausdorff95 ---
+    H, W = pred.shape
+    diagonal = math.sqrt(H * H + W * W)
+
+    if pred_empty and gt_empty:
+        hausdorff95: Optional[float] = None
+    elif pred_empty or gt_empty:
+        hausdorff95 = diagonal
+    else:
+        pred_boundary = _boundary_pixels(pred)
+        gt_boundary = _boundary_pixels(gt)
+
+        if pred_boundary.sum() == 0 or gt_boundary.sum() == 0:
+            # Degenerate: 1-pixel masks have no boundary after erosion
+            hausdorff95 = diagonal
+        else:
+            # EDT from gt_boundary → distances at pred_boundary positions
+            dt_gt = distance_transform_edt(~gt_boundary)
+            d_pred_to_gt = dt_gt[pred_boundary]
+
+            # EDT from pred_boundary → distances at gt_boundary positions
+            dt_pred = distance_transform_edt(~pred_boundary)
+            d_gt_to_pred = dt_pred[gt_boundary]
+
+            hausdorff95 = float(max(
+                np.percentile(d_pred_to_gt, 95),
+                np.percentile(d_gt_to_pred, 95),
+            ))
+
+    return {
+        'dice': dice,
+        'precision': precision,
+        'recall': recall,
+        'capped_hausdorff95': hausdorff95,
+        'tp': tp,
+        'fp': fp,
+        'fn': fn,
+    }
+
+
+def calculate_optimal_instance_metrics(
+    pred_masks: List[Dict],
+    gt_instance_map: np.ndarray,
+    iou_threshold: float = 0.5,
+) -> Dict[str, Any]:
+    """
+    Optimal 1:1 instance matching via Hungarian algorithm.
+
+    Builds IoU matrix (N_gt × N_pred), solves assignment with
+    scipy.optimize.linear_sum_assignment on cost = 1 − IoU.
+    Pairs with IoU < iou_threshold are discarded post-assignment.
+
+    Args:
+        pred_masks:       list of mask dicts with 'segmentation' (H, W) bool.
+        gt_instance_map:  (H, W) int array, 0 = background, 1..N = instance IDs.
+        iou_threshold:    minimum IoU for a valid match.
+
+    Returns:
+        instance_recall:  fraction of GT instances with a valid match.
+        matched_iou:      mean IoU of valid matched pairs.
+        unmatched_iou:    mean best-IoU of unmatched GT instances.
+        num_gt:           total GT instances.
+        num_detected:     GT instances with valid match.
+        num_pred:         total pred masks.
+        per_instance_details: list of dicts per GT instance.
+    """
+    gt_ids = np.unique(gt_instance_map)
+    gt_ids = gt_ids[gt_ids > 0]
+    num_gt = len(gt_ids)
+    num_pred = len(pred_masks)
+
+    if num_gt == 0:
+        return {
+            'instance_recall': None,
+            'matched_iou': None,
+            'unmatched_iou': None,
+            'num_gt': 0,
+            'num_detected': 0,
+            'num_pred': num_pred,
+            'per_instance_details': [],
+        }
+
+    if num_pred == 0:
+        details = []
+        for gid in gt_ids:
+            gt_area = int((gt_instance_map == gid).sum())
+            details.append({
+                'gt_instance_id': int(gid),
+                'matched_pred_idx': None,
+                'iou': 0.0,
+                'detected': False,
+                'gt_area': gt_area,
+            })
+        return {
+            'instance_recall': 0.0,
+            'matched_iou': 0.0,
+            'unmatched_iou': 0.0,
+            'num_gt': num_gt,
+            'num_detected': 0,
+            'num_pred': 0,
+            'per_instance_details': details,
+        }
+
+    # Build binary masks: (N_gt, HW) and (N_pred, HW)
+    HW = gt_instance_map.size
+    gt_masks_flat = np.stack(
+        [(gt_instance_map == gid).ravel() for gid in gt_ids],
+        axis=0,
+    ).astype(np.float32)  # (N_gt, HW)
+
+    pred_masks_flat = np.stack(
+        [m['segmentation'].ravel() for m in pred_masks],
+        axis=0,
+    ).astype(np.float32)  # (N_pred, HW)
+
+    # IoU matrix: (N_gt, N_pred)
+    # intersection = gt @ pred.T  (matrix product on flattened binary)
+    intersection = gt_masks_flat @ pred_masks_flat.T  # (N_gt, N_pred)
+    gt_areas = gt_masks_flat.sum(axis=1, keepdims=True)     # (N_gt, 1)
+    pred_areas = pred_masks_flat.sum(axis=1, keepdims=True).T  # (1, N_pred)
+    union = gt_areas + pred_areas - intersection
+    iou_matrix = np.where(union > 0, intersection / union, 0.0)  # (N_gt, N_pred)
+
+    # Hungarian optimal assignment on cost = 1 − IoU
+    cost = 1.0 - iou_matrix
+    row_idx, col_idx = linear_sum_assignment(cost)
+
+    # Build assignment map: gt_idx → (pred_idx, iou)
+    assignment: Dict[int, tuple] = {}
+    for r, c in zip(row_idx, col_idx):
+        assignment[r] = (c, float(iou_matrix[r, c]))
+
+    # Classify matches
+    matched_ious = []
+    unmatched_ious = []
+    details = []
+    detected = 0
+
+    for gi, gid in enumerate(gt_ids):
+        gt_area = int(gt_masks_flat[gi].sum())
+
+        if gi in assignment:
+            pred_idx, iou_val = assignment[gi]
+            is_match = iou_val >= iou_threshold
+        else:
+            # More GTs than preds — unassigned
+            best_iou = float(iou_matrix[gi].max()) if num_pred > 0 else 0.0
+            pred_idx = None
+            iou_val = best_iou
+            is_match = False
+
+        if is_match:
+            detected += 1
+            matched_ious.append(iou_val)
+        else:
+            # Best overlap for unmatched (may differ from assigned pair)
+            best = float(iou_matrix[gi].max()) if num_pred > 0 else 0.0
+            unmatched_ious.append(best)
+
+        details.append({
+            'gt_instance_id': int(gid),
+            'matched_pred_idx': int(pred_idx) if pred_idx is not None and is_match else None,
+            'iou': float(iou_val),
+            'detected': is_match,
+            'gt_area': gt_area,
+        })
+
+    instance_recall = detected / num_gt
+    avg_matched = float(np.mean(matched_ious)) if matched_ious else 0.0
+    avg_unmatched = float(np.mean(unmatched_ious)) if unmatched_ious else 0.0
+
+    return {
+        'instance_recall': instance_recall,
+        'matched_iou': avg_matched,
+        'unmatched_iou': avg_unmatched,
+        'num_gt': num_gt,
+        'num_detected': detected,
+        'num_pred': num_pred,
+        'per_instance_details': details,
     }

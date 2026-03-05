@@ -4,6 +4,9 @@
 - Handle file I/O operations for astronomical data formats (`.fits.gz`, image files, mask files).
 - Parse sample and metadata naming conventions consistently.
 - Perform astrophysical-standard preprocessing to convert Surface Brightness arrays (mag/arcsec²) into machine learning-ready RGB format.
+  - `LSBPreprocessor`: Mag → Flux → Percentile Norm → Asinh Stretch → Bicubic Resize (float domain) → 8-bit RGB.
+  - `LinearMagnitudePreprocessor`: Mag → Clip → Linear Normalize → 8-bit RGB → Resize (configurable interpolation).
+  - `MultiExposurePreprocessor`: 3-channel RGB [R=linear mag, G=asinh stretch, B=mode-dependent] → Bicubic Resize (float domain) → 8-bit.
 - Load and parse satellite instance metadata from serialization (`.pkl`).
 
 ## Non-goals
@@ -58,7 +61,9 @@
 
 ## Invariants
 - **Photometry:** Lower magnitude value corresponds to higher physical flux (brighter source).
-- **Mask Integrity:** Integer instance IDs are preserved exactly through resizing; no interpolation is applied.
+- **No Background Subtraction:** Simulated data has no sky background; median subtraction is not applied.
+- **Resize Quality:** `LSBPreprocessor` and `MultiExposurePreprocessor` resize in float domain with `INTER_CUBIC` before quantization to avoid interpolation artifacts on discrete values. Negative ringing from bicubic is clipped.
+- **Mask Integrity:** Integer instance IDs are preserved exactly through resizing; nearest-neighbor interpolation only.
 
 ## Produced Artifacts
 - Returns in-memory strongly-typed instances (`np.ndarray`, `SatelliteInstance`, `GalaxySatellites`).

@@ -9,3 +9,6 @@ __pycache__/
 *.pths
 
 outputs/
+
+sam2_finetuning_20260205_210313/
+sam3_finetuning_2026-02-24_19-04-51/

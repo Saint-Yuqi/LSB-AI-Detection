@@ -4,6 +4,7 @@
 - Serve as the executable entry points (CLI) orchestrating the complete LSB AI Detection pipeline.
 - Tie together discrete structural modules into end-to-end workflows.
 - Manage dataset generation, hyperparameter sweeping, model evaluation, and visual diagnostics.
+- Run folder-based SAM3 evaluation over rendered/noisy image sets with reproducible JSON outputs.
 
 ## Non-goals
 - **No Core Logic:** Scripts must defer complex math, astrophysical conversions, filtering logic, and metric calculations to downstream modules.
@@ -49,6 +50,42 @@
     - `mean_binary_iou: float`
     - `num_samples: int`
 
+### Folder-Based SAM3 Evaluation (`evaluate_model.py`)
+- **Input:** `--config: Path` (`configs/eval_sam3.yaml` by default), plus optional overrides:
+  - `--render-dir: Path`
+  - `--gt-dir: Path`
+  - `--output-dir: Path`
+  - `--max-samples: int`
+  - `--per-galaxy` (flag)
+  - `--snr-tag: str`
+  - `--save-overlays` (flag)
+- **YAML schema (`--config`):**
+  - Required keys:
+    - `sam3.checkpoint: str`
+    - `sam3.bpe_path: str`
+    - `paths.render_dir: str`
+    - `paths.gt_dir: str`
+    - `paths.output_dir: str`
+  - Optional keys:
+    - `sam3.resolution: int`
+    - `target_size: List[int]` (`[H, W]`, defaults to `[1024, 1024]`)
+    - `prompts: List[Prompt]`
+      - `Prompt.text: str`
+      - `Prompt.type_label: str`
+      - `Prompt.confidence_threshold: float`
+    - `match_iou_thresh: float`
+    - `post_filter.min_area: int`
+    - `post_filter.max_area_frac: float`
+    - `post_filter.edge_touch_frac: float`
+- **Output:**
+  - `{output_dir}/eval_results_{timestamp}.json` — top-level keys:
+    - `config: Dict`
+    - `summary: Dict` (`overall` and optional `per_galaxy`)
+    - `per_image: List[Dict]` (type-aware metrics: `streams`, `satellites`, `combined` with `raw`/`post`)
+    - `created_at: str` (ISO datetime)
+  - Optional QA overlays when `--save-overlays` is set:
+    - `{output_dir}/overlays/{base_key}_overlay.png`
+
 ### Analysis & Plotting (`analyze_mask_stats.py`, `plot_*.py`, `visualize_*.py`)
 - **Input:** `--stats_csv: Path` — CSV file with EXACT columns: [`image_id: str`, `total_masks: int`, `core_hits: int`, `passed_prior: int`, `runtime_ms: float`]. Or `--masks_dir: Path` containing per-sample `.json` files.
   - Per-sample JSON: `List[MaskDictSerialized]`, each element (TypedDict, STRICTLY CLOSED):
@@ -83,6 +120,7 @@
 - Configured inference datasets.
 - Evaluation run matrices resolving to static JSON/CSV artifacts.
 - Performance plots evaluating validation baselines.
+- Type-aware SAM3 evaluation JSON reports and optional overlay visualizations.
 
 ## Failure Modes
 - `FileNotFoundError`: Raised when any CLI-provided path (`--config`, `--dataset_dir`, `--checkpoint`, `--masks_dir`) does not exist on the filesystem.

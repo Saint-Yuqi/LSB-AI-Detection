@@ -63,7 +63,7 @@ processing:
   
   # Asinh stretch parameter (higher = more contrast for faint features)
   # Range: 10-50. SAM2 uses higher nonlinearity (300.0) for better stream visibility.
-  nonlinearity: 50.0
+  nonlinearity: 200.0
   
   # Percentile for vmax normalization reference
   clip_percentile: 99.5

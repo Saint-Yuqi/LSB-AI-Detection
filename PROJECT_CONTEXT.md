@@ -15,6 +15,7 @@ A modular Python package for detecting Low Surface Brightness (LSB) features in 
 LSB-AI-Detection/
 ├── configs/                          # Configuration files
 │   ├── unified_data_prep.yaml        # Main unified pipeline config (4-phase)
+│   ├── noise_profiles.yaml           # Forward observation noise profiles
 │   ├── data_prep_sam2.yaml           # Legacy SAM2 config
 │   ├── data_prep_sam3.yaml           # Legacy SAM3 config
 │   ├── eval_sam2.yaml                # Model evaluation config
@@ -23,11 +24,16 @@ LSB-AI-Detection/
 ├── data/
 │   ├── 01_raw/                       # Raw FITS data (symlinked)
 │   │   └── LSB_and_Satellites/       # FIREbox-DR1 + fbox data
-│   └── 02_processed/                 # Generated training data
-│       ├── gt_canonical/             # Canonical Ground Truth (instance_map_uint8.png)
-│       ├── renders/                  # Cached intermediate renders
-│       ├── sam2_prepared/            # SAM2 symlinks (img_folder, gt_folder)
-│       └── sam3_prepared/            # SAM3 COCO (images, annotations.json)
+│   ├── 02_processed/                 # Generated training data
+│   │   ├── gt_canonical/             # Canonical Ground Truth (instance_map_uint8.png)
+│   │   ├── renders/                  # Cached intermediate renders
+│   │   ├── sam2_prepared/            # SAM2 symlinks (img_folder, gt_folder)
+│   │   └── sam3_prepared/            # SAM3 COCO (images, annotations.json)
+│   └── 04_noise/                     # Noise-injected FITS (forward observation model)
+│       ├── snr05/                    # SNR≈5 profiles
+│       ├── snr10/                    # SNR≈10 profiles
+│       ├── snr20/                    # SNR≈20 profiles
+│       └── snr50/                    # SNR≈50 profiles
 │
 ├── docs/
 │   ├── api/                          # Sphinx API documentation
@@ -40,6 +46,7 @@ LSB-AI-Detection/
 │
 ├── scripts/                          # Entry point scripts
 │   ├── prepare_unified_dataset.py    # Main 4-phase unified pipeline
+│   ├── generate_noisy_fits.py        # Forward observation noise injection
 │   ├── build_dataset.py              # Legacy dataset builder
 │   ├── eval_model.py                 # Model evaluation
 │   ├── sweep_automask_configs.py     # AutoMask config sweep & ranking
@@ -50,6 +57,8 @@ LSB-AI-Detection/
 │   ├── data/                         # Data loading & preprocessing
 │   │   ├── io.py
 │   │   └── preprocessing.py
+│   ├── noise/                        # Forward observation noise model
+│   │   └── forward_observation.py    # SB→flux→counts→Poisson→read→mag
 │   ├── inference/                    # Model inference wrappers
 │   │   └── sam2_automask_runner.py   # SAM2 AutoMask generator wrapper
 │   ├── postprocess/                  # Mask post-processing filters
@@ -210,6 +219,29 @@ class MultiExposurePreprocessor:
     
     def resize_mask(self, mask: np.ndarray) -> np.ndarray:
         """Resize mask with nearest-neighbor interpolation."""
+```
+
+### `src/noise/forward_observation.py`
+```python
+class ForwardObservationModel:
+    """Forward observation noise: SB(mag) → flux → counts → Poisson → read → −sky → mag.
+    
+    Quantile-based SNR: top-p% = signal, bottom-q% = background.
+    Analytic variance: Var ≈ (counts_bkg + sky) + read_noise². No MC needed.
+    Negative flux → NaN (LSBPreprocessor nan_to_num handles downstream).
+    """
+    def __init__(self, zeropoint, signal_scale, sky_level, read_noise,
+                 signal_quantile, background_quantile, seed): ...
+    
+    def inject(self, sb_map: np.ndarray) -> np.ndarray:
+        """Full noise pipeline. Returns mag/arcsec² float32 (NaN where flux≤0)."""
+    
+    def expected_snr(self, sb_map: np.ndarray) -> float:
+        """Analytic SNR from variance decomposition (deterministic)."""
+    
+    @staticmethod
+    def from_target_snr(target_snr, sb_map, ...) -> 'ForwardObservationModel':
+        """Bisection on analytic SNR to auto-tune signal_scale."""
 ```
 
 ### `src/evaluation/metrics.py`

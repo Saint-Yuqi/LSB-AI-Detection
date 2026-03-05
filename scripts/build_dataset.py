@@ -9,6 +9,24 @@ Generates training data in either:
 Usage:
     python scripts/build_dataset.py --config configs/data_prep_sam3.yaml
     python scripts/build_dataset.py --config configs/data_prep_sam2.yaml
+    
+    python scripts/build_dataset.py \
+    --config configs/data_prep_sam2.yaml \
+    --preview \
+    --galaxy-id 11 \
+    --orientation eo \
+    --feature-type streams
+
+    python scripts/prepare_unified_dataset.py \
+    --config configs/unified_data_prep.yaml \
+    --phase render \
+    --force-variants asinh_stretch
+
+    python scripts/prepare_unified_dataset.py \
+    --config configs/unified_data_prep.yaml \
+    --phase export \
+    --force-variants asinh_stretch
+
 """
 
 import argparse

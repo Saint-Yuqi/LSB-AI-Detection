@@ -1,0 +1,31 @@
+2026-02-24 15:51:43 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 15:51:43 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 15:51:43 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 15:51:58 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-24 15:51:58 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-24 15:54:55 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 15:54:55 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 15:54:55 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 15:54:56 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.png
+2026-02-24 15:54:56 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00011_eo_streams.json
+2026-02-24 16:02:47 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 16:02:47 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 16:02:47 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-11-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 16:04:25 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 16:04:25 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 16:04:25 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-13-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 18:06:36 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 18:06:36 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 18:06:36 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-13-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 18:06:37 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.png
+2026-02-24 18:06:37 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.json
+2026-02-24 18:08:36 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 18:08:36 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 18:08:36 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-13-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 18:08:53 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.png
+2026-02-24 18:08:53 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.json
+2026-02-24 18:12:43 | INFO     | build_dataset | Logging to file: /shares/feldmann.ics.mnf.uzh/Yuqi/LSB-AI-Detection/logs/build_dataset_2026-02-24.log
+2026-02-24 18:12:43 | INFO     | build_dataset | Config: configs/data_prep_sam2.yaml
+2026-02-24 18:12:43 | INFO     | build_dataset | Loaded: data/01_raw/LSB_and_Satellites/FIREbox-DR1/SB_maps/magnitudes-Fbox-13-eo-VIS2.fits.gz | shape=(1072, 1072)
+2026-02-24 18:12:44 | INFO     | build_dataset | Saved panel: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.png
+2026-02-24 18:12:44 | INFO     | build_dataset | Saved metadata: data/02_processed/sam2_prepared/preview/preview_Gal00013_eo_streams.json

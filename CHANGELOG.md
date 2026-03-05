@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Forward Observation Noise Model** for controlled SNR degradation of SB maps
+  - `src/noise/forward_observation.py` — `ForwardObservationModel` class
+    - Physics chain: SB(mag) → flux → counts → +sky → Poisson → +read_noise → −sky → mag
+    - Quantile-based SNR regions (signal_quantile, background_quantile) — GT-free
+    - Analytic `expected_snr()` via variance decomposition (no Monte Carlo)
+    - `from_target_snr()` factory: bisection on analytic SNR to auto-tune signal_scale
+    - Negative flux → NaN (compatible with existing `LSBPreprocessor` nan_to_num)
+    - Isolated `np.random.Generator` per instance (multi-process safe)
+  - `configs/noise_profiles.yaml` — 4 target profiles (SNR 5/10/20/50)
+  - `scripts/generate_noisy_fits.py` — Batch CLI with `--galaxies` and `--profiles` filters
+  - Output: `data/04_noise/{profile}/magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz`
+  - FITS headers annotated: NOISSNR, NOISSCL, NOISSKY, NOISRDN, NOISMSN
+
 ### Changed
 
 - **SAM3 Visualization**: Completely rewrote `scripts/visualize_sam3.py` to support the refactored data pipeline outputs.

@@ -2,6 +2,7 @@
 
 ## Responsibilities
 - Provide an interface for SAM2 Automatic Mask Generation inference.
+- Provide an interface for SAM3 text-prompt grounding inference.
 - Handle model initialization with specified configuration and weights.
 - Measure execution time on the GPU for sweep evaluations.
 
@@ -55,13 +56,34 @@
   - `n: int` — number of warmup passes
 - **Output:** `None`
 
+### `SAM3PromptRunner.__init__(checkpoint, bpe_path, confidence_threshold, resolution, device, target_size)`
+- **Input:**
+  - `checkpoint: Union[str, Path]` — fine-tuned SAM3 checkpoint
+  - `bpe_path: Union[str, Path]` — tokenizer vocab path
+  - `confidence_threshold: float` — processor-level floor
+  - `resolution: int` — SAM3 processor resolution
+  - `device: str` — e.g. `"cuda"`
+  - `target_size: Tuple[int, int]` — output grid `(H_work, W_work)`
+- **Output:** Initialized runner with loaded SAM3 model/processor.
+
+### `SAM3PromptRunner.run(image_pil, prompts)`
+- **Input:**
+  - `image_pil: PIL.Image.Image` (RGB)
+  - `prompts: List[Dict[str, str]]` with required keys:
+    - `text: str`
+    - `type_label: str`
+    - optional `confidence_threshold: float`
+- **Output:** `Tuple[List[MaskDict], float]`
+  - Element 0: mask list aligned to SAM2-style contract, plus `type_label`
+  - Element 1: end-to-end inference runtime in milliseconds
+
 ## Invariants
 - **Precision Contract:** The model executes in the numeric precision set by `use_bf16` at construction; callers cannot override precision per-call.
 - **Benchmarking:** The returned runtime scalar covers the full GPU execution span from image ingestion to final mask list retrieval.
 - **Zero-Detection Boundary:** When the model produces zero candidate regions for the given image (e.g., uniform/blank input), `run` returns `([], float)`.
 
 ## Produced Artifacts
-- In-memory `List[MaskDict]` reflecting exactly the SAM2 framework's native output keys.
+- In-memory `List[MaskDict]` reflecting unified SAM2/SAM3-compatible output keys.
 
 ## Failure Modes
 - `FileNotFoundError`: Raised by `__init__` when `checkpoint` path does not exist on the filesystem.

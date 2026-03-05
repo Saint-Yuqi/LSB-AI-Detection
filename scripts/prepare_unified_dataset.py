@@ -5,16 +5,17 @@ Unified Dataset Preparation Pipeline
 4-Phase Architecture:
     render     → renders/current/{preprocessing}/{BaseKey}/0000.png
     gt         → gt_canonical/.../streams_instance_map.npy
-    satellites → satellites_cache.npz + instance_map_uint8.png + instances.json
+    inference  → SAM2 (AutoMask merge) or SAM3 (evaluate: predictions JSON + QA overlay)
     export     → SAM2 symlinks + SAM3 annotations.json
 
 Usage:
     python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
-    python scripts/prepare_unified_dataset.py --config ... --phase render
+    python scripts/prepare_unified_dataset.py --config ... --phase inference
+    python scripts/prepare_unified_dataset.py --config ... --phase satellites  # alias
     python scripts/prepare_unified_dataset.py --config ... --galaxies 11,13
 
 Env:
-    CUDA, PyTorch with bf16 support for satellites phase.
+    CUDA, PyTorch with bf16 support for inference phase.
 """
 from __future__ import annotations
 
@@ -289,41 +290,70 @@ def _sha1_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
 
 
 # =============================================================================
-# PHASE 3: SATELLITES (AutoMask + Merge)
+# PHASE 3: INFERENCE (engine-agnostic: SAM2 AutoMask or SAM3 Text-Prompt)
 # =============================================================================
 
-def run_satellites_phase(
+def run_inference_phase(
     config: dict[str, Any],
     base_keys: list[BaseKey],
     logger: logging.Logger,
     force_variants: set[str] | None = None,
 ) -> None:
-    """Run AutoMask → filter → cache → merge."""
+    """Run inference engine → type-aware filter → merge (SAM2) or evaluate (SAM3)."""
     logger.info("=" * 60)
-    logger.info("PHASE 3: SATELLITES (AutoMask + Merge)")
+    logger.info("PHASE 3: INFERENCE")
     logger.info("=" * 60)
-    
+
+    inf_cfg = config.get("inference_phase", {})
+    engine = inf_cfg.get("engine", "sam2")
+    run_mode = inf_cfg.get("run_mode", "evaluate")
+    input_variant = inf_cfg.get("input_image_variant",
+                                config.get("satellites", {}).get("input_image_variant", "linear_magnitude"))
+    target_size = tuple(config["processing"]["target_size"])
+
+    logger.info(f"Engine: {engine}, run_mode: {run_mode}")
+
+    if engine == "sam3":
+        _run_inference_sam3(config, base_keys, logger, force_variants,
+                           inf_cfg, input_variant, target_size, run_mode)
+    else:
+        # SAM2: delegate to original AutoMask merge pipeline
+        _run_inference_sam2(config, base_keys, logger, force_variants,
+                           input_variant, target_size)
+
+
+# --------------------------------------------------------------------------- #
+#  SAM2 engine (preserves original run_satellites_phase logic)
+# --------------------------------------------------------------------------- #
+
+def _run_inference_sam2(
+    config: dict[str, Any],
+    base_keys: list[BaseKey],
+    logger: logging.Logger,
+    force_variants: set[str] | None,
+    input_variant: str,
+    target_size: tuple[int, int],
+) -> None:
+    """SAM2 AutoMask → filter → cache → merge (unchanged behaviour)."""
     sat_cfg = config.get("satellites", {})
     if not sat_cfg.get("enabled", True):
         logger.info("Satellites disabled in config, skipping.")
         return
-    
+
     resolver = PathResolver(config)
-    input_variant = sat_cfg.get("input_image_variant", "linear_magnitude")
-    target_size = tuple(config["processing"]["target_size"])
-    
-    # Import inference modules
-    from src.inference.sam2_automask_runner import AutoMaskRunner
+
+    from src.inference.sam2_automask_runner import AutoMaskRunner, DEFAULT_CHECKPOINT, DEFAULT_MODEL_CFG
     from src.postprocess.satellite_prior_filter import SatellitePriorFilter, load_filter_cfg
     from src.postprocess.core_exclusion_filter import CoreExclusionFilter
     from src.postprocess.candidate_grouping import group_by_centroid
     from src.postprocess.representative_selection import select_representatives
     from src.analysis.mask_metrics import append_metrics_to_masks
-    
-    # Initialize runner
-    runner = AutoMaskRunner()
-    
-    # Type-convert generator config (YAML may load as strings)
+
+    checkpoint = sat_cfg.get("checkpoint", DEFAULT_CHECKPOINT)
+    model_cfg = sat_cfg.get("model_cfg", DEFAULT_MODEL_CFG)
+    runner = AutoMaskRunner(checkpoint=checkpoint, model_cfg=model_cfg)
+
+    # Type-convert generator config
     raw_gen_cfg = sat_cfg.get("generator", {})
     gen_cfg = {}
     int_keys = {"points_per_side", "points_per_batch", "min_mask_region_area", "crop_n_layers", "crop_n_points_downscale_factor"}
@@ -340,16 +370,15 @@ def run_satellites_phase(
     core_cfg = sat_cfg.get("core_exclusion", {})
     sort_policy = sat_cfg.get("satellite_sort_policy", ["area_desc"])
     overlap_policy = sat_cfg.get("overlap_policy", "keep_streams")
-    
-    # Load prior filter config
+
     stats_json = Path(prior_cfg_entry.get("stats_json", "outputs/mask_stats/mask_stats_summary.json"))
     prior_cfg = load_filter_cfg(stats_json)
     prior_cfg["ambiguous_factor"] = prior_cfg_entry.get("ambiguous_factor", 0.25)
     prior_cfg["core_radius_frac"] = core_cfg.get("radius_frac", 0.08)
-    
+
     prior_flt = SatellitePriorFilter(prior_cfg)
     core_flt = CoreExclusionFilter(radius_frac=core_cfg.get("radius_frac", 0.08))
-    
+
     # Warm up
     first_key = base_keys[0] if base_keys else None
     if first_key:
@@ -357,18 +386,16 @@ def run_satellites_phase(
         if warmup_path.exists():
             warmup_img = np.array(Image.open(warmup_path).convert("RGB"))
             runner.warmup(warmup_img, n=2)
-    
+
     stats = {"processed": 0, "skipped_exists": 0, "skipped_no_render": 0, "skipped_no_streams": 0}
-    
+
     for key in base_keys:
         gt_dir = resolver.get_gt_dir(key)
         cache_path = gt_dir / "satellites_cache.npz"
         final_map_path = gt_dir / "instance_map_uint8.png"
-        
-        # Check if already done (respect force flag)
+
         if final_map_path.exists() and cache_path.exists():
             if force_variants:
-                # Force rebuild: remove stale outputs
                 final_map_path.unlink(missing_ok=True)
                 cache_path.unlink(missing_ok=True)
                 (gt_dir / "instances.json").unlink(missing_ok=True)
@@ -378,31 +405,30 @@ def run_satellites_phase(
             else:
                 stats["skipped_exists"] += 1
                 continue
-        
-        # Load render
+
         render_path = resolver.get_render_dir(input_variant, key) / "0000.png"
         if not render_path.exists():
             logger.warning(f"Render not found: {render_path}")
             stats["skipped_no_render"] += 1
             continue
-        
-        # Load streams instance map
+
         streams_npy = gt_dir / "streams_instance_map.npy"
         if not streams_npy.exists():
             logger.warning(f"Streams map not found: {streams_npy}")
             stats["skipped_no_streams"] += 1
             continue
-        
+
         streams_map = np.load(streams_npy)
         max_stream_id = int(streams_map.max())
-        
-        # Load image
+
         image = np.array(Image.open(render_path).convert("RGB"))
         H, W = image.shape[:2]
-        
-        # Run AutoMask
+
+        # Run AutoMask — all SAM2 masks are satellites
         masks, time_ms = runner.run(image, gen_cfg)
-        
+        for m in (masks or []):
+            m["type_label"] = "satellites"
+
         # Pipeline: metrics → grouping → selection → prior → core
         if masks:
             append_metrics_to_masks(masks, H, W, compute_hull=False)
@@ -413,41 +439,32 @@ def run_satellites_phase(
             kept_final, core_hits, _ = core_flt.filter(kept_prior, H, W)
         else:
             kept_final, ambig, dups, rej_prior, core_hits = [], [], [], [], []
-        
-        # Sort kept_final deterministically
+
         kept_final = _sort_masks(kept_final, sort_policy)
-        
-        # Cache all buckets (RLE encoded)
+
         _save_satellites_cache(
-            cache_path,
-            kept=kept_final,
-            ambiguous=ambig,
-            dup_rejected=dups,
-            prior_rejected=rej_prior,
+            cache_path, kept=kept_final, ambiguous=ambig,
+            dup_rejected=dups, prior_rejected=rej_prior,
             core_rejected=core_hits,
-            input_image_sha1=_sha1_file(render_path),
-            H=H, W=W,
+            input_image_sha1=_sha1_file(render_path), H=H, W=W,
         )
-        
-        # Merge: streams + satellites
+
         instance_map, instances_list, id_map, overlap_stats = _merge_instances(
-            streams_map, kept_final, max_stream_id, overlap_policy
+            streams_map, kept_final, max_stream_id, overlap_policy,
         )
-        
-        # Assert uint8 range
+
         max_final_id = int(instance_map.max())
         assert 0 <= max_final_id <= 255, f"max_id={max_final_id} exceeds uint8"
         assert instance_map.dtype == np.uint8, f"dtype={instance_map.dtype}"
-        
-        # Save outputs
+
         cv2.imwrite(str(final_map_path), instance_map)
         (gt_dir / "instances.json").write_text(json.dumps(instances_list, indent=2))
         (gt_dir / "id_map.json").write_text(json.dumps(id_map, indent=2))
-        
-        # Update manifest
+
         manifest_path = gt_dir / "manifest.json"
         manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
         manifest.update({
+            "engine": "sam2",
             "automask_config_name": sat_cfg.get("automask_config_name", "unknown"),
             "input_image_variant": input_variant,
             "satellite_sort_policy": sort_policy,
@@ -463,16 +480,263 @@ def run_satellites_phase(
             "updated_at": datetime.now().isoformat(),
         })
         manifest_path.write_text(json.dumps(manifest, indent=2))
-        
-        # Generate overlay
+
         _save_overlay(gt_dir / "overlay.png", image, instance_map)
-        
+
         stats["processed"] += 1
-        
-        if (stats["processed"]) % 10 == 0:
+        if stats["processed"] % 10 == 0:
             logger.info(f"Progress: {stats['processed']}/{len(base_keys)}")
-    
+
     logger.info(f"Processed: {stats['processed']}, Skipped (exists): {stats['skipped_exists']}")
+
+
+# --------------------------------------------------------------------------- #
+#  SAM3 engine (evaluate mode: save predictions + QA overlay, no merge)
+# --------------------------------------------------------------------------- #
+
+def _run_inference_sam3(
+    config: dict[str, Any],
+    base_keys: list[BaseKey],
+    logger: logging.Logger,
+    force_variants: set[str] | None,
+    inf_cfg: dict[str, Any],
+    input_variant: str,
+    target_size: tuple[int, int],
+    run_mode: str,
+) -> None:
+    """SAM3 text-prompt → type-aware filter → evaluate (save JSON + overlay)."""
+    resolver = PathResolver(config)
+    sam3_cfg = inf_cfg.get("sam3", {})
+    prompts = sam3_cfg.get("prompts", [])
+    H_work, W_work = target_size
+
+    from src.inference.sam3_prompt_runner import SAM3PromptRunner
+    from src.postprocess.streams_sanity_filter import StreamsSanityFilter
+    from src.postprocess.satellite_prior_filter import SatellitePriorFilter, load_filter_cfg
+    from src.postprocess.core_exclusion_filter import CoreExclusionFilter
+    from src.analysis.mask_metrics import append_metrics_to_masks
+
+    runner = SAM3PromptRunner(
+        checkpoint=sam3_cfg.get("checkpoint"),
+        bpe_path=sam3_cfg.get("bpe_path"),
+        confidence_threshold=sam3_cfg.get("confidence_threshold", 0.55),
+        resolution=sam3_cfg.get("resolution", 1008),
+        target_size=target_size,
+    )
+
+    # Build filters
+    sanity_cfg = sam3_cfg.get("streams_sanity", {})
+    streams_flt = StreamsSanityFilter(
+        min_area=sanity_cfg.get("min_area", 50),
+        max_area_frac=sanity_cfg.get("max_area_frac", 0.5),
+        edge_touch_frac=sanity_cfg.get("edge_touch_frac", 0.8),
+    )
+    # Satellite filters (reuse existing)
+    sat_cfg = config.get("satellites", {})
+    prior_cfg_entry = sat_cfg.get("prior", {})
+    core_cfg = sat_cfg.get("core_exclusion", {})
+    stats_json = Path(prior_cfg_entry.get("stats_json", "outputs/mask_stats/mask_stats_summary.json"))
+    prior_cfg = load_filter_cfg(stats_json)
+    prior_cfg["ambiguous_factor"] = prior_cfg_entry.get("ambiguous_factor", 0.25)
+    prior_cfg["core_radius_frac"] = core_cfg.get("radius_frac", 0.08)
+    sat_prior_flt = SatellitePriorFilter(prior_cfg)
+    sat_core_flt = CoreExclusionFilter(radius_frac=core_cfg.get("radius_frac", 0.08))
+
+    stats = {"processed": 0, "skipped_exists": 0, "skipped_no_render": 0, "skipped_no_streams": 0}
+
+    for key in base_keys:
+        gt_dir = resolver.get_gt_dir(key)
+        raw_json_path = gt_dir / "sam3_predictions_raw.json"
+        post_json_path = gt_dir / "sam3_predictions_post.json"
+        overlay_path = gt_dir / "sam3_eval_overlay.png"
+
+        # Check if already done
+        if raw_json_path.exists() and overlay_path.exists():
+            if force_variants:
+                raw_json_path.unlink(missing_ok=True)
+                post_json_path.unlink(missing_ok=True)
+                overlay_path.unlink(missing_ok=True)
+                logger.info(f"Force rebuild SAM3 evaluate: {key}")
+            else:
+                stats["skipped_exists"] += 1
+                continue
+
+        render_path = resolver.get_render_dir(input_variant, key) / "0000.png"
+        if not render_path.exists():
+            logger.warning(f"Render not found: {render_path}")
+            stats["skipped_no_render"] += 1
+            continue
+
+        streams_npy = gt_dir / "streams_instance_map.npy"
+        if not streams_npy.exists():
+            logger.warning(f"Streams map not found: {streams_npy}")
+            stats["skipped_no_streams"] += 1
+            continue
+
+        gt_dir.mkdir(parents=True, exist_ok=True)
+
+        # Load image as PIL (SAM3 expects PIL)
+        image_pil = Image.open(render_path).convert("RGB")
+        image_np = np.array(image_pil)
+        streams_map = np.load(streams_npy)
+
+        # --- Run SAM3 ---
+        masks, time_ms = runner.run(image_pil, prompts)
+        logger.info(f"{key}: SAM3 returned {len(masks)} masks in {time_ms:.0f}ms")
+
+        # Compute metrics on all masks
+        if masks:
+            append_metrics_to_masks(masks, H_work, W_work, compute_hull=True)
+
+        # --- Save RAW predictions ---
+        _save_predictions_json(raw_json_path, masks, H_work, W_work,
+                               engine="sam3", layer="raw")
+
+        # --- Type-aware filter fork ---
+        stream_masks = [m for m in masks if m.get("type_label") == "streams"]
+        sat_masks = [m for m in masks if m.get("type_label") == "satellites"]
+
+        # Streams → StreamsSanityFilter
+        kept_streams, rej_streams = streams_flt.filter(stream_masks, H_work, W_work)
+
+        # Satellites → SatellitePriorFilter → CoreExclusionFilter
+        if sat_masks:
+            kept_sat_prior, rej_sat_prior, ambig_sat = sat_prior_flt.filter(sat_masks)
+            kept_sat_final, core_hits, _ = sat_core_flt.filter(kept_sat_prior, H_work, W_work)
+        else:
+            kept_sat_final = []
+
+        post_masks = kept_streams + kept_sat_final
+
+        # --- Save POST predictions ---
+        _save_predictions_json(post_json_path, post_masks, H_work, W_work,
+                               engine="sam3", layer="post")
+
+        # --- QA overlay (GT contours + prediction fills) ---
+        _save_evaluation_overlay(overlay_path, image_np, streams_map, post_masks)
+
+        # --- Update manifest ---
+        manifest_path = gt_dir / "manifest.json"
+        manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+        manifest.update({
+            "engine": "sam3",
+            "run_mode": run_mode,
+            "sam3_n_raw": len(masks),
+            "sam3_n_post": len(post_masks),
+            "sam3_n_streams_kept": len(kept_streams),
+            "sam3_n_satellites_kept": len(kept_sat_final),
+            "sam3_inference_time_ms": round(time_ms, 2),
+            "sam3_updated_at": datetime.now().isoformat(),
+        })
+        manifest_path.write_text(json.dumps(manifest, indent=2))
+
+        stats["processed"] += 1
+        if stats["processed"] % 10 == 0:
+            logger.info(f"Progress: {stats['processed']}/{len(base_keys)}")
+
+    logger.info(f"SAM3 evaluate: {stats['processed']} processed, {stats['skipped_exists']} skipped")
+
+
+# --------------------------------------------------------------------------- #
+#  Evaluate-mode helpers
+# --------------------------------------------------------------------------- #
+
+def _save_predictions_json(
+    path: Path,
+    masks: list[dict[str, Any]],
+    H_work: int,
+    W_work: int,
+    engine: str = "sam3",
+    layer: str = "raw",
+) -> None:
+    """Save mask predictions to JSON with RLE encoding and schema header."""
+    from src.utils.coco_utils import mask_to_rle
+
+    predictions = []
+    for m in masks:
+        seg = m.get("segmentation")
+        if seg is None:
+            continue
+        rle = mask_to_rle(seg.astype(np.uint8))
+        predictions.append({
+            "type_label": m.get("type_label", "unknown"),
+            "score": round(m.get("predicted_iou", 0.0), 4),
+            "area": m.get("area", int(seg.sum())),
+            "bbox_xywh": m.get("bbox", [0, 0, 0, 0]),
+            "rle": rle,
+        })
+
+    doc = {
+        "schema_version": 1,
+        "rle_convention": "coco_rle_fortran",
+        "H_work": H_work,
+        "W_work": W_work,
+        "engine": engine,
+        "layer": layer,
+        "n_predictions": len(predictions),
+        "created_at": datetime.now().isoformat(),
+        "predictions": predictions,
+    }
+    path.write_text(json.dumps(doc, indent=2))
+
+
+def _save_evaluation_overlay(
+    path: Path,
+    image: np.ndarray,
+    streams_map: np.ndarray,
+    predictions: list[dict[str, Any]],
+) -> None:
+    """QA overlay: GT streams as solid white contours, predictions as semi-transparent fills."""
+    overlay = image.copy()
+
+    # --- GT contours (white, solid) ---
+    gt_ids = np.unique(streams_map)
+    gt_ids = gt_ids[gt_ids > 0]
+    for gid in gt_ids:
+        gt_binary = (streams_map == gid).astype(np.uint8)
+        contours, _ = cv2.findContours(gt_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(overlay, contours, -1, (255, 255, 255), 2)
+
+    # --- Prediction fills (semi-transparent, color-coded by type_label) ---
+    # streams = blue palette, satellites = orange palette
+    stream_colors = [(100, 149, 237), (65, 105, 225), (30, 144, 255)]   # cornflower, royal, dodger
+    sat_colors = [(255, 165, 0), (255, 140, 0), (255, 127, 80)]          # orange, dark-orange, coral
+    stream_idx, sat_idx = 0, 0
+
+    for m in predictions:
+        seg = m.get("segmentation")
+        if seg is None or seg.sum() == 0:
+            continue
+        mask_bool = seg.astype(bool)
+        tl = m.get("type_label", "")
+
+        if tl == "streams":
+            color = np.array(stream_colors[stream_idx % len(stream_colors)], dtype=np.uint8)
+            stream_idx += 1
+        else:
+            color = np.array(sat_colors[sat_idx % len(sat_colors)], dtype=np.uint8)
+            sat_idx += 1
+
+        # Alpha blend
+        alpha = 0.45
+        overlay[mask_bool] = (overlay[mask_bool].astype(np.float32) * (1 - alpha)
+                              + color.astype(np.float32) * alpha).astype(np.uint8)
+
+        # Thin contour in same color
+        seg_u8 = seg.astype(np.uint8)
+        contours, _ = cv2.findContours(seg_u8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(overlay, contours, -1, color.tolist(), 1)
+
+        # Score label
+        score = m.get("predicted_iou", 0.0)
+        bbox = m.get("bbox", None)
+        if bbox and len(bbox) == 4:
+            x, y = int(bbox[0]), max(int(bbox[1]) - 5, 12)
+            cv2.putText(overlay, f"{tl[0]}:{score:.2f}", (x, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        color.tolist(), 1, cv2.LINE_AA)
+
+    cv2.imwrite(str(path), cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
 
 
 def _sort_masks(masks: list[dict], policy: list[str]) -> list[dict]:
@@ -540,49 +804,48 @@ def _mask_to_rle(binary_mask: np.ndarray) -> dict:
 
 def _merge_instances(
     streams_map: np.ndarray,
-    satellites: list[dict],
+    inferred_masks: list[dict],
     max_stream_id: int,
     overlap_policy: str,
 ) -> tuple[np.ndarray, list[dict], dict, dict]:
-    """Merge streams + satellites into final instance map."""
+    """Merge streams GT + inferred masks into final instance map.
+    Uses type_label from each mask dict for instances_list type field."""
     instance_map = streams_map.copy().astype(np.int32)
-    
-    # Build instances list from streams
+
+    # Build instances list from GT streams
     stream_ids = sorted([int(x) for x in np.unique(streams_map) if x > 0])
     instances_list = [{"id": sid, "type": "streams"} for sid in stream_ids]
-    
-    # ID mapping
+
     id_map = {
         "streams": {str(sid): sid for sid in stream_ids},
         "satellites": {},
     }
-    
+
     overlap_px = 0
-    total_sat_px = 0
-    
-    for i, sat in enumerate(satellites):
+    total_inferred_px = 0
+
+    for i, m in enumerate(inferred_masks):
         new_id = max_stream_id + i + 1
-        seg = sat.get("segmentation", np.zeros_like(streams_map, dtype=bool))
-        
+        seg = m.get("segmentation", np.zeros_like(streams_map, dtype=bool))
+        type_label = m.get("type_label", "satellites")
+
         if overlap_policy == "keep_streams":
-            # Only fill where streams==0
             mask = seg & (instance_map == 0)
         else:
             mask = seg
-        
+
         overlap_px += int((seg & (streams_map > 0)).sum())
-        total_sat_px += int(seg.sum())
-        
+        total_inferred_px += int(seg.sum())
+
         instance_map[mask] = new_id
-        instances_list.append({"id": new_id, "type": "satellites"})
-        id_map["satellites"][str(i)] = new_id
-    
-    overlap_rate = overlap_px / total_sat_px if total_sat_px > 0 else 0.0
-    
-    # Convert to uint8
+        instances_list.append({"id": new_id, "type": type_label})
+        id_map.setdefault(type_label, {})[str(i)] = new_id
+
+    overlap_rate = overlap_px / total_inferred_px if total_inferred_px > 0 else 0.0
+
     assert instance_map.max() <= 255, f"Too many instances: {instance_map.max()}"
     instance_map = instance_map.astype(np.uint8)
-    
+
     return instance_map, instances_list, id_map, {"overlap_px": overlap_px, "overlap_rate": overlap_rate}
 
 
@@ -785,7 +1048,7 @@ def generate_base_keys(config: dict, galaxy_filter: list[int] | None = None) -> 
 def main():
     parser = argparse.ArgumentParser(description="Unified Dataset Preparation")
     parser.add_argument("--config", "-c", type=Path, required=True, help="Config YAML path")
-    parser.add_argument("--phase", type=str, choices=["render", "gt", "satellites", "export", "all"], default="all")
+    parser.add_argument("--phase", type=str, choices=["render", "gt", "inference", "satellites", "export", "all"], default="all")
     parser.add_argument("--galaxies", type=str, default=None, help="Comma-separated galaxy IDs subset")
     parser.add_argument("--force", action="store_true", help="Force rebuild all variants in selected phase")
     parser.add_argument("--force-variants", type=str, default=None,
@@ -820,15 +1083,15 @@ def main():
     base_keys = generate_base_keys(config, galaxy_filter)
     logger.info(f"Processing {len(base_keys)} BaseKeys")
     
-    phases = ["render", "gt", "satellites", "export"] if args.phase == "all" else [args.phase]
-    
+    phases = ["render", "gt", "inference", "export"] if args.phase == "all" else [args.phase]
+
     for phase in phases:
         if phase == "render":
             run_render_phase(config, base_keys, logger, force_variants)
         elif phase == "gt":
             run_gt_phase(config, base_keys, logger, force_variants)
-        elif phase == "satellites":
-            run_satellites_phase(config, base_keys, logger, force_variants)
+        elif phase in ("inference", "satellites"):  # satellites = backward compat alias
+            run_inference_phase(config, base_keys, logger, force_variants)
         elif phase == "export":
             run_export_phase(config, base_keys, logger, force_variants)
     
