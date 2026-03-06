@@ -1,58 +1,159 @@
-# LSB-AI-Detection
+<p align="center">
+  <img src="docs/assets/render_multi_exposure.jpg" width="180" alt="Multi-exposure render"/>
+  <img src="docs/assets/gt_instance_overlay.jpg" width="180" alt="Ground truth overlay"/>
+  <img src="docs/assets/eval_overlay.jpg" width="180" alt="Evaluation overlay"/>
+</p>
 
-Automated detection and segmentation of **Low Surface Brightness (LSB)** features — stellar streams and satellite galaxies — in astronomical images using fine-tuned SAM2/SAM3 (Segment Anything Model).
+<h1 align="center">LSB-AI-Detection</h1>
 
-Built on the [FIREbox-DR1](https://fire.northwestern.edu/) cosmological simulation data (surface-brightness maps in FITS format).
+<p align="center">
+  <b>Automated detection of Low Surface Brightness features in astronomical images<br/>using fine-tuned SAM2 / SAM3 (Segment Anything Model)</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white" alt="Python 3.12"/>
+  <img src="https://img.shields.io/badge/PyTorch-2.7-ee4c2c?logo=pytorch&logoColor=white" alt="PyTorch 2.7"/>
+  <img src="https://img.shields.io/badge/SAM2_%7C_SAM3-Meta_AI-4267B2?logo=meta&logoColor=white" alt="SAM2 | SAM3"/>
+  <img src="https://img.shields.io/badge/data-FIREbox--DR1-orange" alt="FIREbox-DR1"/>
+</p>
 
 ---
 
-## Table of Contents
+Detects and segments **stellar streams** and **satellite galaxies** — the faintest structures around galaxies — from [FIREbox-DR1](https://fire.northwestern.edu/) cosmological simulation surface-brightness maps (FITS format). The pipeline covers everything from raw FITS preprocessing through noise-augmented training data generation to type-aware model evaluation.
 
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [End-to-End Workflow](#end-to-end-workflow)
-  - [Phase 0: Mask Statistics](#phase-0-mask-statistics-analysis)
-  - [Phase 1–4: Unified Data Preparation](#unified-data-preparation-pipeline)
-  - [Model Evaluation](#model-evaluation)
-- [Configuration Reference](#configuration-reference)
-- [Evaluation Metrics](#evaluation-metrics)
-- [Visualization](#visualization)
+<br/>
+
+## Visual Overview
+
+### Preprocessing Variants
+
+Three preprocessing strategies convert raw surface-brightness (mag/arcsec²) FITS data into model-ready RGB images:
+
+<table>
+  <tr>
+    <td align="center"><b>Asinh Stretch</b></td>
+    <td align="center"><b>Linear Magnitude</b></td>
+    <td align="center"><b>Multi-Exposure (3-ch)</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/render_asinh_stretch.jpg" width="250"/></td>
+    <td><img src="docs/assets/render_linear_magnitude.jpg" width="250"/></td>
+    <td><img src="docs/assets/render_multi_exposure.jpg" width="250"/></td>
+  </tr>
+  <tr>
+    <td>Nonlinear arcsinh mapping<br/>emphasizing faint features</td>
+    <td>Linear mapping in magnitude<br/>space (global min/max)</td>
+    <td>R=linear, G=asinh, B=gamma<br/>composite 3-channel</td>
+  </tr>
+</table>
+
+### Ground Truth & Predictions
+
+<table>
+  <tr>
+    <td align="center"><b>Ground Truth Instances</b></td>
+    <td align="center"><b>SAM3 Evaluation Overlay</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/gt_instance_overlay.jpg" width="380"/></td>
+    <td><img src="docs/assets/eval_overlay.jpg" width="380"/></td>
+  </tr>
+  <tr>
+    <td>Merged streams + satellites instance map<br/>Color-coded per-instance overlay on galaxy image</td>
+    <td>GT contours (white=streams, yellow=satellites)<br/>Predictions (blue=streams, green=satellites)</td>
+  </tr>
+</table>
+
+### Noise Robustness
+
+Forward observation noise model simulates realistic observing conditions at different signal-to-noise ratios:
+
+<table>
+  <tr>
+    <td align="center"><b>Clean (no noise)</b></td>
+    <td align="center"><b>SNR ≈ 50</b></td>
+    <td align="center"><b>SNR ≈ 20</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/render_asinh_stretch.jpg" width="250"/></td>
+    <td><img src="docs/assets/render_noisy_snr50.jpg" width="250"/></td>
+    <td><img src="docs/assets/render_noisy_snr20.jpg" width="250"/></td>
+  </tr>
+  <tr>
+    <td>Ideal simulation output</td>
+    <td>Faint structures partially visible</td>
+    <td>Only brightest features survive</td>
+  </tr>
+</table>
+
+### SAM3 Dataset Visualization
+
+4-column grid: **Original → Streams → Satellites → Combined** across preprocessing variants.
+
+<p align="center">
+  <img src="docs/assets/sam3_dataset_grid.jpg" width="90%" alt="SAM3 4-column grid visualization"/>
+</p>
+
+<details>
+<summary>More examples</summary>
+
+<p align="center">
+  <img src="docs/assets/sam3_dataset_grid_2.jpg" width="90%" alt="SAM3 grid — Galaxy 00019"/>
+</p>
+
+</details>
+
+---
+
+## Evaluation Results
+
+### Metrics Across SNR Tiers
+
+Performance degrades gracefully as noise increases. Clean images achieve Dice > 0.80, while SNR ≈ 5 remains challenging.
+
+<table>
+  <tr>
+    <td align="center"><b>Combined Metrics by SNR</b></td>
+    <td align="center"><b>Degradation Curves</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/metrics_bar_combined.png" width="450"/></td>
+    <td><img src="docs/assets/degradation_curves.png" width="450"/></td>
+  </tr>
+</table>
+
+### Mask Shape Statistics
+
+Data-driven filter thresholds derived from ground truth geometry (streams vs satellites).
+
+<p align="center">
+  <img src="docs/assets/mask_stats_distributions.png" width="85%" alt="Mask statistics distributions"/>
+</p>
 
 ---
 
 ## Installation
 
 ```bash
-# Clone
 git clone <repo-url> && cd LSB-AI-Detection
 
-# Create conda env (SAM2/SAM3 require separate installation)
+# Conda environment
 conda create -n lsb python=3.12
 conda activate lsb
 pip install torch==2.7.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
-
-git clone https://github.com/facebookresearch/sam3.git
-cd sam3
-pip install -e .
-pip install -e ".[notebooks]"
-
-# For development
-pip install -e ".[train,dev]"
-
-git clone https://github.com/facebookresearch/sam2.git && cd sam2
-pip install -e .
-pip install -e ".[notebooks]"
-# Core dependencies
 pip install -r requirements.txt
 
-# SAM2 / SAM3 — install from their repos into the same env
-# e.g. pip install -e /path/to/sam2   and   pip install -e /path/to/sam3
+# SAM3 (install into same env)
+git clone https://github.com/facebookresearch/sam3.git
+cd sam3 && pip install -e ".[notebooks]" && cd ..
+
+# SAM2 (install into same env)
+git clone https://github.com/facebookresearch/sam2.git
+cd sam2 && pip install -e ".[notebooks]" && cd ..
 
 # (Optional) Versioned git hooks
 git config core.hooksPath tools/githooks
 ```
-
-**Key dependencies** (`requirements.txt`):
 
 | Category | Packages |
 |----------|----------|
@@ -63,65 +164,90 @@ git config core.hooksPath tools/githooks
 
 ---
 
-## Project Structure
+## Quick Start
 
-```
-LSB-AI-Detection/
-├── configs/                        # YAML configs for all pipelines
-│   ├── unified_data_prep.yaml      # 4-phase unified pipeline (primary)
-│   ├── eval_sam3.yaml              # SAM3 evaluation config
-│   ├── eval_sam2.yaml              # SAM2 evaluation config
-│   └── noise_profiles.yaml         # Forward observation model SNR profiles
-│
-├── scripts/                        # Entry-point scripts
-│   ├── prepare_unified_dataset.py  # ★ Main data pipeline (4-phase)
-│   ├── evaluate_model.py           # SAM3 type-aware evaluation
-│   ├── analyze_mask_stats.py       # GT instance statistics → filter thresholds
-│   ├── generate_noisy_fits.py      # Noise injection (SNR profiles)
-│   ├── render_noisy_fits.py        # Render noise-injected FITS → PNG
-│   ├── plot_mask_stats.py          # Boxplots for shape metrics
-│   ├── visualize_sam3.py           # 4-column grid visualization
-│   └── run_batch_eval.sh           # Batch evaluation shell wrapper
-│
-├── src/                            # Python package
-│   ├── data/                       # FITS I/O, preprocessing (asinh, linear_mag, multi_exposure)
-│   ├── noise/                      # ForwardObservationModel (SB → flux → Poisson → readout)
-│   ├── inference/                  # SAM2 AutoMask runner, SAM3 text-prompt runner
-│   ├── postprocess/                # Type-aware filtering pipeline
-│   │   ├── satellite_prior_filter.py   # Area/solidity/aspect rules
-│   │   ├── streams_sanity_filter.py    # Area bounds, edge-touch fraction
-│   │   ├── core_exclusion_filter.py    # Centroid radius exclusion
-│   │   ├── candidate_grouping.py       # Union-Find centroid clustering
-│   │   └── representative_selection.py # Best mask per group
-│   ├── analysis/                   # Per-mask geometry metrics
-│   ├── evaluation/                 # Pixel + instance metrics, SAM3 eval orchestration
-│   ├── visualization/              # Overlay, 3-panel comparison plotting
-│   └── utils/                      # COCO RLE, logger, geometry helpers
-│
-├── data/
-│   ├── 01_raw/                     # Raw FIREbox FITS + masks
-│   └── 02_processed/               # Pipeline outputs (renders, GT, exports)
-│
-├── outputs/                        # Evaluation results, mask stats, overlays
-├── requirements.txt
-└── ARCHITECTURE.md
+```bash
+# 1. Full unified pipeline (Render → GT → Inference → Export)
+python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+
+# 2. Noise augmentation
+python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
+python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+
+# 3. Galaxy-level train/val split
+python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+
+# 4. Evaluate
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
+python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
 ```
 
 ---
 
-## End-to-End Workflow
-
-The typical workflow has three stages:
+## End-to-End Pipeline
 
 ```
-[0] analyze_mask_stats  →  filter thresholds (one-time)
-[1–4] prepare_unified_dataset  →  renders + GT + inference + export
-[5] evaluate_model  →  Dice / IoU / Recall metrics
+                    ┌─────────────────────────────────────────┐
+                    │          FITS Surface-Brightness Maps    │
+                    │         (FIREbox-DR1 Simulation Data)    │
+                    └────────────────┬────────────────────────┘
+                                     │
+          ┌──────────────────────────┼──────────────────────────┐
+          ▼                          ▼                          ▼
+   ┌─────────────┐          ┌──────────────┐          ┌──────────────┐
+   │ Phase 0     │          │ Phase 1      │          │ Phase 2      │
+   │ Mask Stats  │          │ RENDER       │          │ GT           │
+   │             │          │              │          │              │
+   │ GT geometry │          │ FITS → RGB   │          │ SB masks →   │
+   │ → filter    │          │ PNG images   │          │ instance     │
+   │ thresholds  │          │ (per variant)│          │ maps (.npy)  │
+   └─────┬───────┘          └──────┬───────┘          └──────┬───────┘
+         │                         │                         │
+         │            ┌────────────┴─────────────┐           │
+         │            ▼                          ▼           │
+         │   ┌────────────────┐       ┌────────────────┐     │
+         │   │ Phase 3a       │       │ Phase 3b       │     │
+         │   │ SAM2 AutoMask  │       │ SAM3 Prompts   │     │
+         │   │                │       │                │     │
+         └──►│ → Prior Filter │       │ → Type-Aware   │◄────┘
+             │ → Core Excl.   │       │   Filter Fork  │
+             │ → Group+Merge  │       │ → Streams/Sat  │
+             └───────┬────────┘       └───────┬────────┘
+                     │                        │
+                     ▼                        ▼
+              ┌─────────────┐         ┌──────────────┐
+              │ Phase 4      │         │ Phase 4      │
+              │ SAM2 Export  │         │ SAM3 Export  │
+              │              │         │              │
+              │ Symlinks     │         │ COCO JSON    │
+              │ (img + gt)   │         │ + RLE masks  │
+              └──────────────┘         └──────────────┘
+                     │                        │
+                     ▼                        ▼
+              ┌──────────────────────────────────────┐
+              │         Noise Augmentation            │
+              │  Forward Observation Model (Poisson   │
+              │  + readout noise) at SNR 5/10/20/50   │
+              └──────────────┬───────────────────────┘
+                             ▼
+              ┌──────────────────────────────────────┐
+              │   Galaxy-Level Train / Val Split      │
+              └──────────────┬───────────────────────┘
+                             ▼
+              ┌──────────────────────────────────────┐
+              │      Type-Aware Model Evaluation      │
+              │  Dice · Precision · Recall · HD95     │
+              │  Matched IoU · Instance Recall        │
+              └──────────────────────────────────────┘
 ```
 
-### Phase 0: Mask Statistics Analysis
+---
 
-Computes per-instance geometric statistics from canonical GT masks. The output `mask_stats_summary.json` drives all downstream filter thresholds (satellite prior filter, streams sanity filter).
+## Detailed Workflow
+
+### Phase 0 — Mask Statistics (one-time)
+
+Computes per-instance geometric statistics from canonical GT masks. Output drives all downstream filter thresholds.
 
 ```bash
 python scripts/analyze_mask_stats.py \
@@ -129,157 +255,206 @@ python scripts/analyze_mask_stats.py \
     --output_dir outputs/mask_stats
 ```
 
-**Outputs:**
+<details>
+<summary>Output files & filter recommendations</summary>
 
 | File | Content |
 |------|---------|
-| `mask_instance_stats.csv` | Per-instance row: area, solidity, aspect ratios, curvature |
-| `mask_stats_summary.json` | Quantile distributions + `filter_recommendations` section |
-
-The `filter_recommendations` block provides data-driven thresholds:
+| `mask_instance_stats.csv` | Per-instance: area, solidity, aspect ratios, curvature |
+| `mask_stats_summary.json` | Quantile distributions + `filter_recommendations` |
 
 ```json
 {
   "streams": {
-    "min_area": 42,
-    "max_area": 98304,
-    "min_solidity": 0.12,
-    "aspect_sym_moment_max": 8.5
+    "min_area": 42, "max_area": 98304,
+    "min_solidity": 0.12, "aspect_sym_moment_max": 8.5
   },
   "satellites": {
-    "min_area": 15,
-    "max_area": 5200,
-    "min_solidity": 0.65,
-    "aspect_sym_moment_max": 3.2
+    "min_area": 15, "max_area": 5200,
+    "min_solidity": 0.65, "aspect_sym_moment_max": 3.2
   }
 }
 ```
 
----
-
-### Unified Data Preparation Pipeline
-
-The main data pipeline (`scripts/prepare_unified_dataset.py`) converts raw FITS data into training-ready datasets through **4 phases**:
-
-```
-FITS (SB maps)
-  │
-  ▼
-Phase 1: RENDER ─── FITS → RGB PNGs (per preprocessing variant)
-  │
-  ▼
-Phase 2: GT ──────── SB masks → streams_instance_map.npy (canonical GT)
-  │
-  ▼
-Phase 3: INFERENCE ─ SAM2 AutoMask or SAM3 text-prompt → filter → merge/evaluate
-  │
-  ▼
-Phase 4: EXPORT ──── SAM2 symlinks + SAM3 COCO annotations.json
-```
-
-#### Basic Usage
+Regenerate the distribution plots:
 
 ```bash
-# Run full pipeline (all 4 phases)
+python scripts/plot_mask_stats.py
+```
+
+</details>
+
+### Phases 1–4 — Unified Data Preparation
+
+The main pipeline (`scripts/prepare_unified_dataset.py`) converts raw FITS data into training-ready datasets.
+
+```bash
+# Full pipeline (all 4 phases)
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
-# Run a single phase
+# Run individual phases
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase render
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase gt
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase inference
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase export
 
-# Subset of galaxies (comma-separated IDs)
+# Subset of galaxies
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --galaxies 11,13,19
 
-# Force rebuild all outputs
+# Force rebuild
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --force
-
-# Force rebuild specific preprocessing variants only
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml \
-    --force-variants asinh_stretch,multi_exposure
 ```
 
-#### Phase Details
+| Phase | Action | Output |
+|-------|--------|--------|
+| **1 — Render** | FITS → RGB PNGs per preprocessing variant | `renders/current/{variant}/{galaxy_id}_{orient}/0000.png` |
+| **2 — GT** | SB-threshold masks → instance maps | `gt_canonical/current/{base_key}/streams_instance_map.npy` |
+| **3 — Inference** | SAM2 AutoMask or SAM3 text-prompt → filter → merge | `instance_map_uint8.png`, overlay, manifests |
+| **4 — Export** | SAM2 symlinks + SAM3 COCO `annotations.json` | `sam2_prepared/`, `sam3_prepared/` |
 
-**Phase 1 — Render**: Loads `.fits.gz` surface-brightness maps and applies preprocessing variants to produce RGB PNGs. Each variant generates a separate directory tree.
+### Noise Augmentation
 
-Available preprocessors (defined in `src/data/preprocessing.py`):
+Inject realistic observation noise using a forward model (SB → flux → counts → Poisson → readout → magnitude):
 
-| Variant | Description |
-|---------|-------------|
-| `asinh_stretch` | Arcsinh stretch with configurable nonlinearity + zeropoint |
-| `linear_magnitude` | Linear mapping in magnitude space (global min/max) |
-| `multi_exposure` | Composite of linear + asinh channels (3-channel RGB) |
+```bash
+# Generate noisy FITS at multiple SNR tiers
+python scripts/generate_noisy_fits.py --config configs/noise_profiles.yaml
 
-Output: `data/02_processed/renders/current/{variant}/{galaxy_id}_{orientation}/0000.png`
+# Render noisy FITS → PNG
+python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
 
-**Phase 2 — GT**: Loads SB-threshold masks (e.g. SB=32 mag/arcsec²), resizes with nearest-neighbor interpolation to preserve instance IDs, saves as `.npy`.
+# Build noise-augmented COCO annotations
+python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+```
 
-Output: `data/02_processed/gt_canonical/current/{base_key}/streams_instance_map.npy`
+### Train/Val Split
 
-**Phase 3 — Inference**: Runs the selected engine on rendered images, applies type-aware post-processing filters, then either merges (SAM2) or evaluates (SAM3).
+Galaxy-level splitting ensures no data leakage between train and validation:
 
-- **SAM2 engine** (`inference_phase.engine: "sam2"`):
-  AutoMask → `append_metrics` → centroid grouping → representative selection → satellite prior filter → core exclusion → merge with streams GT → `instance_map_uint8.png`
-
-- **SAM3 engine** (`inference_phase.engine: "sam3"`):
-  Text-prompt inference (e.g. "stellar stream", "satellite galaxy") → type-aware filter fork (streams → `StreamsSanityFilter`, satellites → `SatellitePriorFilter` + `CoreExclusionFilter`) → save raw/post JSON + QA overlay
-
-**Phase 4 — Export**: Generates training-ready formats:
-
-- **SAM2**: Folder-based symlinks (`img_folder/` + `gt_folder/`)
-- **SAM3**: COCO-format `annotations.json` with RLE-encoded masks + `images/` symlinks
-
----
+```bash
+python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+```
 
 ### Model Evaluation
 
-After training, evaluate models with `scripts/evaluate_model.py`. This script is **type-aware**: it splits predictions into streams and satellites, computing metrics for each type independently and combined.
+Type-aware evaluation computing metrics independently for streams and satellites:
 
 ```bash
-# SAM3 evaluation (default config)
-python scripts/evaluate_model.py --config configs/eval_sam3.yaml
+# SAM3 evaluation
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
 
-# Override paths via CLI
-python scripts/evaluate_model.py --config configs/eval_sam3.yaml \
-    --render-dir data/02_processed/renders/current/asinh_stretch \
-    --gt-dir data/02_processed/gt_canonical/current \
-    --output-dir outputs/eval_sam3 \
-    --save-overlays
+# With overlays for visual inspection
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --save-overlays
 
-# Limit samples for debugging
-python scripts/evaluate_model.py --config configs/eval_sam3.yaml --max-samples 5
+# Per-galaxy aggregation
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --per-galaxy
 
-# Per-galaxy aggregation (merge eo+fo)
-python scripts/evaluate_model.py --config configs/eval_sam3.yaml --per-galaxy
+# Noise-tier evaluation
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --snr-tag snr10
 
-# Tag with SNR tier (for noise-injected evaluations)
-python scripts/evaluate_model.py --config configs/eval_sam3.yaml --snr-tag snr10
+# Batch across all SNR tiers
+bash scripts/run_batch_eval.sh
 ```
 
-**Evaluation pipeline:**
+---
 
-1. **Discover pairs**: Match `{render_dir}/{base_key}/0000.png` ↔ `{gt_dir}/{base_key}/` GT files
-2. **Inference**: Run SAM3 with text prompts (per-prompt confidence thresholds)
-3. **Filter**: Apply `StreamsSanityFilter` on stream predictions (post layer)
-4. **Metrics**: Compute pixel-level and instance-level metrics per type (raw + post)
-5. **Aggregate**: Macro-average across images, output JSON
+## Visualization Scripts
 
-**Output** (`outputs/eval_sam3/eval_YYYYMMDD_HHMMSS.json`):
+| Script | Purpose | Output |
+|--------|---------|--------|
+| `visualize_sam3.py` | 4-column grid: Original / Streams / Satellites / Combined | `sam3_prepared/visualizations_grid/*.jpg` |
+| `plot_mask_stats.py` | Streams vs satellites shape distribution boxplots | `outputs/mask_stats/*.png` |
+| `visualize_eval_metrics.py` | Cross-SNR metric bars + degradation curves | `outputs/eval_sam3_comparison/*.png` |
+| `overlay_masks_on_streams.py` | Overlay satellite masks on stream images | `sam2_prepared/overlays_satellites_on_streams/` |
+
+```bash
+# Generate all visualizations
+python scripts/visualize_sam3.py
+python scripts/plot_mask_stats.py
+python scripts/visualize_eval_metrics.py \
+    --results-dirs outputs/eval_sam3 outputs/eval_sam3_snr50 outputs/eval_sam3_snr20 \
+                   outputs/eval_sam3_snr10 outputs/eval_sam3_snr05 \
+    --labels clean snr50 snr20 snr10 snr05
+```
+
+---
+
+## Evaluation Metrics
+
+Two levels of metrics, reported for both **raw** (unfiltered) and **post** (filtered) prediction layers:
+
+### Pixel-Level
+
+| Metric | Formula | Empty-mask handling |
+|--------|---------|---------------------|
+| **Dice** | 2·TP / (2·TP + FP + FN) | `null` if both empty; `0.0` if one empty |
+| **Precision** | TP / (TP + FP) | `null` if no predicted pixels |
+| **Recall** | TP / (TP + FN) | `null` if no GT pixels |
+| **Hausdorff95** | Symmetric 95th-percentile boundary distance | `null` if both empty; image diagonal if one empty |
+
+### Instance-Level
+
+| Metric | Description |
+|--------|-------------|
+| **Matched IoU** | Mean IoU of valid matches (Hungarian 1:1 on IoU matrix) |
+| **Instance Recall** | Fraction of GT instances matched (IoU ≥ threshold) |
+
+Aggregation: **Macro** (mean ± std across images) and **Micro** (global TP/FP/FN sums).
+
+---
+
+## Project Structure
 
 ```
-{
-  "config": { ... },
-  "summary": {
-    "overall": {
-      "streams":    { "raw": {...}, "post": {...} },
-      "satellites": { "raw": {...}, "post": {...} },
-      "combined":   { "raw": {...}, "post": {...} }
-    }
-  },
-  "per_image": [ ... ]
-}
+LSB-AI-Detection/
+├── configs/                            # YAML configuration files
+│   ├── unified_data_prep.yaml          #   4-phase unified pipeline config
+│   ├── eval_sam3.yaml                  #   SAM3 type-aware evaluation
+│   ├── eval_sam2.yaml                  #   SAM2 evaluation
+│   ├── noise_profiles.yaml             #   Forward noise model SNR profiles
+│   └── sam3_dataset_split.yaml         #   Galaxy-level train/val split
+│
+├── scripts/                            # CLI entry points
+│   ├── prepare_unified_dataset.py      #   Main 4-phase data pipeline
+│   ├── evaluate_sam3.py                #   SAM3 type-aware evaluation
+│   ├── evaluate_sam2.py                #   SAM2 evaluation
+│   ├── analyze_mask_stats.py           #   GT instance statistics → thresholds
+│   ├── generate_noisy_fits.py          #   Forward noise FITS generation
+│   ├── render_noisy_fits.py            #   Render noisy FITS → PNG
+│   ├── build_noise_augmented_annotations.py  # Noise-aug COCO annotations
+│   ├── split_annotations.py            #   Galaxy-level train/val split
+│   ├── visualize_sam3.py               #   4-column grid visualization
+│   ├── plot_mask_stats.py              #   Shape metric boxplots
+│   ├── visualize_eval_metrics.py       #   Cross-SNR metric charts
+│   └── run_batch_eval*.sh              #   Batch evaluation wrappers
+│
+├── src/                                # Python source package
+│   ├── data/                           #   FITS I/O, preprocessing (asinh, linear, multi-exposure)
+│   ├── noise/                          #   ForwardObservationModel (SB → flux → Poisson → readout)
+│   ├── inference/                      #   SAM2 AutoMask runner, SAM3 text-prompt runner
+│   ├── postprocess/                    #   Type-aware filtering pipeline
+│   │   ├── satellite_prior_filter.py   #     Area/solidity/aspect rules
+│   │   ├── streams_sanity_filter.py    #     Area bounds, edge-touch fraction
+│   │   ├── core_exclusion_filter.py    #     Centroid radius exclusion
+│   │   ├── candidate_grouping.py       #     Union-Find centroid clustering
+│   │   └── representative_selection.py #     Best mask per group
+│   ├── pipelines/unified_dataset/      #   Modular pipeline subpackage
+│   ├── analysis/                       #   Per-mask geometry metrics
+│   ├── evaluation/                     #   Pixel + instance metrics, SAM3 eval orchestration
+│   ├── visualization/                  #   Overlay, grid, comparison plotting
+│   └── utils/                          #   COCO RLE, logger, geometry helpers
+│
+├── data/
+│   ├── 01_raw/                         # Raw FIREbox FITS + masks (symlinked)
+│   └── 02_processed/                   # Pipeline outputs (renders, GT, exports)
+│
+├── tests/                              # Unit tests (pytest)
+├── docs/                               # Documentation & assets
+├── outputs/                            # Evaluation results & plots
+├── notebooks/                          # Jupyter notebooks
+├── requirements.txt
+├── ARCHITECTURE.md                     # Detailed architecture docs
+└── CHANGELOG.md                        # Version history
 ```
 
 ---
@@ -287,6 +462,9 @@ python scripts/evaluate_model.py --config configs/eval_sam3.yaml --snr-tag snr10
 ## Configuration Reference
 
 ### `configs/unified_data_prep.yaml`
+
+<details>
+<summary>Full config structure</summary>
 
 ```yaml
 paths:
@@ -299,9 +477,9 @@ data_selection:
   canonical_sb_threshold: 32.0        # mag/arcsec² for GT masks
 
 processing:
-  target_size: [1024, 1024]           # Resize target (W, H)
+  target_size: [1024, 1024]
 
-preprocessing_variants:               # Each produces a render directory
+preprocessing_variants:
   - name: "asinh_stretch"
     params: { nonlinearity: 200.0, zeropoint: 22.5, clip_percentile: 99.5 }
   - name: "linear_magnitude"
@@ -316,7 +494,7 @@ inference_phase:
       - { text: "stellar stream", type_label: "streams" }
       - { text: "satellite galaxy", type_label: "satellites" }
 
-satellites:                           # SAM2 AutoMask pipeline config
+satellites:
   checkpoint: "/path/to/sam2/checkpoint.pt"
   generator:
     points_per_side: 64
@@ -328,7 +506,12 @@ satellites:                           # SAM2 AutoMask pipeline config
     radius_frac: 0.08
 ```
 
+</details>
+
 ### `configs/eval_sam3.yaml`
+
+<details>
+<summary>Evaluation config</summary>
 
 ```yaml
 paths:
@@ -351,83 +534,86 @@ post_filter:
   edge_touch_frac: 0.8
 ```
 
----
+</details>
 
-## Evaluation Metrics
+### `configs/noise_profiles.yaml`
 
-The evaluation system (`src/evaluation/metrics.py`) computes two levels of metrics, reported for both **raw** (unfiltered) and **post** (filtered) prediction layers:
+<details>
+<summary>Noise model config</summary>
 
-### Pixel-Level Metrics
+```yaml
+paths:
+  output_root: "data/04_noise"
 
-| Metric | Formula | Empty-mask handling |
-|--------|---------|---------------------|
-| **Dice** | 2·TP / (2·TP + FP + FN) | `null` if both empty; `0.0` if one empty |
-| **Precision** | TP / (TP + FP) | `null` if no pred pixels |
-| **Recall** | TP / (TP + FN) | `null` if no GT pixels |
-| **Hausdorff95** | Symmetric 95th-percentile boundary distance | `null` if both empty; image diagonal if one empty |
+noise_model:
+  zeropoint: 22.5
+  sky_level: 200
+  read_noise: 5
+  signal_quantile: 0.90
+  background_quantile: 0.20
 
-### Instance-Level Metrics
-
-| Metric | Description |
-|--------|-------------|
-| **Matched IoU** | Mean IoU of valid matches (Hungarian optimal 1:1 assignment on IoU matrix) |
-| **Instance Recall** | Fraction of GT instances with a valid match (IoU ≥ threshold) |
-
-Aggregation modes:
-- **Macro**: Mean ± std across images (null values skipped)
-- **Micro**: Global TP/FP/FN sums → single Dice/Precision/Recall
-
----
-
-## Visualization
-
-```bash
-# SAM3 dataset: 4-column grid (Original, Streams, Satellites, Combined)
-python scripts/visualize_sam3.py
-
-# Mask statistics boxplots (streams vs satellites)
-python scripts/plot_mask_stats.py
-
-# Evaluation metrics across SNR tiers
-python scripts/visualize_eval_metrics.py
-
-# Overlay GT masks on rendered images
-python scripts/overlay_masks_on_streams.py
+profiles:
+  snr05: { target_snr: 5 }
+  snr10: { target_snr: 10 }
+  snr20: { target_snr: 20 }
+  snr50: { target_snr: 50 }
 ```
 
----
-
-## Additional Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `generate_noisy_fits.py` | Inject Poisson + readout noise at specified SNR profiles |
-| `render_noisy_fits.py` | Render noise-injected FITS to PNG |
-| `run_batch_eval.sh` | Shell wrapper for batch evaluation across SNR tiers |
+</details>
 
 ---
 
 ## Data Layout
 
-After running the full pipeline, the processed data directory looks like:
+After running the full pipeline:
 
 ```
 data/02_processed/
-├── renders/current/
+├── renders/current/                    # Phase 1 output
 │   ├── asinh_stretch/{base_key}/0000.png
-│   └── linear_magnitude/{base_key}/0000.png
-├── gt_canonical/current/{base_key}/
-│   ├── streams_instance_map.npy      # Phase 2: streams-only GT
-│   ├── instance_map_uint8.png        # Phase 3: merged streams + satellites
-│   ├── instances.json                # Instance ID → type mapping
-│   ├── manifest.json                 # Provenance metadata
-│   └── overlay.png                   # QA visualization
-├── sam2_prepared/                     # Phase 4 export
+│   ├── linear_magnitude/{base_key}/0000.png
+│   └── multi_exposure/{base_key}/0000.png
+├── renders/noisy/                      # Noise-augmented renders
+│   └── asinh_stretch/snr{05,10,20,50}/{base_key}/0000.png
+├── gt_canonical/current/{base_key}/    # Phase 2+3 output
+│   ├── streams_instance_map.npy        #   Streams-only GT
+│   ├── instance_map_uint8.png          #   Merged streams + satellites
+│   ├── instances.json                  #   Instance ID → type mapping
+│   ├── manifest.json                   #   Provenance metadata
+│   └── overlay.png                     #   QA visualization
+├── sam2_prepared/                       # Phase 4: SAM2 export
 │   ├── img_folder/{variant_key}/0000.png → (symlink)
 │   └── gt_folder/{variant_key}/0000.png  → (symlink)
-└── sam3_prepared/                     # Phase 4 export
+└── sam3_prepared/                       # Phase 4: SAM3 export
     ├── images/{variant_key}.png → (symlink)
-    └── annotations.json              # COCO format with RLE masks
+    ├── annotations.json                #   COCO format with RLE masks
+    └── visualizations_grid/            #   QA grid images
 ```
 
-Where `{base_key}` = `{galaxy_id:05d}_{orientation}` (e.g. `00011_eo`) and `{variant_key}` = `{base_key}_{preprocessing}` (e.g. `00011_eo_asinh_stretch`).
+Where `{base_key}` = `{galaxy_id:05d}_{orientation}` (e.g. `00011_eo`).
+
+---
+
+## Module Documentation
+
+Each source module has its own `MODULE_DOC.md` with detailed API docs:
+
+| Module | Description | Docs |
+|--------|-------------|------|
+| `src/data/` | FITS I/O, preprocessing | [MODULE_DOC.md](src/data/MODULE_DOC.md) |
+| `src/noise/` | Forward observation model | [MODULE_DOC.md](src/noise/MODULE_DOC.md) |
+| `src/inference/` | SAM2/SAM3 inference runners | [MODULE_DOC.md](src/inference/MODULE_DOC.md) |
+| `src/postprocess/` | Type-aware filter pipeline | [MODULE_DOC.md](src/postprocess/MODULE_DOC.md) |
+| `src/pipelines/` | Unified dataset pipeline | [MODULE_DOC.md](src/pipelines/MODULE_DOC.md) |
+| `src/analysis/` | Mask geometry metrics | [MODULE_DOC.md](src/analysis/MODULE_DOC.md) |
+| `src/evaluation/` | Pixel + instance metrics | [MODULE_DOC.md](src/evaluation/MODULE_DOC.md) |
+| `src/visualization/` | Overlay & QA plotting | [MODULE_DOC.md](src/visualization/MODULE_DOC.md) |
+| `src/utils/` | COCO RLE, geometry, logger | [MODULE_DOC.md](src/utils/MODULE_DOC.md) |
+| `scripts/` | CLI entry points | [MODULE_DOC.md](scripts/MODULE_DOC.md) |
+
+---
+
+## Acknowledgements
+
+- **[FIREbox-DR1](https://fire.northwestern.edu/)** — Cosmological simulation data
+- **[SAM2](https://github.com/facebookresearch/sam2)** / **[SAM3](https://github.com/facebookresearch/sam3)** — Segment Anything Model (Meta AI)

@@ -22,6 +22,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Output: `data/04_noise/{profile}/magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz`
   - FITS headers annotated: NOISSNR, NOISSCL, NOISSKY, NOISRDN, NOISMSN
 
+- **Noise-Augmented Training Dataset**
+  - `scripts/render_noisy_fits.py` — Render noisy FITS → PNG images per SNR profile
+  - `scripts/build_noise_augmented_annotations.py` — Generate COCO annotations for noise-augmented images, reusing GT masks from clean images
+  - `src/pipelines/unified_dataset/noise_aug.py` — Core noise augmentation logic (render + annotation generation)
+  - Output: `annotations_train_noise_augmented.json` with `_snr{N}` image variants
+
+- **Galaxy-Level Train/Val Split**
+  - `scripts/split_annotations.py` — Split COCO annotations by galaxy ID (no data leakage)
+  - `configs/sam3_dataset_split.yaml` — Split configuration (train/val ratio, seed)
+  - `src/pipelines/unified_dataset/split.py` — Split logic with galaxy-level grouping
+
+- **SAM3 Evaluation Pipeline**
+  - `scripts/evaluate_sam3.py` — End-to-end SAM3 evaluation CLI
+  - `src/evaluation/sam3_eval.py` — Type-aware IoU evaluation (streams vs satellites)
+  - `src/inference/sam3_prompt_runner.py` — SAM3 prompt-based inference runner
+  - `scripts/evaluate_sam2.py` — Standalone SAM2 evaluation script
+  - `scripts/run_batch_eval.sh`, `scripts/run_batch_eval_type_aware.sh` — Batch evaluation shell wrappers
+
+- **Unified Dataset Pipeline Modularization** (`src/pipelines/unified_dataset/`)
+  - Split monolithic pipeline into focused submodules: `config`, `paths`, `keys`, `fs_utils`, `render`, `gt`, `inference`, `inference_sam2`, `inference_sam3`, `compose`, `export`, `artifacts`, `noise_aug`, `split`, `preprocessor_factory`
+
+- **Geometry Utility** — `src/utils/geometry.py`
+  - `discrete_convex_area()`: Pixel-corner-aware convex hull area to fix solidity > 1.0 on compact shapes
+
+- **Visualization** — Two new overlay functions in `src/visualization/overlay.py`
+  - `save_evaluation_overlay()`: QA overlay with GT white contours + prediction semi-transparent fills
+  - `save_instance_overlay()`: Colored instance map overlay for merged GT QA
+
+- **Tests** — 7 new test modules
+  - `test_artifacts.py`, `test_cli_compat.py`, `test_compose.py`, `test_dataset_keys.py`, `test_galaxy_split.py`, `test_gt_phase.py`, `test_noise_aug.py`
+
 ### Changed
 
 - **SAM3 Visualization**: Completely rewrote `scripts/visualize_sam3.py` to support the refactored data pipeline outputs.
@@ -29,6 +60,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Utilized `multiprocessing` to generate visualizations for all galaxies concurrently.
   - Implemented fully vectorized RLE decoding (`np.repeat`) and mask broadcasting.
   - Outputs a new 4-column grid layout (Original, Streams, Satellites, Combined) under `visualizations_grid/`.
+- **Solidity computation**: `mask_metrics.py` and `satellite_prior_filter.py` now use `discrete_convex_area` (pixel-corner expansion) instead of raw `ConvexHull` on pixel centers.
+- **Robust config loading**: `load_filter_cfg`, `load_area_target`, `load_streams_cfg` all use 3-tier guards (file → JSON parse → key presence) with `warnings.warn` instead of silent fallback.
+- **Streams filter**: `StreamsSanityFilter` supports absolute `max_area_px` threshold from GT stats, taking priority over fractional `max_area_frac`.
+
+### Removed
+
+- `src/analysis/sweep_scoring.py` — Sweep aggregation logic superseded by direct evaluation pipeline.
+- `scripts/sweep_automask_configs.py` — AutoMask sweep script replaced by integrated pipeline.
+- `scripts/build_dataset.py` — Replaced by `scripts/prepare_unified_dataset.py` + submodules.
+- `configs/automask_sweep.yaml`, `configs/automask_sweep_2.yaml`, `configs/data_prep_sam2.yaml`, `configs/data_prep_sam3.yaml`, `configs/sweep_subset_5.yaml` — Obsolete configs.
 
 ## [0.4.1] - 2026-02-18
 
