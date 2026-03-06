@@ -29,7 +29,8 @@ from typing import Any
 
 import numpy as np
 from scipy.ndimage import label, binary_fill_holes
-from scipy.spatial import ConvexHull
+
+from src.utils.geometry import discrete_convex_area
 
 # Gate for hull computation: skip convex hull for tiny masks (unstable + slow)
 MIN_AREA_FOR_HULL = 10
@@ -113,12 +114,8 @@ def compute_mask_metrics(
     if compute_hull and area_clean >= MIN_AREA_FOR_HULL:
         hull_coords = np.column_stack((rows, cols))
         if len(hull_coords) >= 3:
-            try:
-                hull = ConvexHull(hull_coords)
-                convex_area = float(hull.volume)  # 2D: volume = area
-                solidity = area_clean / convex_area if convex_area > 0 else 1.0
-            except Exception:
-                solidity = 1.0
+            convex_area = discrete_convex_area(hull_coords)
+            solidity = area_clean / convex_area if convex_area > 0 else 1.0
         else:
             solidity = 1.0
 

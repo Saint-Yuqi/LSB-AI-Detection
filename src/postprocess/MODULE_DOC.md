@@ -84,11 +84,21 @@
   - Element 2 (ambiguous): each dict retains the full input schema plus:
     - `reject_reason: str` — rejection reason string tag (e.g., `'core_rejected'`)
 
-### `StreamsSanityFilter.__init__(min_area, max_area_frac, edge_touch_frac)`
+### `load_streams_cfg(stats_json)`
+- **Input:**
+  - `stats_json: Path | str` (default: `outputs/mask_stats/mask_stats_summary.json`)
+- **Output:** `dict[str, Any]` with keys:
+  - `min_area: int`
+  - `max_area_px: int | None`
+  - `edge_touch_frac: float`
+- **Failure:** Warns and returns safe defaults if file missing or malformed.
+
+### `StreamsSanityFilter.__init__(min_area, max_area_frac, edge_touch_frac, max_area_px)`
 - **Input:**
   - `min_area: int`
   - `max_area_frac: float`
   - `edge_touch_frac: float`
+  - `max_area_px: int | None` — absolute upper-area bound from GT stats; takes priority over `max_area_frac` when set.
 - **Output:** Initialized lightweight stream-filter object.
 
 ### `StreamsSanityFilter.filter(masks, H, W)`
@@ -99,7 +109,7 @@
   - Element 0: kept masks
   - Element 1: rejected masks with `reject_reason` in:
     - `sanity_area_low`
-    - `sanity_area_high`
+    - `sanity_area_high` (uses `max_area_px` when set, else `max_area_frac * H * W`)
     - `sanity_edge`
 
 ## Invariants

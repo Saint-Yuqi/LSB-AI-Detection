@@ -44,6 +44,21 @@
   - `dpi: int`
 - **Output:** `None` — writes a multi-panel PNG figure to `output_path`.
 
+### `save_evaluation_overlay(path, image, streams_map, predictions)`
+- **Input:**
+  - `path: Path`
+  - `image: np.ndarray` — shape `(H, W, 3)`, dtype `np.uint8`
+  - `streams_map: np.ndarray` — shape `(H, W)`, GT instance map (0 = background)
+  - `predictions: List[dict]` — each with `segmentation`, optional `type_label`, `predicted_iou`, `bbox`
+- **Output:** `None` — writes QA overlay PNG with GT white contours and prediction semi-transparent fills.
+
+### `save_instance_overlay(path, image, instance_map)`
+- **Input:**
+  - `path: Path`
+  - `image: np.ndarray` — shape `(H, W, 3)`, dtype `np.uint8`
+  - `instance_map: np.ndarray` — shape `(H, W)`, integer instance IDs (0 = background)
+- **Output:** `None` — writes colored-instance overlay PNG.
+
 ## Invariants
 - **Output Format Contract:** All written files are 8-bit RGB PNG. Input arrays with incompatible dtype or shape raise `ValueError` before any file is created.
 

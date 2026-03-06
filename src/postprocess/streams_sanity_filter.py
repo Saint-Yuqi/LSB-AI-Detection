@@ -2,19 +2,22 @@
 Streams sanity filter – lightweight guard against obvious false positives.
 
 Usage:
-    from src.postprocess.streams_sanity_filter import StreamsSanityFilter
-    flt = StreamsSanityFilter(min_area=50, max_area_frac=0.5, edge_touch_frac=0.8)
+    from src.postprocess.streams_sanity_filter import StreamsSanityFilter, load_streams_cfg
+    cfg = load_streams_cfg()  # from mask_stats_summary.json
+    flt = StreamsSanityFilter(min_area=cfg["min_area"], max_area_px=cfg["max_area_px"],
+                              edge_touch_frac=cfg["edge_touch_frac"])
     kept, rejected = flt.filter(masks, H, W)
 
 Args:
     masks:          list of mask dicts with 'segmentation' (H, W) bool numpy.
     min_area:       reject masks with area < min_area pixels.
-    max_area_frac:  reject masks covering > max_area_frac of total image.
-    edge_touch_frac: reject if > this fraction of perimeter touches image border.
+    max_area_px:    reject masks with area > max_area_px (absolute, from GT stats).
+    max_area_frac:  reject masks covering > max_area_frac of total image (fallback when max_area_px is None).
+    edge_touch_frac: reject if > this fraction of mask pixels lie on image border.
 
 Reject reasons:
     - sanity_area_low:  area < min_area
-    - sanity_area_high: area > max_area_frac * H * W
+    - sanity_area_high: area > max_area_px (or max_area_frac * H * W)
     - sanity_edge:      edge_touch_ratio > edge_touch_frac
 
 Contract:
@@ -23,9 +26,63 @@ Contract:
 """
 from __future__ import annotations
 
+import json
+import math
+import warnings
+from pathlib import Path
 from typing import Any
 
 import numpy as np
+
+_DEFAULT_STATS_JSON = Path(__file__).parents[2] / "outputs" / "mask_stats" / "mask_stats_summary.json"
+
+
+def load_streams_cfg(
+    stats_json: Path | str = _DEFAULT_STATS_JSON,
+) -> dict[str, Any]:
+    """Load streams filter thresholds from mask_stats_summary.json.
+
+    Returns dict with keys: min_area (int), max_area_px (int|None), edge_touch_frac (float).
+    Uses math.ceil for area thresholds to avoid over-filtering at boundary.
+    """
+    defaults: dict[str, Any] = {"min_area": 50, "max_area_px": None, "edge_touch_frac": 0.8}
+    stats_json = Path(stats_json)
+
+    if not stats_json.exists():
+        warnings.warn(
+            f"Stats not found: {stats_json}; using defaults. "
+            "Run: python scripts/analyze_mask_stats.py",
+            stacklevel=2,
+        )
+        return defaults
+
+    try:
+        with open(stats_json) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        warnings.warn(f"Failed to parse {stats_json}: {e}; using defaults", stacklevel=2)
+        return defaults
+
+    rec = data.get("filter_recommendations", {}).get("streams")
+    if rec is None:
+        warnings.warn(
+            f"Key 'filter_recommendations.streams' missing in {stats_json}; using defaults",
+            stacklevel=2,
+        )
+        return defaults
+
+    min_area_val = rec.get("min_area")
+    max_area_val = rec.get("max_area")
+    if min_area_val is None:
+        warnings.warn(f"Missing 'min_area' in streams recommendations; using {defaults['min_area']}", stacklevel=2)
+    if max_area_val is None:
+        warnings.warn(f"Missing 'max_area' in streams recommendations; max_area_px disabled", stacklevel=2)
+
+    return {
+        "min_area": int(math.ceil(min_area_val)) if min_area_val is not None else defaults["min_area"],
+        "max_area_px": int(math.ceil(max_area_val)) if max_area_val is not None else None,
+        "edge_touch_frac": defaults["edge_touch_frac"],
+    }
 
 
 class StreamsSanityFilter:
@@ -36,10 +93,12 @@ class StreamsSanityFilter:
         min_area: int = 50,
         max_area_frac: float = 0.5,
         edge_touch_frac: float = 0.8,
+        max_area_px: int | None = None,
     ):
         self.min_area = min_area
         self.max_area_frac = max_area_frac
         self.edge_touch_frac = edge_touch_frac
+        self.max_area_px = max_area_px
 
     def filter(
         self,
@@ -51,7 +110,10 @@ class StreamsSanityFilter:
         Returns:
             (kept, rejected). Rejected masks get 'reject_reason' field.
         """
-        max_area = int(self.max_area_frac * H * W)
+        if self.max_area_px is not None:
+            max_area = self.max_area_px
+        else:
+            max_area = int(self.max_area_frac * H * W)
         kept, rejected = [], []
 
         for m in masks:
@@ -84,8 +146,7 @@ class StreamsSanityFilter:
 
 
 def _edge_touch_ratio(seg: np.ndarray, H: int, W: int) -> float:
-    """Fraction of mask perimeter pixels that touch image border."""
-    # Border pixels: first/last row, first/last col
+    """Fraction of mask pixels that lie on image border (border_px / total_mask_px)."""
     border_mask = np.zeros_like(seg, dtype=bool)
     border_mask[0, :] = True
     border_mask[-1, :] = True

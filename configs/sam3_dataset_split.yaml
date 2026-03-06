@@ -1,0 +1,8 @@
+# Dataset path overlay for galaxy-level split outputs (this repo side only).
+# The external SAM3 trainer config must be patched separately to point
+# train.ann_file / val.ann_file to these split outputs.
+dataset:
+  root: data/02_processed/sam3_prepared
+  train_ann: annotations_train.json
+  val_ann: annotations_val.json
+  split_manifest: split_manifest.json

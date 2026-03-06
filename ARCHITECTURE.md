@@ -32,6 +32,7 @@ LSB-AI-Detection/
 - [Evaluation Module (`src/evaluation`)](src/evaluation/MODULE_DOC.md)
 - [Visualization Module (`src/visualization`)](src/visualization/MODULE_DOC.md)
 - [Utilities Module (`src/utils`)](src/utils/MODULE_DOC.md)
+- [Pipelines Module (`src/pipelines`)](src/pipelines/MODULE_DOC.md)
 
 ---
 
@@ -40,10 +41,9 @@ LSB-AI-Detection/
 | Config File              | Process          | Output                               |
 | :----------------------- | :--------------- | :----------------------------------- |
 | `unified_data_prep.yaml` | 4-Phase Pipeline | Canonical GT + SAM2 link + SAM3 COCO |
-| `data_prep_sam2.yaml`    | Legacy           | Folder-based (1072x1072)             |
-| `data_prep_sam3.yaml`    | Legacy           | COCO JSON (1024x1024)                |
-| `eval_sam2.yaml`         | Eval             | Model metrics                        |
-| `automask_sweep.yaml`    | Sweep            | AutoMask ranking                     |
+| `eval_sam2.yaml`         | SAM2 Eval        | Model metrics                        |
+| `eval_sam3.yaml`         | SAM3 Eval        | Type-aware metrics JSON              |
+| `sam3_dataset_split.yaml`| Dataset Split    | Train/val COCO annotations           |
 
 ---
 
@@ -59,6 +59,9 @@ git config core.hooksPath tools/githooks
 # Unified Pipeline (Recommended)
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
-# Evaluate model
-python scripts/eval_model.py --checkpoint /path/to/model.pt --save_vis
+# Evaluate SAM2
+python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
+
+# Evaluate SAM3
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
 ```

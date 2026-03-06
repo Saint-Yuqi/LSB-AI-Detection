@@ -3,7 +3,7 @@
 ## Responsibilities
 - Serve as the executable entry points (CLI) orchestrating the complete LSB AI Detection pipeline.
 - Tie together discrete structural modules into end-to-end workflows.
-- Manage dataset generation, hyperparameter sweeping, model evaluation, and visual diagnostics.
+- Manage dataset generation, model evaluation, and visual diagnostics.
 - Run folder-based SAM3 evaluation over rendered/noisy image sets with reproducible JSON outputs.
 
 ## Non-goals
@@ -12,45 +12,27 @@
 
 ## Inputs / Outputs
 
-### Dataset Generators (`build_dataset.py`, `prepare_unified_dataset.py`)
-- **Input:** `--config: Path` pointing to a `.yaml` file.
-  - YAML schema:
-    - Required keys:
-      - `output_dir: str`
-      - `sb_thresholds: List[float]`
-      - `galaxy_ids: List[int]`
-      - `orientations: List[str]`
-      - `preprocessor: str`
-      - `preprocessor_kwargs`:
-        - `target_size: int`
-        - `nonlinearity: float`
-        - `zeropoint: float`
-    - Optional keys:
-      - `preprocessor_kwargs.b_mode: str` — defaults to `'add'` if omitted
-- **Output (per sample):**
-  - `{output_dir}/img_folder/{sample_name}/0000.png` — `np.ndarray (H, W, 3)`, dtype `np.uint8`
-  - `{output_dir}/gt_folder/{sample_name}/0000.png` — `np.ndarray (H, W)`, dtype `np.uint8`
-
-### Inference & Evaluation (`sweep_automask_configs.py`, `eval_model.py`)
-- **Input:** `--dataset_dir: Path`, `--checkpoint: Path`, `--config: Path`.
-  - YAML schema (all keys required):
-    - `model_cfg: str`
-    - `device: str`
-    - `iou_threshold: float`
-    - `param_grid: List[ParamGridEntry]`
-      - `ParamGridEntry` (TypedDict, all keys required):
-        - `points_per_side: int`
-        - `pred_iou_thresh: float`
-        - `stability_score_thresh: float`
-        - `min_mask_region_area: int`
+### Dataset Generator (`prepare_unified_dataset.py`)
+- **Input:** `--config: Path` pointing to a `.yaml` file (e.g. `configs/unified_data_prep.yaml`).
+  - `--phase`: `render | gt | inference | export | all`
+  - `--galaxies`: Comma-separated galaxy IDs subset
+  - `--force` / `--force-variants`: Force rebuild
 - **Output:**
-  - `per_image_metrics.csv` — columns: `sample_name: str`, `recall: float`, `binary_iou: float`, `mean_instance_iou: float`, `num_gt_instances: int`, `num_pred_masks: int`
-  - `summary.json` — schema:
-    - `mean_recall: float`
-    - `mean_binary_iou: float`
-    - `num_samples: int`
+  - Phase 1: `renders/current/{variant}/{base_key}/0000.png`
+  - Phase 2: `gt_canonical/current/{base_key}/streams_instance_map.npy`
+  - Phase 3: `gt_canonical/current/{base_key}/instance_map_uint8.png` (SAM2) or `sam3_predictions_*.json` (SAM3)
+  - Phase 4: `sam2_prepared/` symlinks + `sam3_prepared/annotations.json`
 
-### Folder-Based SAM3 Evaluation (`evaluate_model.py`)
+### SAM2 Evaluation (`evaluate_sam2.py`, formerly `eval_model.py`)
+- **Input:** `--config: Path` (`configs/eval_sam2.yaml` by default)
+- **Output:** `{output_dir}/iou_results_{timestamp}.json`
+- Note: `eval_model.py` is a deprecated thin wrapper that emits `FutureWarning`.
+
+### Galaxy-Level COCO Split (`split_annotations.py`)
+- **Input:** `--annotations: Path` (`data/02_processed/sam3_prepared/annotations.json`)
+- **Output:** `annotations_train.json`, `annotations_val.json`, `split_manifest.json`
+
+### Folder-Based SAM3 Evaluation (`evaluate_sam3.py`, formerly `evaluate_model.py`)
 - **Input:** `--config: Path` (`configs/eval_sam3.yaml` by default), plus optional overrides:
   - `--render-dir: Path`
   - `--gt-dir: Path`

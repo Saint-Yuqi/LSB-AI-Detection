@@ -35,7 +35,7 @@ def setup_logger(
         
     Example:
         >>> from src.utils.logger import setup_logger
-        >>> logger = setup_logger("build_dataset", Path("logs"))
+        >>> logger = setup_logger("prepare_dataset", Path("logs"))
         >>> logger.info("Starting dataset build...")
     """
     logger = logging.getLogger(name)

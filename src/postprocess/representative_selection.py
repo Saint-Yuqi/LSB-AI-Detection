@@ -17,12 +17,12 @@ Note: Solidity is NOT used in scoring (computed later for prior filter).
 from __future__ import annotations
 
 import json
+import warnings
 from collections import defaultdict
 from math import log
 from pathlib import Path
 from typing import Any
 
-# Default area target if not provided
 _DEFAULT_AREA_TARGET = 144.0
 
 
@@ -30,30 +30,43 @@ def load_area_target(
     stats_json: Path | str,
     key: str = "satellites_global",
 ) -> float:
-    """
-    Load quantiles.area.p50 from mask_stats_summary.json.
+    """Load quantiles.area.p50 from mask_stats_summary.json with 3-tier guards.
 
-    Args:
-        stats_json: path to mask_stats_summary.json
-        key: top-level key (e.g., "satellites_global", "satellites_SB32")
-
-    Returns:
-        Median area (p50) for the specified feature type.
+    Tier 1: file existence. Tier 2: JSON parse. Tier 3: key/field presence.
+    Each tier emits warnings.warn and falls back to _DEFAULT_AREA_TARGET.
     """
     stats_json = Path(stats_json)
+
     if not stats_json.exists():
+        warnings.warn(
+            f"Stats not found: {stats_json}; using default area_target={_DEFAULT_AREA_TARGET}. "
+            "Run: python scripts/analyze_mask_stats.py",
+            stacklevel=2,
+        )
         return _DEFAULT_AREA_TARGET
+
     try:
         with open(stats_json) as f:
             data = json.load(f)
-        return float(
-            data.get(key, {})
-            .get("quantiles", {})
-            .get("area", {})
-            .get("p50", _DEFAULT_AREA_TARGET)
-        )
-    except Exception:
+    except (json.JSONDecodeError, OSError) as e:
+        warnings.warn(f"Failed to parse {stats_json}: {e}; using default area_target", stacklevel=2)
         return _DEFAULT_AREA_TARGET
+
+    section = data.get(key)
+    if section is None:
+        warnings.warn(f"Key '{key}' missing in {stats_json}; using default area_target", stacklevel=2)
+        return _DEFAULT_AREA_TARGET
+
+    p50 = section.get("quantiles", {}).get("area", {}).get("p50")
+    if p50 is None:
+        warnings.warn(
+            f"'quantiles.area.p50' missing under '{key}' in {stats_json}; "
+            f"using default area_target={_DEFAULT_AREA_TARGET}",
+            stacklevel=2,
+        )
+        return _DEFAULT_AREA_TARGET
+
+    return float(p50)
 
 
 def compute_rep_score(m: dict[str, Any], cfg: dict[str, Any]) -> float:

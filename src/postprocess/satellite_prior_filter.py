@@ -27,59 +27,99 @@ Ambiguous criteria (must pass ALL to be ambiguous instead of rejected):
 from __future__ import annotations
 
 import json
+import math
+import warnings
 from pathlib import Path
 from typing import Any
 
 import numpy as np
-from scipy.spatial import ConvexHull
 
-# Default recommendations source
+from src.utils.geometry import discrete_convex_area
+
 _DEFAULT_STATS_JSON = Path(__file__).parents[2] / "outputs" / "mask_stats" / "mask_stats_summary.json"
+
+_FILTER_DEFAULTS: dict[str, Any] = {
+    "area_min": 30,
+    "area_max": 1842,
+    "solidity_min": 0.83,
+    "aspect_sym_max": 1.75,
+    "ambiguous_factor": 0.25,
+    "core_radius_frac": 0.08,
+}
+
+_JSON_TO_CFG = [
+    ("area_min", "min_area"),
+    ("area_max", "max_area"),
+    ("solidity_min", "min_solidity"),
+    ("aspect_sym_max", "aspect_sym_moment_max"),
+]
 
 
 def load_filter_cfg(
     stats_json: Path | str = _DEFAULT_STATS_JSON,
     feature_type: str = "satellites",
 ) -> dict[str, Any]:
-    """Load filter thresholds from mask_stats_summary.json. Falls back to safe defaults."""
-    defaults = {
-        "area_min": 30,
-        "area_max": 1842,
-        "solidity_min": 0.83,
-        "aspect_sym_max": 1.75,
-        "ambiguous_factor": 0.25,
-        "core_radius_frac": 0.08,
-    }
+    """Load filter thresholds from mask_stats_summary.json with 3-tier guards.
+
+    Tier 1: file existence. Tier 2: JSON parse. Tier 3: key/field presence.
+    Each tier emits warnings.warn and falls back to defaults.
+    Uses math.ceil for area thresholds.
+    """
+    defaults = dict(_FILTER_DEFAULTS)
     stats_json = Path(stats_json)
+
     if not stats_json.exists():
+        warnings.warn(
+            f"Stats not found: {stats_json}; using defaults. "
+            "Run: python scripts/analyze_mask_stats.py",
+            stacklevel=2,
+        )
         return defaults
 
     try:
         with open(stats_json) as f:
             data = json.load(f)
-        rec = data.get("filter_recommendations", {}).get(feature_type, {})
-        return {
-            "area_min": rec.get("min_area", defaults["area_min"]),
-            "area_max": rec.get("max_area", defaults["area_max"]),
-            "solidity_min": rec.get("min_solidity", defaults["solidity_min"]),
-            "aspect_sym_max": rec.get("aspect_sym_moment_max", rec.get("aspect_sym_max", defaults["aspect_sym_max"])),
-            "ambiguous_factor": defaults["ambiguous_factor"],
-            "core_radius_frac": defaults["core_radius_frac"],
-        }
-    except Exception:
+    except (json.JSONDecodeError, OSError) as e:
+        warnings.warn(f"Failed to parse {stats_json}: {e}; using defaults", stacklevel=2)
         return defaults
+
+    rec = data.get("filter_recommendations", {}).get(feature_type)
+    if rec is None:
+        warnings.warn(
+            f"Key 'filter_recommendations.{feature_type}' missing in "
+            f"{stats_json}; using defaults",
+            stacklevel=2,
+        )
+        return defaults
+
+    cfg: dict[str, Any] = {}
+    for cfg_key, json_key in _JSON_TO_CFG:
+        val = rec.get(json_key)
+        if json_key == "aspect_sym_moment_max" and val is None:
+            val = rec.get("aspect_sym_max")
+        if val is None:
+            warnings.warn(
+                f"Missing '{json_key}' in {feature_type} recommendations; "
+                f"using default {defaults[cfg_key]}",
+                stacklevel=2,
+            )
+            cfg[cfg_key] = defaults[cfg_key]
+        elif cfg_key in ("area_min", "area_max"):
+            cfg[cfg_key] = int(math.ceil(val))
+        else:
+            cfg[cfg_key] = val
+
+    cfg["ambiguous_factor"] = defaults["ambiguous_factor"]
+    cfg["core_radius_frac"] = defaults["core_radius_frac"]
+    return cfg
 
 
 def _compute_solidity(binary: np.ndarray) -> float:
-    """Convex-hull-based solidity (area / convex_area)."""
+    """Convex-hull-based solidity (area / convex_area), pixel-corner-aware."""
     coords = np.argwhere(binary)
     if len(coords) < 3:
         return 1.0
-    try:
-        hull = ConvexHull(coords)
-        convex_area = float(hull.volume)
-    except Exception:
-        convex_area = float(np.sum(binary))
+    convex_area = discrete_convex_area(coords)
     area = float(np.sum(binary))
     return area / convex_area if convex_area > 0 else 1.0
 

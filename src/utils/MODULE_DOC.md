@@ -3,6 +3,7 @@
 ## Responsibilities
 - Provide standardized COCO format conversion utilities (RLE encoding, bounding box extraction).
 - Supply a centralized, thread-safe, rotating file logging configuration.
+- Offer shared geometry helpers (pixel-corner-aware convex hull area) for mask analysis.
 
 ## Non-goals
 - **No Domain Logic:** Does not run astrophysics physical equations or instance filtering algorithms.
@@ -48,6 +49,10 @@
     - `area: int`
     - `iscrowd: int` — always `0`
   - `int` — next available annotation ID after this call
+
+### `discrete_convex_area(coords)`
+- **Input:** `coords: np.ndarray` — shape `(N, 2)`, pixel coordinates (row, col).
+- **Output:** `float` — convex hull area in px², using pixel-corner expansion to avoid underestimation on compact shapes. Falls back to `len(coords)` on degenerate geometry.
 
 ### `setup_logger(name, log_dir, level, max_bytes, backup_count)`
 - **Input:** `name: str`, `log_dir: Optional[Path]`, `level: int`, `max_bytes: int`, `backup_count: int`

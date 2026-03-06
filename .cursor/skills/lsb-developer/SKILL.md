@@ -18,7 +18,7 @@ Before writing a single line, locate your task in this logic tree:
     * Yes, Evaluation Metrics -> Go to `src/evaluation/metrics.py`
 
 2.  **Are you EXECUTING existing logic?**
-    * Yes, running a dataset build -> Go to `scripts/build_dataset.py`
+    * Yes, running a dataset build -> Go to `scripts/prepare_unified_dataset.py`
     * Yes, evaluating a model -> Go to `scripts/eval_model.py`
     * *Constraint*: Scripts should be thin wrappers (<100 lines). Logic belongs in `src/`.
 

@@ -1,8 +1,8 @@
 # SAM3 Evaluation Config
 # ======================
 # Usage:
-#   python scripts/evaluate_model.py --config configs/eval_sam3.yaml
-#   python scripts/evaluate_model.py --config configs/eval_sam3.yaml --max-samples 5
+#   python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
+#   python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --max-samples 5
 
 paths:
   render_dir: "data/02_processed/renders/current/asinh_stretch"
@@ -27,7 +27,7 @@ prompts:
 match_iou_thresh: 0.5
 
 # StreamsSanityFilter thresholds (post layer only)
+# min_area / max_area_px loaded from stats_json; explicit values here override GT.
 post_filter:
-  min_area: 50
-  max_area_frac: 0.5
+  stats_json: "outputs/mask_stats/mask_stats_summary.json"
   edge_touch_frac: 0.8

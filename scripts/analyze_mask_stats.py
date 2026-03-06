@@ -25,12 +25,18 @@ import argparse
 import csv
 import json
 import re
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import numpy as np
 from PIL import Image
-from scipy.ndimage import label as ndimage_label
-from scipy.spatial import ConvexHull
+from scipy.ndimage import binary_fill_holes, label as ndimage_label
+
+from src.utils.geometry import discrete_convex_area
 
 
 def parse_base_key(folder_name: str) -> tuple | None:
@@ -53,15 +59,9 @@ def compute_perimeter(binary: np.ndarray) -> float:
 
 
 def compute_convex_area(binary: np.ndarray) -> float:
-    """Compute convex hull area from boundary points."""
+    """Compute discrete convex hull area (pixel-corner-aware)."""
     coords = np.argwhere(binary)
-    if len(coords) < 3:
-        return float(np.sum(binary))  # Too few points for convex hull
-    try:
-        hull = ConvexHull(coords)
-        return float(hull.volume)  # In 2D, volume is area
-    except Exception:
-        return float(np.sum(binary))
+    return discrete_convex_area(coords)
 
 
 def compute_instance_stats(mask: np.ndarray, instance_id: int) -> dict | None:
@@ -73,11 +73,12 @@ def compute_instance_stats(mask: np.ndarray, instance_id: int) -> dict | None:
     if num_features == 0:
         return None
 
-    # Find largest component
+    # Find largest component + fill holes (aligned with mask_metrics._clean_mask)
     component_sizes = np.bincount(labeled.ravel())
     component_sizes[0] = 0  # Ignore background
     largest = component_sizes.argmax()
     binary = (labeled == largest).astype(np.uint8)
+    binary = binary_fill_holes(binary).astype(np.uint8)
 
     area = int(np.sum(binary))
     if area == 0:

@@ -16,10 +16,7 @@ LSB-AI-Detection/
 ├── configs/                          # Configuration files
 │   ├── unified_data_prep.yaml        # Main unified pipeline config (4-phase)
 │   ├── noise_profiles.yaml           # Forward observation noise profiles
-│   ├── data_prep_sam2.yaml           # Legacy SAM2 config
-│   ├── data_prep_sam3.yaml           # Legacy SAM3 config
-│   ├── eval_sam2.yaml                # Model evaluation config
-│   └── automask_sweep.yaml           # AutoMask config sweep definitions
+│   └── eval_sam2.yaml                # Model evaluation config
 │
 ├── data/
 │   ├── 01_raw/                       # Raw FITS data (symlinked)
@@ -45,11 +42,13 @@ LSB-AI-Detection/
 │       └── FIREbox-DR1_analysis.md
 │
 ├── scripts/                          # Entry point scripts
-│   ├── prepare_unified_dataset.py    # Main 4-phase unified pipeline
+│   ├── prepare_unified_dataset.py    # Main 4-phase unified pipeline (thin CLI)
+│   ├── split_annotations.py          # Galaxy-level COCO train/val split
 │   ├── generate_noisy_fits.py        # Forward observation noise injection
-│   ├── build_dataset.py              # Legacy dataset builder
-│   ├── eval_model.py                 # Model evaluation
-│   ├── sweep_automask_configs.py     # AutoMask config sweep & ranking
+│   ├── evaluate_sam2.py              # SAM2 evaluation (canonical)
+│   ├── evaluate_sam3.py              # SAM3 evaluation (canonical)
+│   ├── eval_model.py                 # Deprecated wrapper -> evaluate_sam2.py
+│   ├── evaluate_model.py             # Deprecated wrapper -> evaluate_sam3.py
 │   ├── analyze_mask_stats.py         # GT mask statistics analysis
 │   └── visualize_sam3.py             # Visualization for SAM3 dataset
 │
@@ -65,10 +64,11 @@ LSB-AI-Detection/
 │   │   ├── satellite_prior_filter.py # Area/solidity/aspect_sym rules
 │   │   └── core_exclusion_filter.py  # Centre-radius exclusion
 │   ├── analysis/                     # Metrics & scoring
-│   │   ├── mask_metrics.py           # Per-mask geometry computation
-│   │   └── sweep_scoring.py          # Config ranking & aggregation
+│   │   └── mask_metrics.py           # Per-mask geometry computation
 │   ├── evaluation/                   # Evaluation metrics
 │   │   └── metrics.py
+│   ├── pipelines/                    # Pipeline core logic
+│   │   └── unified_dataset/          # 4-phase dataset prep modules
 │   ├── utils/                        # Utilities
 │   │   ├── coco_utils.py
 │   │   └── logger.py
@@ -314,17 +314,6 @@ def append_metrics_to_masks(masks: List[Dict], H: int, W: int, compute_hull: boo
 
 ---
 
-### `src/analysis/sweep_scoring.py`
-```python
-def summarise_config(config_dir: Path) -> Dict:
-    """Aggregate per_image_metrics.csv → summary with CV, core_rate, stability, score."""
-
-def aggregate_and_rank(output_root: Path) -> List[Dict]:
-    """Walk config dirs, compute summaries, write ranking.json."""
-```
-
----
-
 ### `src/visualization/overlay.py`
 ```python
 def save_overlay(
@@ -396,10 +385,9 @@ def save_visualization(
 | Config File              | Process          | Output                               |
 | :----------------------- | :--------------- | :----------------------------------- |
 | `unified_data_prep.yaml` | 4-Phase Pipeline | Canonical GT + SAM2 link + SAM3 COCO |
-| `data_prep_sam2.yaml`    | Legacy           | Folder-based (1072x1072)             |
-| `data_prep_sam3.yaml`    | Legacy           | COCO JSON (1024x1024)                |
-| `eval_sam2.yaml`         | Eval             | Model metrics                        |
-| `automask_sweep.yaml`    | Sweep            | AutoMask ranking                     |
+| `eval_sam2.yaml`         | SAM2 Eval        | Model metrics                        |
+| `eval_sam3.yaml`         | SAM3 Eval        | Type-aware metrics JSON              |
+| `sam3_dataset_split.yaml`| Dataset Split    | Train/val COCO annotations           |
 
 ---
 
@@ -412,6 +400,9 @@ pip install -r requirements.txt
 # Unified Pipeline (Recommended)
 python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
-# Evaluate model
-python scripts/eval_model.py --checkpoint /path/to/model.pt --save_vis
+# Evaluate SAM2
+python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
+
+# Evaluate SAM3
+python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
 ```

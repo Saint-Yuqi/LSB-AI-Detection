@@ -69,8 +69,8 @@ inference_phase:
       - text: "satellite galaxy"
         type_label: "satellites"
     streams_sanity:
-      min_area: 50
-      max_area_frac: 0.5
+      stats_json: "outputs/mask_stats/mask_stats_summary.json"
+      # min_area / max_area_px loaded from stats_json; explicit values here override GT.
       edge_touch_frac: 0.8
 
 # Satellites pipeline (AutoMask + filters) – used when engine: "sam2"
