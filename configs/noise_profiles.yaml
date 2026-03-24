@@ -3,8 +3,8 @@
 # Forward observation model: SB(mag) → flux → counts → Poisson → read → −sky → mag
 #
 # Usage:
-#   python scripts/generate_noisy_fits.py --config configs/noise_profiles.yaml
-#   python scripts/generate_noisy_fits.py --config ... --galaxies 11,13 --profiles snr10
+#   python scripts/data/generate_noisy_fits.py --config configs/noise_profiles.yaml
+#   python scripts/data/generate_noisy_fits.py --config ... --galaxies 11,13 --profiles snr10
 
 paths:
   firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"

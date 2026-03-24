@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Scripts layout:** CLI entry points grouped under `scripts/data/`, `scripts/eval/`, `scripts/viz/`, and `scripts/analysis/` (update any local commands or job scripts that still used flat `scripts/*.py` paths).
+- **HPC:** Slurm eval sweep moved to `scripts/cluster/` (`launch_eval_sweep.sh`, `eval_sweep.slurm`); launcher exports `REPO_ROOT` / `CONDA_ENV`; batch script no longer hardcodes a single machine path (still edit `#SBATCH` and `module load` for your cluster).
+
 ### Added
 
 - **Forward Observation Noise Model** for controlled SNR degradation of SB maps
@@ -18,27 +23,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Negative flux → NaN (compatible with existing `LSBPreprocessor` nan_to_num)
     - Isolated `np.random.Generator` per instance (multi-process safe)
   - `configs/noise_profiles.yaml` — 4 target profiles (SNR 5/10/20/50)
-  - `scripts/generate_noisy_fits.py` — Batch CLI with `--galaxies` and `--profiles` filters
+  - `scripts/data/generate_noisy_fits.py` — Batch CLI with `--galaxies` and `--profiles` filters
   - Output: `data/04_noise/{profile}/magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz`
   - FITS headers annotated: NOISSNR, NOISSCL, NOISSKY, NOISRDN, NOISMSN
 
 - **Noise-Augmented Training Dataset**
-  - `scripts/render_noisy_fits.py` — Render noisy FITS → PNG images per SNR profile
-  - `scripts/build_noise_augmented_annotations.py` — Generate COCO annotations for noise-augmented images, reusing GT masks from clean images
+  - `scripts/data/render_noisy_fits.py` — Render noisy FITS → PNG images per SNR profile
+  - `scripts/data/build_noise_augmented_annotations.py` — Generate COCO annotations for noise-augmented images, reusing GT masks from clean images
   - `src/pipelines/unified_dataset/noise_aug.py` — Core noise augmentation logic (render + annotation generation)
   - Output: `annotations_train_noise_augmented.json` with `_snr{N}` image variants
 
 - **Galaxy-Level Train/Val Split**
-  - `scripts/split_annotations.py` — Split COCO annotations by galaxy ID (no data leakage)
+  - `scripts/data/split_annotations.py` — Split COCO annotations by galaxy ID (no data leakage)
   - `configs/sam3_dataset_split.yaml` — Split configuration (train/val ratio, seed)
   - `src/pipelines/unified_dataset/split.py` — Split logic with galaxy-level grouping
 
 - **SAM3 Evaluation Pipeline**
-  - `scripts/evaluate_sam3.py` — End-to-end SAM3 evaluation CLI
+  - `scripts/eval/evaluate_sam3.py` — End-to-end SAM3 evaluation CLI
   - `src/evaluation/sam3_eval.py` — Type-aware IoU evaluation (streams vs satellites)
   - `src/inference/sam3_prompt_runner.py` — SAM3 prompt-based inference runner
-  - `scripts/evaluate_sam2.py` — Standalone SAM2 evaluation script
-  - `scripts/run_batch_eval.sh`, `scripts/run_batch_eval_type_aware.sh` — Batch evaluation shell wrappers
+  - `scripts/eval/evaluate_sam2.py` — Standalone SAM2 evaluation script
+  - `scripts/eval/run_batch_eval.sh`, `scripts/eval/run_batch_eval_type_aware.sh` — Batch evaluation shell wrappers
 
 - **Unified Dataset Pipeline Modularization** (`src/pipelines/unified_dataset/`)
   - Split monolithic pipeline into focused submodules: `config`, `paths`, `keys`, `fs_utils`, `render`, `gt`, `inference`, `inference_sam2`, `inference_sam3`, `compose`, `export`, `artifacts`, `noise_aug`, `split`, `preprocessor_factory`
@@ -55,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **SAM3 Visualization**: Completely rewrote `scripts/visualize_sam3.py` to support the refactored data pipeline outputs.
+- **SAM3 Visualization**: Completely rewrote `scripts/viz/visualize_sam3.py` to support the refactored data pipeline outputs.
   - Adapted to unified dataset annotations, visualizing variants like `asinh_stretch` vs `linear_magnitude`.
   - Utilized `multiprocessing` to generate visualizations for all galaxies concurrently.
   - Implemented fully vectorized RLE decoding (`np.repeat`) and mask broadcasting.
@@ -68,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `src/analysis/sweep_scoring.py` — Sweep aggregation logic superseded by direct evaluation pipeline.
 - `scripts/sweep_automask_configs.py` — AutoMask sweep script replaced by integrated pipeline.
-- `scripts/build_dataset.py` — Replaced by `scripts/prepare_unified_dataset.py` + submodules.
+- `scripts/build_dataset.py` — Replaced by `scripts/data/prepare_unified_dataset.py` + submodules.
 - `configs/automask_sweep.yaml`, `configs/automask_sweep_2.yaml`, `configs/data_prep_sam2.yaml`, `configs/data_prep_sam3.yaml`, `configs/sweep_subset_5.yaml` — Obsolete configs.
 
 ## [0.4.1] - 2026-02-18
@@ -80,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `aspect_sym_boundary`: `cv2.fitEllipse` axis ratio (boundary-aware)
   - `curvature_ratio`: skeleton_length / ellipse_major (>1 = curved/bent structure)
   - `aspect_sym`: kept as backward-compat alias for `aspect_sym_moment`
-  - Updated in `src/analysis/mask_metrics.py`, `scripts/analyze_mask_stats.py`, `src/postprocess/satellite_prior_filter.py`
+  - Updated in `src/analysis/mask_metrics.py`, `scripts/analysis/analyze_mask_stats.py`, `src/postprocess/satellite_prior_filter.py`
   - Filter reads `aspect_sym_moment` first, falls back to `aspect_sym` for legacy compat
   - New deps: `opencv-python-headless`, `scikit-image` (lazy-imported)
 
@@ -89,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Unified Data Pipeline** for canonical ground truth generation
-  - `scripts/prepare_unified_dataset.py` - 4-phase pipeline (Render → GT → Satellites → Export)
+  - `scripts/data/prepare_unified_dataset.py` - 4-phase pipeline (Render → GT → Satellites → Export)
   - `configs/unified_data_prep.yaml` - Centralized configuration for all phases
   - **Phased Architecture**:
     - **Render**: Caches preprocessed images (linear, asinh, multi-exposure)

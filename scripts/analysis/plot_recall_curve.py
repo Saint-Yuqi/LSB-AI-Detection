@@ -4,8 +4,8 @@ plot_recall_curve.py
 Generate Recall vs SB Threshold plots from SAM2 evaluation JSON.
 
 Usage:
-    python scripts/plot_recall_curve.py data/03_results/sam2_eval/iou_results_*.json
-    python scripts/plot_recall_curve.py --dir data/03_results/sam2_eval/
+    python scripts/analysis/plot_recall_curve.py data/03_results/sam2_eval/iou_results_*.json
+    python scripts/analysis/plot_recall_curve.py --dir data/03_results/sam2_eval/
 
 Output: recall_curve_{timestamp}.png saved to same directory as input JSON.
 """

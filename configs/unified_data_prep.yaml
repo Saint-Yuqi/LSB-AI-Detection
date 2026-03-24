@@ -3,9 +3,9 @@
 # 4-Phase Pipeline: render → gt → satellites → export
 #
 # Usage:
-#   python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
-#   python scripts/prepare_unified_dataset.py --config ... --phase render
-#   python scripts/prepare_unified_dataset.py --config ... --galaxies 11,13
+#   python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+#   python scripts/data/prepare_unified_dataset.py --config ... --phase render
+#   python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
 
 paths:
   firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"

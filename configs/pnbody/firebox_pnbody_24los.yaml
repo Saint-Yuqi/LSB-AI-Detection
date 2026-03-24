@@ -3,8 +3,8 @@
 # Each halo x 24 LOS -> magnitudes-Fbox-{gid}-losXX-VIS2.fits.gz
 #
 # Usage:
-#   python scripts/generate_pnbody_fits.py --config configs/pnbody/firebox_pnbody_24los.yaml
-#   python scripts/generate_pnbody_fits.py --config ... --galaxies 11,13  # smoke test
+#   python scripts/data/generate_pnbody_fits.py --config configs/pnbody/firebox_pnbody_24los.yaml
+#   python scripts/data/generate_pnbody_fits.py --config ... --galaxies 11,13  # smoke test
 
 halo_root: "data/01_raw/LSB_and_Satellites/FIREbox_ARRAKIHS_sample"
 halo_pattern: "pnbody_FB15N1024_old_1200_{galaxy_id:05d}_max_Rvir_325kpc.hdf5"

@@ -40,7 +40,7 @@ def load_area_target(
     if not stats_json.exists():
         warnings.warn(
             f"Stats not found: {stats_json}; using default area_target={_DEFAULT_AREA_TARGET}. "
-            "Run: python scripts/analyze_mask_stats.py",
+            "Run: python scripts/analysis/analyze_mask_stats.py",
             stacklevel=2,
         )
         return _DEFAULT_AREA_TARGET

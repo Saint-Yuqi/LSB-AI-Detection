@@ -2,24 +2,34 @@
 # ============================================================================
 # SAM3 Evaluation Sweep Launcher — sbatch to H100
 #
-# Usage:
-#   bash scripts/launch_eval_sweep.sh              # submit all
-#   bash scripts/launch_eval_sweep.sh --dry        # dry run (print sbatch cmds)
-#   bash scripts/launch_eval_sweep.sh --variant v3_noise_noaug_canary  # one variant
-#   bash scripts/launch_eval_sweep.sh --epochs 10 50 100              # selected epochs
+# Usage (from anywhere):
+#   bash scripts/cluster/launch_eval_sweep.sh              # submit all
+#   bash scripts/cluster/launch_eval_sweep.sh --dry        # dry run (print sbatch cmds)
+#   bash scripts/cluster/launch_eval_sweep.sh --variant v3_noise_noaug_canary
+#   bash scripts/cluster/launch_eval_sweep.sh --epochs 10 50 100
 #
 # Env:
-#   WALLTIME  — override per-job walltime (default 01:30:00)
-#   OUT_ROOT  — override output root (default outputs/eval_sam3_sweep)
+#   REPO_ROOT — override repo path (default: auto from this script’s location)
+#   SWEEP_ROOT — checkpoint root (default: $REPO_ROOT/scratch/sweep_20260311)
+#   WALLTIME  — per-job walltime (default 06:00:00)
+#   OUT_ROOT  — eval output root under repo (default outputs/eval_sam3_sweep)
+#   CONDA_ENV — conda env name passed to the Slurm job (default sam3)
+#
+# Cluster portability:
+#   Edit scripts/cluster/eval_sweep.slurm (#SBATCH, module load, mail) for your site.
+#   The launcher only needs sbatch + paths to data/checkpoints under REPO_ROOT.
 # ============================================================================
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-SWEEP_ROOT="$PROJECT_ROOT/scratch/sweep_20260311"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SWEEP_ROOT="${SWEEP_ROOT:-$REPO_ROOT/scratch/sweep_20260311}"
 SLURM_TEMPLATE="$SCRIPT_DIR/eval_sweep.slurm"
 OUT_ROOT="${OUT_ROOT:-outputs/eval_sam3_sweep}"
+CONDA_ENV="${CONDA_ENV:-sam3}"
+
+cd "$REPO_ROOT"
 WALLTIME="${WALLTIME:-06:00:00}"
 
 ALL_VARIANTS=("v3_noise_noaug_canary" "v4_noise_aug_canary")
@@ -51,7 +61,7 @@ while [ $# -gt 0 ]; do
             done
             ;;
         --help|-h)
-            head -12 "$0" | tail -8
+            head -22 "$0" | tail -16
             exit 0
             ;;
         *)
@@ -70,10 +80,12 @@ SKIPPED=0
 
 echo "============================================"
 echo "SAM3 Eval Sweep Launcher"
+echo "Repo:     $REPO_ROOT"
 echo "Variants: ${VARIANTS[*]}"
 echo "Epochs:   ${EPOCHS[*]} + final"
 echo "Walltime: $WALLTIME"
 echo "Output:   $OUT_ROOT"
+echo "Conda:    $CONDA_ENV"
 echo "============================================"
 
 submit_job() {
@@ -90,18 +102,19 @@ submit_job() {
     local eval_name="${variant}__${epoch_label}"
     local out_dir="${OUT_ROOT}/${variant}/${epoch_label}"
 
+    # REPO_ROOT + CONDA_ENV so the batch script does not depend on hardcoded paths.
     SBATCH_ARGS=(
         "--job-name=eval_${eval_name}"
         "--output=logs/sweep/eval_${eval_name}_%j.out"
         "--error=logs/sweep/eval_${eval_name}_%j.err"
         "--time=${WALLTIME}"
-        "--export=ALL,EVAL_NAME=${eval_name},CHECKPOINT=${ckpt_file},OUTPUT_DIR=${out_dir}"
+        "--export=ALL,EVAL_NAME=${eval_name},CHECKPOINT=${ckpt_file},OUTPUT_DIR=${out_dir},REPO_ROOT=${REPO_ROOT},CONDA_ENV=${CONDA_ENV}"
     )
 
     echo ""
     echo "--- ${variant} / ${epoch_label} ---"
-    echo "  Checkpoint: ${ckpt_file}"
-    echo "  Output:     ${out_dir}"
+    echo "  Checkpoint: $ckpt_file"
+    echo "  Output:     $out_dir"
 
     if [ "$DRY_RUN" = true ]; then
         printf '  [DRY RUN] sbatch'

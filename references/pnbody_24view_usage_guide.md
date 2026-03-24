@@ -17,16 +17,16 @@ Step 3: 合并到训练集                           (build_training_dataset.py)
 
 ```bash
 # 全量运行（184 halo × 24 LOS = 4416 FITS）
-python scripts/generate_pnbody_fits.py \
+python scripts/data/generate_pnbody_fits.py \
   --config configs/pnbody/firebox_pnbody_24los.yaml
 
 # Smoke test（仅 2 个 halo）
-python scripts/generate_pnbody_fits.py \
+python scripts/data/generate_pnbody_fits.py \
   --config configs/pnbody/firebox_pnbody_24los.yaml \
   --galaxies 11,13
 
 # Dry run（只打印命令，不执行）
-python scripts/generate_pnbody_fits.py \
+python scripts/data/generate_pnbody_fits.py \
   --config configs/pnbody/firebox_pnbody_24los.yaml \
   --galaxies 11 \
   --dry-run
@@ -48,21 +48,21 @@ python scripts/generate_pnbody_fits.py \
 
 ```bash
 # 全量运行 4 个阶段（render → [gt=skip] → inference → export）
-python scripts/prepare_unified_dataset.py \
+python scripts/data/prepare_unified_dataset.py \
   --config configs/unified_data_prep_pnbody.yaml
 
 # 只跑推理阶段（已有 render 产物的情况下）
-python scripts/prepare_unified_dataset.py \
+python scripts/data/prepare_unified_dataset.py \
   --config configs/unified_data_prep_pnbody.yaml \
   --phase inference
 
 # Smoke test：仅处理 2 个 galaxy
-python scripts/prepare_unified_dataset.py \
+python scripts/data/prepare_unified_dataset.py \
   --config configs/unified_data_prep_pnbody.yaml \
   --galaxies 11,13
 
 # 强制重跑全部变体
-python scripts/prepare_unified_dataset.py \
+python scripts/data/prepare_unified_dataset.py \
   --config configs/unified_data_prep_pnbody.yaml \
   --force
 ```
@@ -89,11 +89,11 @@ python scripts/prepare_unified_dataset.py \
 
 ```bash
 # 标准分割（DR1 gold 数据）
-python scripts/split_annotations.py \
+python scripts/data/split_annotations.py \
   --annotations data/02_processed/sam3_prepared/annotations.json
 
 # PNbody 伪标签分割（使用 --output-prefix 和 --reuse-manifest）
-python scripts/split_annotations.py \
+python scripts/data/split_annotations.py \
   --annotations data/02_processed/sam3_prepared/annotations_pnbody_pseudo.json \
   --reuse-manifest data/02_processed/sam3_prepared/split_manifest.json \
   --output-prefix annotations_pnbody_pseudo
@@ -114,7 +114,7 @@ python scripts/split_annotations.py \
 
 ```bash
 # Gold + PNbody pseudo → annotations_train_active.json
-python scripts/build_training_dataset.py \
+python scripts/data/build_training_dataset.py \
   --include gold:data/02_processed/sam3_prepared/annotations_train_noise_augmented.json \
   --include pnbody_pseudo:data/02_processed/sam3_prepared/annotations_pnbody_pseudo_train.json \
   --output data/02_processed/sam3_prepared/annotations_train_active.json \
@@ -236,23 +236,23 @@ conda run -n sam3 python -m pytest tests/test_dataset_keys.py tests/test_artifac
 
 ```bash
 # 0. 生成 FITS（dry-run 验证）
-python scripts/generate_pnbody_fits.py \
+python scripts/data/generate_pnbody_fits.py \
   --config configs/pnbody/firebox_pnbody_24los.yaml \
   --galaxies 11 --dry-run
 
 # 1. 准备数据（render + pseudo-label + export）
-python scripts/prepare_unified_dataset.py \
+python scripts/data/prepare_unified_dataset.py \
   --config configs/unified_data_prep_pnbody.yaml \
   --galaxies 11
 
 # 2. 分割伪标签（复用已有 manifest）
-python scripts/split_annotations.py \
+python scripts/data/split_annotations.py \
   --annotations data/02_processed/sam3_prepared/annotations_pnbody_pseudo.json \
   --reuse-manifest data/02_processed/sam3_prepared/split_manifest.json \
   --output-prefix annotations_pnbody_pseudo
 
 # 3. 合并训练集
-python scripts/build_training_dataset.py \
+python scripts/data/build_training_dataset.py \
   --include gold:data/02_processed/sam3_prepared/annotations_train_noise_augmented.json \
   --include pnbody_pseudo:data/02_processed/sam3_prepared/annotations_pnbody_pseudo_train.json \
   --output data/02_processed/sam3_prepared/annotations_train_active.json \

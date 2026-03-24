@@ -2,8 +2,8 @@
 Batch-generate noise-injected FITS from clean SB magnitude maps.
 
 Usage:
-    python scripts/generate_noisy_fits.py --config configs/noise_profiles.yaml
-    python scripts/generate_noisy_fits.py --config ... --galaxies 11,13 --profiles snr10
+    python scripts/data/generate_noisy_fits.py --config configs/noise_profiles.yaml
+    python scripts/data/generate_noisy_fits.py --config ... --galaxies 11,13 --profiles snr10
 
 Env:
     Requires: numpy, astropy, pyyaml
@@ -27,7 +27,7 @@ import yaml
 from astropy.io import fits
 
 # Resolve project root so `src` is importable
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.noise.forward_observation import ForwardObservationModel

@@ -9,12 +9,12 @@ Unified Dataset Preparation Pipeline
     export     -> SAM2 symlinks + SAM3 annotations.json
 
 Usage:
-    python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
-    python scripts/prepare_unified_dataset.py --config ... --phase inference
-    python scripts/prepare_unified_dataset.py --config ... --phase satellites  # alias
-    python scripts/prepare_unified_dataset.py --config ... --galaxies 11,13
-    python scripts/prepare_unified_dataset.py --config ... --force
-    python scripts/prepare_unified_dataset.py --config ... --force-variants asinh_stretch
+    python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+    python scripts/data/prepare_unified_dataset.py --config ... --phase inference
+    python scripts/data/prepare_unified_dataset.py --config ... --phase satellites  # alias
+    python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
+    python scripts/data/prepare_unified_dataset.py --config ... --force
+    python scripts/data/prepare_unified_dataset.py --config ... --force-variants asinh_stretch
 
 Env:
     CUDA, PyTorch with bf16 support for inference phase.
@@ -26,7 +26,7 @@ import logging
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

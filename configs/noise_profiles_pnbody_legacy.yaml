@@ -10,7 +10,7 @@
 #     magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz
 #
 # Example:
-#   conda run -n sam3 python scripts/generate_noisy_fits.py \
+#   conda run -n sam3 python scripts/data/generate_noisy_fits.py \
 #     --config configs/noise_profiles_pnbody_legacy.yaml
 
 paths:

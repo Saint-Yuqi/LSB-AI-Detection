@@ -325,7 +325,7 @@ class TestAggregateGroup:
 class TestVisualizeLegacyCompat:
     def test_legacy_combined_empty(self):
         """Legacy JSON → combined = empty dict, not streams proxy."""
-        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts" / "viz"))
 
         # Inline the extraction function to test it
         from visualize_eval_metrics import _extract_all_metrics

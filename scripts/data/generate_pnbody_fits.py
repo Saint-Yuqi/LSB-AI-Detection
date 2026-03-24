@@ -7,9 +7,9 @@ For each galaxy_id × LOS direction, calls ``mockimgs_sb_compute_images`` with
 ``magnitudes-Fbox-{gid}-los{nn}-VIS2.fits.gz`` file directly.
 
 Usage:
-    python scripts/generate_pnbody_fits.py --config configs/pnbody/firebox_pnbody_24los.yaml
-    python scripts/generate_pnbody_fits.py --config ... --galaxies 11,13
-    python scripts/generate_pnbody_fits.py --config ... --dry-run
+    python scripts/data/generate_pnbody_fits.py --config configs/pnbody/firebox_pnbody_24los.yaml
+    python scripts/data/generate_pnbody_fits.py --config ... --galaxies 11,13
+    python scripts/data/generate_pnbody_fits.py --config ... --dry-run
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 N_LOS = 24
 
 logger = logging.getLogger(__name__)

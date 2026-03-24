@@ -3,7 +3,7 @@
 # Efficiency: Single inference per unique image, multiple GT comparisons.
 # PRECISION: bf16 (Banned: fp32)
 #
-# Usage: python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
+# Usage: python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
 
 import json
 import pickle
@@ -18,7 +18,7 @@ import torch
 import yaml
 
 # Add project root to path
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data.io import load_image, load_mask, parse_sample_name

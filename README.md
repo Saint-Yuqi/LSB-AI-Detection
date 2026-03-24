@@ -168,18 +168,18 @@ git config core.hooksPath tools/githooks
 
 ```bash
 # 1. Full unified pipeline (Render → GT → Inference → Export)
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
 # 2. Noise augmentation
-python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
-python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
+python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
 
 # 3. Galaxy-level train/val split
-python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
 
 # 4. Evaluate
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
-python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
+python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
 ```
 
 ---
@@ -250,7 +250,7 @@ python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
 Computes per-instance geometric statistics from canonical GT masks. Output drives all downstream filter thresholds.
 
 ```bash
-python scripts/analyze_mask_stats.py \
+python scripts/analysis/analyze_mask_stats.py \
     --gt_root data/02_processed/gt_canonical/current \
     --output_dir outputs/mask_stats
 ```
@@ -279,30 +279,30 @@ python scripts/analyze_mask_stats.py \
 Regenerate the distribution plots:
 
 ```bash
-python scripts/plot_mask_stats.py
+python scripts/analysis/plot_mask_stats.py
 ```
 
 </details>
 
 ### Phases 1–4 — Unified Data Preparation
 
-The main pipeline (`scripts/prepare_unified_dataset.py`) converts raw FITS data into training-ready datasets.
+The main pipeline (`scripts/data/prepare_unified_dataset.py`) converts raw FITS data into training-ready datasets.
 
 ```bash
 # Full pipeline (all 4 phases)
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
 # Run individual phases
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase render
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase gt
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase inference
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase export
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase render
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase gt
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase inference
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --phase export
 
 # Subset of galaxies
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --galaxies 11,13,19
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --galaxies 11,13,19
 
 # Force rebuild
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --force
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml --force
 ```
 
 | Phase | Action | Output |
@@ -318,13 +318,13 @@ Inject realistic observation noise using a forward model (SB → flux → counts
 
 ```bash
 # Generate noisy FITS at multiple SNR tiers
-python scripts/generate_noisy_fits.py --config configs/noise_profiles.yaml
+python scripts/data/generate_noisy_fits.py --config configs/noise_profiles.yaml
 
 # Render noisy FITS → PNG
-python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
+python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
 
 # Build noise-augmented COCO annotations
-python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
 ```
 
 ### Train/Val Split
@@ -332,7 +332,7 @@ python scripts/build_noise_augmented_annotations.py --config configs/unified_dat
 Galaxy-level splitting ensures no data leakage between train and validation:
 
 ```bash
-python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
 ```
 
 ### Model Evaluation
@@ -341,19 +341,19 @@ Type-aware evaluation computing metrics independently for streams and satellites
 
 ```bash
 # SAM3 evaluation
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
 
 # With overlays for visual inspection
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --save-overlays
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml --save-overlays
 
 # Per-galaxy aggregation
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --per-galaxy
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml --per-galaxy
 
 # Noise-tier evaluation
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --snr-tag snr10
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml --snr-tag snr10
 
 # Batch across all SNR tiers
-bash scripts/run_batch_eval.sh
+bash scripts/eval/run_batch_eval.sh
 ```
 
 ---
@@ -369,9 +369,9 @@ bash scripts/run_batch_eval.sh
 
 ```bash
 # Generate all visualizations
-python scripts/visualize_sam3.py
-python scripts/plot_mask_stats.py
-python scripts/visualize_eval_metrics.py \
+python scripts/viz/visualize_sam3.py
+python scripts/analysis/plot_mask_stats.py
+python scripts/viz/visualize_eval_metrics.py \
     --results-dirs outputs/eval_sam3 outputs/eval_sam3_snr50 outputs/eval_sam3_snr20 \
                    outputs/eval_sam3_snr10 outputs/eval_sam3_snr05 \
     --labels clean snr50 snr20 snr10 snr05
@@ -414,19 +414,33 @@ LSB-AI-Detection/
 │   ├── noise_profiles.yaml             #   Forward noise model SNR profiles
 │   └── sam3_dataset_split.yaml         #   Galaxy-level train/val split
 │
-├── scripts/                            # CLI entry points
-│   ├── prepare_unified_dataset.py      #   Main 4-phase data pipeline
-│   ├── evaluate_sam3.py                #   SAM3 type-aware evaluation
-│   ├── evaluate_sam2.py                #   SAM2 evaluation
-│   ├── analyze_mask_stats.py           #   GT instance statistics → thresholds
-│   ├── generate_noisy_fits.py          #   Forward noise FITS generation
-│   ├── render_noisy_fits.py            #   Render noisy FITS → PNG
-│   ├── build_noise_augmented_annotations.py  # Noise-aug COCO annotations
-│   ├── split_annotations.py            #   Galaxy-level train/val split
-│   ├── visualize_sam3.py               #   4-column grid visualization
-│   ├── plot_mask_stats.py              #   Shape metric boxplots
-│   ├── visualize_eval_metrics.py       #   Cross-SNR metric charts
-│   └── run_batch_eval*.sh              #   Batch evaluation wrappers
+├── scripts/                            # CLI entry points (by concern)
+│   ├── MODULE_DOC.md                   #   Script I/O + schema notes
+│   ├── data/                           #   Dataset build, noise FITS, splits
+│   │   ├── prepare_unified_dataset.py  #     Main 4-phase pipeline
+│   │   ├── generate_noisy_fits.py      #     Forward noise FITS
+│   │   ├── render_noisy_fits.py        #     Noisy FITS → PNG
+│   │   ├── build_noise_augmented_annotations.py
+│   │   ├── split_annotations.py        #     Galaxy-level train/val split
+│   │   ├── build_training_dataset.py   #     Merge / symlink COCO sources
+│   │   └── generate_pnbody_fits.py     #     PNbody → VIS2 FITS
+│   ├── eval/                           #   Model evaluation + local batch bash
+│   │   ├── evaluate_sam3.py            #     SAM3 type-aware evaluation
+│   │   ├── evaluate_sam2.py            #     SAM2 evaluation
+│   │   ├── run_batch_eval*.sh          #     Batch eval wrappers
+│   │   └── run_sweep_eval.sh           #     Checkpoint sweep (interactive / conda)
+│   ├── cluster/                        #   Slurm + site-specific HPC launcher
+│   │   ├── launch_eval_sweep.sh        #     sbatch wrapper (exports REPO_ROOT)
+│   │   └── eval_sweep.slurm            #     Multi-tier SAM3 eval job body
+│   ├── viz/                            #   Figures / QA grids
+│   │   ├── visualize_sam3.py           #     4-column grid visualization
+│   │   ├── visualize_eval_metrics.py   #     Cross-SNR metric charts
+│   │   ├── visualize_sam2.py
+│   │   └── overlay_masks_on_streams.py
+│   └── analysis/                       #   Stats from masks / eval JSON
+│       ├── analyze_mask_stats.py       #     GT instance statistics → thresholds
+│       ├── plot_mask_stats.py          #     Shape metric boxplots
+│       └── plot_recall_curve.py
 │
 ├── src/                                # Python source package
 │   ├── data/                           #   FITS I/O, preprocessing (asinh, linear, multi-exposure)

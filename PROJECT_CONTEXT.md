@@ -40,21 +40,34 @@ LSB-AI-Detection/
 │       ├── datareadme.md             # SAM2 vs SAM3 format comparison
 │       └── FIREbox-DR1_analysis.md
 │
-├── scripts/                          # Entry point scripts
-│   ├── prepare_unified_dataset.py    # Main 4-phase unified pipeline (thin CLI)
-│   ├── render_noisy_fits.py          # Render noisy FITS → PNG images
-│   ├── build_noise_augmented_annotations.py  # Noise-aug COCO annotations
-│   ├── build_training_dataset.py     # Build final training dataset
-│   ├── split_annotations.py          # Galaxy-level COCO train/val split
-│   ├── generate_noisy_fits.py        # Forward observation noise injection
-│   ├── evaluate_sam2.py              # SAM2 evaluation (canonical)
-│   ├── evaluate_sam3.py              # SAM3 evaluation (canonical)
-│   ├── analyze_mask_stats.py         # GT mask statistics analysis
-│   ├── plot_mask_stats.py            # Mask statistics plotting
-│   ├── visualize_sam3.py             # SAM3 dataset visualization
-│   ├── visualize_eval_metrics.py     # Evaluation metrics visualization
-│   ├── run_batch_eval.sh             # Batch evaluation wrapper
-│   └── run_batch_eval_type_aware.sh  # Type-aware batch eval wrapper
+├── scripts/                          # CLI entry points (data / eval / viz / analysis)
+│   ├── MODULE_DOC.md
+│   ├── data/                         # Dataset build, noise, splits
+│   │   ├── prepare_unified_dataset.py
+│   │   ├── render_noisy_fits.py
+│   │   ├── build_noise_augmented_annotations.py
+│   │   ├── build_training_dataset.py
+│   │   ├── split_annotations.py
+│   │   ├── generate_noisy_fits.py
+│   │   └── generate_pnbody_fits.py
+│   ├── eval/                         # Evaluation + local batch bash
+│   │   ├── evaluate_sam2.py
+│   │   ├── evaluate_sam3.py
+│   │   ├── run_batch_eval.sh
+│   │   ├── run_batch_eval_type_aware.sh
+│   │   └── run_sweep_eval.sh
+│   ├── cluster/                      # Slurm jobs (site-specific headers)
+│   │   ├── launch_eval_sweep.sh
+│   │   └── eval_sweep.slurm
+│   ├── viz/
+│   │   ├── visualize_sam3.py
+│   │   ├── visualize_eval_metrics.py
+│   │   ├── visualize_sam2.py
+│   │   └── overlay_masks_on_streams.py
+│   └── analysis/
+│       ├── analyze_mask_stats.py
+│       ├── plot_mask_stats.py
+│       └── plot_recall_curve.py
 │
 ├── src/                              # Source code package
 │   ├── data/                         # Data loading & preprocessing
@@ -125,7 +138,7 @@ LSB-AI-Detection/
 
 ## Code Skeleton
 
-### `scripts/prepare_unified_dataset.py`
+### `scripts/data/prepare_unified_dataset.py`
 ```python
 def run_render_phase(config, base_keys, logger):
     """Phase 1: Generate & cache rendered images (linear, asinh, etc.)."""
@@ -386,16 +399,16 @@ pip install -r requirements.txt
 git config core.hooksPath tools/githooks
 
 # 1. Unified Pipeline (Recommended)
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
 # 2. Noise augmentation
-python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
-python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
+python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
 
 # 3. Train/val split
-python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
 
 # 4. Evaluate
-python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
+python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
 ```

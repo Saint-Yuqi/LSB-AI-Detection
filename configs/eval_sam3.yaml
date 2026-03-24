@@ -1,8 +1,8 @@
 # SAM3 Evaluation Config
 # ======================
 # Usage:
-#   python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
-#   python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml --max-samples 5
+#   python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
+#   python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml --max-samples 5
 
 paths:
   render_dir: "data/02_processed/renders/current/asinh_stretch"

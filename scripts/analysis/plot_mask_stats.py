@@ -5,7 +5,7 @@ Generates:
 2. mask_stats_trends.png: Trends of median metrics over SB thresholds.
 
 Usage:
-    python scripts/plot_mask_stats.py
+    python scripts/analysis/plot_mask_stats.py
 """
 
 import pandas as pd

@@ -5,7 +5,7 @@ Reads eval_results_*.json (latest by timestamp) from each results directory
 and produces comparison charts for streams, satellites, and combined metrics.
 
 Usage:
-    python scripts/visualize_eval_metrics.py \
+    python scripts/viz/visualize_eval_metrics.py \
         --results-dirs outputs/eval_sam3 outputs/eval_sam3_snr05 \
                        outputs/eval_sam3_snr10 outputs/eval_sam3_snr20 outputs/eval_sam3_snr50 \
         --labels clean snr05 snr10 snr20 snr50 \

@@ -3,7 +3,7 @@
 Analyze instance mask statistics from canonical GT masks (unified pipeline).
 
 Usage:
-    conda run -n sam2 --no-capture-output python scripts/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
+    conda run -n sam2 --no-capture-output python scripts/analysis/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
 
 Args:
     --gt_root: Root directory of canonical GT (default: data/02_processed/gt_canonical/current)
@@ -28,7 +28,7 @@ import re
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -285,11 +285,11 @@ def main():
 
     gt_root = args.gt_root
     if not gt_root.is_absolute():
-        gt_root = Path(__file__).parent.parent / gt_root
+        gt_root = Path(__file__).resolve().parents[2] / gt_root
 
     output_dir = args.output_dir
     if not output_dir.is_absolute():
-        output_dir = Path(__file__).parent.parent / output_dir
+        output_dir = Path(__file__).resolve().parents[2] / output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Scanning masks from: {gt_root}")

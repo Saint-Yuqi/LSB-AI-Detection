@@ -6,11 +6,15 @@
 # evaluate on clean data, write to checkpoint-tagged output dirs.
 #
 # Usage:
-#   conda run -n sam3 --no-capture-output bash scripts/run_sweep_eval.sh
+#   conda run -n sam3 --no-capture-output bash scripts/eval/run_sweep_eval.sh
 #
 # Failure strategy: continue-on-error (matches run_batch_eval_type_aware.sh).
 # Failed runs are logged to stdout but do not block subsequent checkpoints.
 # ============================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$REPO_ROOT"
 
 SWEEP_ROOT="scratch/sweep_20260311"
 CONFIG="configs/eval_sam3.yaml"
@@ -37,7 +41,7 @@ for variant in "${VARIANTS[@]}"; do
     echo "====== $variant / epoch_${epoch} ======"
     TOTAL=$((TOTAL + 1))
 
-    python scripts/evaluate_sam3.py \
+    python scripts/eval/evaluate_sam3.py \
         --config "$CONFIG" \
         --checkpoint "$CKPT_FILE" \
         --output-dir "$OUT_DIR" \
@@ -57,7 +61,7 @@ for variant in "${VARIANTS[@]}"; do
   echo "====== $variant / final ======"
   TOTAL=$((TOTAL + 1))
 
-  python scripts/evaluate_sam3.py \
+  python scripts/eval/evaluate_sam3.py \
       --config "$CONFIG" \
       --checkpoint "$CKPT_FILE" \
       --output-dir "$OUT_DIR" \

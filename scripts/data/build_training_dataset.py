@@ -7,17 +7,17 @@ Multiple sources -> merge mode (concatenate + renumber + tag dataset_source).
 
 Usage:
     # Noise-augmented (symlink mode)
-    python scripts/build_training_dataset.py \
+    python scripts/data/build_training_dataset.py \
       --include noise_aug:data/02_processed/sam3_prepared/annotations_train_noise_augmented.json \
       --output data/02_processed/sam3_prepared/annotations_train_active.json
 
     # Clean-only (symlink mode)
-    python scripts/build_training_dataset.py \
+    python scripts/data/build_training_dataset.py \
       --include clean:data/02_processed/sam3_prepared/annotations_train.json \
       --output data/02_processed/sam3_prepared/annotations_train_active.json
 
     # Multi-source (merge mode)
-    python scripts/build_training_dataset.py \
+    python scripts/data/build_training_dataset.py \
       --include clean:annotations_train.json \
       --include betterdata:annotations_train_betterdata.json \
       --output annotations_train_active.json
@@ -32,7 +32,7 @@ import argparse
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

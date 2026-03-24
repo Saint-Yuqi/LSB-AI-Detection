@@ -26,7 +26,6 @@ from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 
 
 # ── 1. Config loading ────────────────────────────────────────────────────
@@ -207,7 +206,7 @@ class TestGeneratePnbodyFits:
         result = subprocess.run(
             [
                 sys.executable,
-                str(PROJECT_ROOT / "scripts" / "generate_pnbody_fits.py"),
+                str(PROJECT_ROOT / "scripts" / "data" / "generate_pnbody_fits.py"),
                 "--config", str(PROJECT_ROOT / "configs" / "pnbody" / "firebox_pnbody_24los.yaml"),
                 "--galaxies", "11",
                 "--dry-run",
@@ -258,7 +257,7 @@ class TestSplitAnnotationsPrefix:
         result = subprocess.run(
             [
                 sys.executable,
-                str(PROJECT_ROOT / "scripts" / "split_annotations.py"),
+                str(PROJECT_ROOT / "scripts" / "data" / "split_annotations.py"),
                 "--annotations", str(ann_path),
                 "--output-dir", str(tmp_path),
                 "--output-prefix", "annotations_pnbody_pseudo",

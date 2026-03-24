@@ -8,7 +8,7 @@ Layout: 4 Columns grid.
 - Rows: Preprocessing variants (e.g., asinh_stretch, linear_magnitude)
 
 Usage:
-    python scripts/visualize_sam3.py [--max N] [--galaxy NAME] [--num_proc N]
+    python scripts/viz/visualize_sam3.py [--max N] [--galaxy NAME] [--num_proc N]
 
 Environment:
     Requires PIL, numpy, multiprocessing.
@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw, ImageFont
 from collections import defaultdict
 
 # Add project root to path
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 import sys
 sys.path.insert(0, str(PROJECT_ROOT))
 from src.utils.coco_utils import decode_rle

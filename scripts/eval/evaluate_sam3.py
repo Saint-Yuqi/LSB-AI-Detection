@@ -8,8 +8,8 @@ instance-level (optimal 1:1 matched IoU, instance recall) metrics.
 Outputs both raw and post-filtered results in a single run.
 
 Usage:
-    python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
-    python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml \\
+    python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
+    python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml \\
         --render-dir data/02_processed/renders/current/asinh_stretch \\
         --gt-dir data/02_processed/gt_canonical/current \\
         --max-samples 5 --save-overlays
@@ -26,7 +26,7 @@ Args:
 
 Env:
     CUDA, bf16 Ampere+. SAM3 package must be importable.
-    conda run -n lsb --no-capture-output python scripts/evaluate_model.py --help
+    conda run -n lsb --no-capture-output python scripts/eval/evaluate_model.py --help
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.evaluation.sam3_eval import (

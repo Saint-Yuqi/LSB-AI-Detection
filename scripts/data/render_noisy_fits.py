@@ -2,11 +2,11 @@
 Render noise-injected FITS to PNG using preprocessing variants from unified config.
 
 Usage:
-    python scripts/render_noisy_fits.py \
+    python scripts/data/render_noisy_fits.py \
         --noise-config configs/noise_profiles.yaml \
         --data-config configs/unified_data_prep.yaml
-    python scripts/render_noisy_fits.py ... --variants asinh_stretch linear_magnitude
-    python scripts/render_noisy_fits.py ... --profiles snr10 snr20
+    python scripts/data/render_noisy_fits.py ... --variants asinh_stretch linear_magnitude
+    python scripts/data/render_noisy_fits.py ... --profiles snr10 snr20
 
 Args:
     --noise-config : Path to noise_profiles.yaml (input FITS paths)
@@ -33,7 +33,7 @@ import numpy as np
 import yaml
 from astropy.io import fits
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.pipelines.unified_dataset.preprocessor_factory import create_preprocessor as _create_preprocessor

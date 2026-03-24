@@ -1,11 +1,13 @@
 scratch
+notebook_images/
 /data/
 !data/.gitkeep  
 
 .agent/
 .agent_rules/
 .cursor/
-notebooks_images/
+.vscode/
+
 
 __pycache__/
 *.pyc

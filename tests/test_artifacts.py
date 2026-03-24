@@ -19,7 +19,7 @@ import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+sys.path.insert(0, str(PROJECT_ROOT / "scripts" / "data"))
 
 from prepare_unified_dataset import _save_predictions_json
 from src.utils.coco_utils import get_bbox_from_mask

@@ -1,5 +1,5 @@
 # SAM2 Evaluation Configuration
-# Used by: python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
+# Used by: python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
 # Note: CLI arguments override these values
 
 # ============================================================================

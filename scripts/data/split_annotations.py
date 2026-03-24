@@ -3,10 +3,10 @@
 Galaxy-level train/val split for COCO annotations.
 
 Usage:
-    python scripts/split_annotations.py
-    python scripts/split_annotations.py --annotations path/to/annotations.json
-    python scripts/split_annotations.py --train-ratio 0.8 --seed 42
-    python scripts/split_annotations.py --reuse-manifest path/to/split_manifest.json
+    python scripts/data/split_annotations.py
+    python scripts/data/split_annotations.py --annotations path/to/annotations.json
+    python scripts/data/split_annotations.py --train-ratio 0.8 --seed 42
+    python scripts/data/split_annotations.py --reuse-manifest path/to/split_manifest.json
 
 Output:
     {output_dir}/annotations_train.json
@@ -20,7 +20,7 @@ import json
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

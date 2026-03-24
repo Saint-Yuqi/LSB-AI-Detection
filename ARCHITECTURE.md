@@ -16,16 +16,12 @@ LSB-AI-Detection/
 │   └── sam3_dataset_split.yaml       #   Galaxy-level train/val split
 ├── data/                             # Raw and processed datasets
 ├── docs/                             # Documentation (API and Datasets)
-├── scripts/                          # Entry point scripts
-│   ├── prepare_unified_dataset.py    #   Main data pipeline
-│   ├── render_noisy_fits.py          #   Render noisy FITS → PNG
-│   ├── build_noise_augmented_annotations.py  # Noise-aug COCO annotations
-│   ├── split_annotations.py          #   Galaxy-level train/val split
-│   ├── evaluate_sam2.py              #   SAM2 evaluation
-│   ├── evaluate_sam3.py              #   SAM3 evaluation
-│   ├── generate_noisy_fits.py        #   Forward noise FITS generation
-│   ├── analyze_mask_stats.py         #   GT mask statistics
-│   └── run_batch_eval*.sh            #   Batch evaluation wrappers
+├── scripts/                          # CLI entry points (data / eval / cluster / viz / analysis)
+│   ├── data/                         #   Dataset build, noise FITS, splits
+│   ├── eval/                         #   SAM2/SAM3 eval, local batch bash
+│   ├── cluster/                      #   Slurm templates + sbatch launcher (site-specific)
+│   ├── viz/                          #   QA grids and metric figures
+│   └── analysis/                     #   Mask stats and recall curves
 ├── src/                              # Source code package
 │   ├── analysis/                     #   Mask geometric metrics
 │   ├── data/                         #   Data loading & preprocessing
@@ -83,16 +79,16 @@ pip install -r requirements.txt
 git config core.hooksPath tools/githooks
 
 # 1. Unified Pipeline (Recommended)
-python scripts/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
 # 2. Noise augmentation
-python scripts/render_noisy_fits.py --config configs/unified_data_prep.yaml
-python scripts/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
+python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
 
 # 3. Train/val split
-python scripts/split_annotations.py --config configs/sam3_dataset_split.yaml
+python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
 
 # 4. Evaluate
-python scripts/evaluate_sam2.py --config configs/eval_sam2.yaml
-python scripts/evaluate_sam3.py --config configs/eval_sam3.yaml
+python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
+python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
 ```
