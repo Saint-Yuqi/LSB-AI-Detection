@@ -135,7 +135,7 @@ def parse_sample_name(name: str) -> Optional[dict]:
         
         Returns None if name doesn't match expected pattern.
     """
-    pattern = r'^(\d+)_([ef]o)_SB([\d.]+)_(streams|satellites)$'
+    pattern = r'^(\d+)_([^_]+)_SB([\d.]+)_(streams|satellites)$'
     match = re.match(pattern, name)
     
     if match:

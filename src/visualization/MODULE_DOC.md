@@ -52,6 +52,13 @@
   - `predictions: List[dict]` — each with `segmentation`, optional `type_label`, `predicted_iou`, `bbox`
 - **Output:** `None` — writes QA overlay PNG with GT white contours and prediction semi-transparent fills.
 
+### `save_pseudo_label_overlay(path, image, predictions)`
+- **Input:**
+  - `path: Path`
+  - `image: np.ndarray` — shape `(H, W, 3)`, dtype `np.uint8`
+  - `predictions: List[dict]` — each with `segmentation`, optional `type_label`, `predicted_iou`, `bbox`
+- **Output:** `None` — writes prediction-only QA overlay PNG for pseudo-label workflows (no GT contour layer).
+
 ### `save_instance_overlay(path, image, instance_map)`
 - **Input:**
   - `path: Path`
@@ -61,9 +68,11 @@
 
 ## Invariants
 - **Output Format Contract:** All written files are 8-bit RGB PNG. Input arrays with incompatible dtype or shape raise `ValueError` before any file is created.
+- **Type-Aware Palette:** Evaluation and pseudo-label overlays use separate stream/satellite color cycles and annotate scores when `bbox` metadata is available.
 
 ## Produced Artifacts
 - Colored contour overlay `.png` files and multi-panel comparison `.png` figures written to caller-specified paths.
+- Prediction-only pseudo-label QA overlays written to caller-specified paths.
 
 ## Failure Modes
 - `ValueError`: Raised by `save_overlay` when `image.shape[:2] != segmentation.shape` for any mask in any input list.

@@ -65,7 +65,7 @@ def discover_pairs(
     render_dir = Path(render_dir)
     gt_dir = Path(gt_dir)
 
-    pattern = re.compile(r"^(\d+)_(eo|fo)$")
+    pattern = re.compile(r"^(\d+)_([^_]+)$")
     pairs: list[dict[str, Any]] = []
 
     for subdir in sorted(render_dir.iterdir()):
@@ -114,6 +114,7 @@ def discover_pairs(
         pairs.append({
             "base_key": subdir.name,
             "galaxy_id": int(m.group(1)),
+            "view_id": m.group(2),
             "orientation": m.group(2),
             "render_path": render_path,
             "gt_path": gt_path,

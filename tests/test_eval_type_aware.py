@@ -145,6 +145,18 @@ class TestDiscoverPairs:
         pairs = discover_pairs(render_root, gt_root)
         assert len(pairs) == 0
 
+    def test_los_view_discovery(self, tmp_path):
+        """discover_pairs accepts losNN view tokens via widened regex."""
+        render_root = tmp_path / "renders"
+        gt_root = tmp_path / "gt"
+        _make_render_dir(render_root, "00011_los05")
+        _make_gt_dir(gt_root, "00011_los05", full_mode=True)
+
+        pairs = discover_pairs(render_root, gt_root)
+        assert len(pairs) == 1
+        assert pairs[0]["view_id"] == "los05"
+        assert pairs[0]["galaxy_id"] == 11
+
 
 # ---------------------------------------------------------------------------
 # GT Type Split Tests

@@ -36,6 +36,7 @@ def _make_coco(prefix="a", n_images=3, n_anns_per_image=2, start_id=1):
             "width": 64,
             "height": 64,
             "galaxy_id": 10 + i,
+            "view_id": "eo",
             "orientation": "eo",
             "variant": "asinh_stretch",
             "base_key": f"{10 + i:05d}_eo",
@@ -173,3 +174,48 @@ class TestCompose:
 
         for img in through_symlink["images"]:
             assert "dataset_source" not in img
+
+    def test_compose_gold_and_pnbody_pseudo(self, tmp_path):
+        """Merge gold + pnbody_pseudo; verify dataset_source and image count."""
+        gold = _make_coco(prefix="gold", n_images=3)
+        pseudo_imgs = []
+        pseudo_anns = []
+        for i in range(2):
+            pseudo_imgs.append({
+                "id": i + 1,
+                "file_name": f"images/pnbody_{i:04d}.png",
+                "width": 64, "height": 64,
+                "galaxy_id": 100 + i,
+                "view_id": f"los{i:02d}",
+                "orientation": f"los{i:02d}",
+                "variant": "linear_magnitude",
+                "base_key": f"{100 + i:05d}_los{i:02d}",
+                "snr_tag": "clean",
+            })
+            pseudo_anns.append({
+                "id": i + 1, "image_id": i + 1,
+                "category_id": 1,
+                "segmentation": {"size": [64, 64], "counts": "xyz"},
+                "bbox": [0, 0, 5, 5], "area": 25, "iscrowd": 0,
+            })
+        pseudo = {
+            "info": {"description": "pnbody pseudo"},
+            "images": pseudo_imgs,
+            "annotations": pseudo_anns,
+            "categories": gold["categories"],
+        }
+
+        path_gold = _write_coco(tmp_path, "gold.json", gold)
+        path_pseudo = _write_coco(tmp_path, "pseudo.json", pseudo)
+        output = tmp_path / "active.json"
+
+        compose_training_coco(
+            sources=[("gold", path_gold), ("pnbody_pseudo", path_pseudo)],
+            output_path=output,
+            force=True,
+        )
+
+        merged = json.loads(output.read_text())
+        assert len(merged["images"]) == 5  # 3 gold + 2 pseudo
+        sources_seen = {img["dataset_source"] for img in merged["images"]}
+        assert sources_seen == {"gold", "pnbody_pseudo"}

@@ -172,7 +172,7 @@ class TestCocoAnnotationCounts:
             "data_sources": {"streams": {}},
             "processing": {"target_size": [H, W]},
             "preprocessing_variants": variants,
-            "data_selection": {"galaxy_ids": [11], "orientations": ["eo"]},
+            "data_selection": {"galaxy_ids": [11], "views": ["eo"]},
         }
         logger = logging.getLogger("test")
         run_export_phase(config, keys, logger)
@@ -195,7 +195,7 @@ class TestCocoAnnotationCounts:
             "data_sources": {"streams": {}},
             "processing": {"target_size": [H, W]},
             "preprocessing_variants": variants,
-            "data_selection": {"galaxy_ids": [11], "orientations": ["eo"]},
+            "data_selection": {"galaxy_ids": [11], "views": ["eo"]},
         }
         logger = logging.getLogger("test")
         run_export_phase(config, keys, logger)
@@ -218,7 +218,7 @@ class TestCocoAnnotationCounts:
             "data_sources": {"streams": {}},
             "processing": {"target_size": [H, W]},
             "preprocessing_variants": variants,
-            "data_selection": {"galaxy_ids": [11], "orientations": ["eo"]},
+            "data_selection": {"galaxy_ids": [11], "views": ["eo"]},
         }
         logger = logging.getLogger("test")
         run_export_phase(config, keys, logger)
@@ -228,3 +228,47 @@ class TestCocoAnnotationCounts:
         )
         # ID 3 has 0 pixels, should be skipped
         assert len(coco["annotations"]) == 4  # 2 real instances x 2 variants
+
+
+class TestRasterizePseudoGt:
+    """Tests for rasterize_pseudo_gt and save_pseudo_gt."""
+
+    def test_round_trip(self, tmp_path):
+        from src.pipelines.unified_dataset.artifacts import rasterize_pseudo_gt, save_pseudo_gt
+
+        H, W = 64, 64
+        masks = [
+            {"segmentation": np.zeros((H, W), dtype=bool), "type_label": "streams"},
+            {"segmentation": np.zeros((H, W), dtype=bool), "type_label": "satellites"},
+        ]
+        masks[0]["segmentation"][5:15, 5:15] = True
+        masks[1]["segmentation"][30:40, 30:40] = True
+
+        imap, instances = rasterize_pseudo_gt(masks, H, W)
+        assert imap.dtype == np.uint8
+        assert set(np.unique(imap)) == {0, 1, 2}
+        assert len(instances) == 2
+        assert instances[0] == {"id": 1, "type": "streams"}
+        assert instances[1] == {"id": 2, "type": "satellites"}
+
+    def test_save_writes_files(self, tmp_path):
+        from src.pipelines.unified_dataset.artifacts import save_pseudo_gt
+
+        H, W = 64, 64
+        masks = [{"segmentation": np.ones((H, W), dtype=bool), "type_label": "streams"}]
+
+        gt_dir = tmp_path / "gt"
+        save_pseudo_gt(gt_dir, masks, H, W)
+
+        assert (gt_dir / "instance_map_uint8.png").exists()
+        assert (gt_dir / "instances.json").exists()
+
+        instances = json.loads((gt_dir / "instances.json").read_text())
+        assert len(instances) == 1
+
+    def test_empty_masks(self, tmp_path):
+        from src.pipelines.unified_dataset.artifacts import rasterize_pseudo_gt
+
+        imap, instances = rasterize_pseudo_gt([], 64, 64)
+        assert imap.max() == 0
+        assert instances == []

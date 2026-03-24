@@ -1,7 +1,13 @@
 """
-Phase 3 – SAM3 engine: text-prompt -> type-aware filter -> evaluate.
+Phase 3 – SAM3 engine: text-prompt -> type-aware filter -> evaluate / pseudo_label.
 
-Output: gt_canonical/current/{BaseKey}/sam3_predictions_{raw,post}.json + sam3_eval_overlay.png
+run_mode='evaluate'      (default) – requires GT streams_instance_map.npy,
+                          produces sam3_predictions_{raw,post}.json + sam3_eval_overlay.png
+run_mode='pseudo_label'  – no GT required; rasterises post-filtered masks into
+                          instance_map_uint8.png + instances.json and writes a
+                          pred-only QA overlay (sam3_pseudo_label_overlay.png).
+
+Output dir: gt_canonical/current/{BaseKey}/
 """
 from __future__ import annotations
 
@@ -19,8 +25,25 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 from .keys import BaseKey
 from .paths import PathResolver
-from .artifacts import save_predictions_json
-from src.visualization.overlay import save_evaluation_overlay
+from .artifacts import save_predictions_json, save_pseudo_gt
+from src.visualization.overlay import save_evaluation_overlay, save_pseudo_label_overlay
+
+_PSEUDO_LABEL_ARTIFACTS = [
+    "instance_map_uint8.png",
+    "instances.json",
+    "manifest.json",
+    "sam3_predictions_raw.json",
+    "sam3_predictions_post.json",
+    "sam3_pseudo_label_overlay.png",
+]
+
+
+def _pseudo_label_complete(gt_dir: Path) -> bool:
+    return all((gt_dir / f).exists() for f in _PSEUDO_LABEL_ARTIFACTS)
+
+
+def _evaluate_complete(gt_dir: Path) -> bool:
+    return (gt_dir / "sam3_predictions_raw.json").exists() and (gt_dir / "sam3_eval_overlay.png").exists()
 
 
 def run_inference_sam3(
@@ -30,7 +53,7 @@ def run_inference_sam3(
     force: bool = False,
     force_variants: set[str] | None = None,
 ) -> None:
-    """SAM3 text-prompt -> type-aware filter -> evaluate (save JSON + overlay)."""
+    """SAM3 text-prompt -> type-aware filter -> evaluate or pseudo_label."""
     inf_cfg = config.get("inference_phase", {})
     input_variant = inf_cfg.get(
         "input_image_variant",
@@ -80,21 +103,20 @@ def run_inference_sam3(
     sat_prior_flt = SatellitePriorFilter(prior_cfg)
     sat_core_flt = CoreExclusionFilter(radius_frac=core_cfg.get("radius_frac", 0.08))
 
+    is_pseudo = run_mode == "pseudo_label"
     stats = {"processed": 0, "skipped_exists": 0, "skipped_no_render": 0, "skipped_no_streams": 0}
 
     for key in base_keys:
         gt_dir = resolver.get_gt_dir(key)
-        raw_json_path = gt_dir / "sam3_predictions_raw.json"
-        post_json_path = gt_dir / "sam3_predictions_post.json"
-        overlay_path = gt_dir / "sam3_eval_overlay.png"
 
         should_rebuild = force or (force_variants is not None)
-        if raw_json_path.exists() and overlay_path.exists():
+        already_done = _pseudo_label_complete(gt_dir) if is_pseudo else _evaluate_complete(gt_dir)
+
+        if already_done:
             if should_rebuild:
-                raw_json_path.unlink(missing_ok=True)
-                post_json_path.unlink(missing_ok=True)
-                overlay_path.unlink(missing_ok=True)
-                logger.info(f"Force rebuild SAM3 evaluate: {key}")
+                for art in (_PSEUDO_LABEL_ARTIFACTS if is_pseudo else ["sam3_predictions_raw.json", "sam3_predictions_post.json", "sam3_eval_overlay.png"]):
+                    (gt_dir / art).unlink(missing_ok=True)
+                logger.info(f"Force rebuild SAM3 {run_mode}: {key}")
             else:
                 stats["skipped_exists"] += 1
                 continue
@@ -105,17 +127,19 @@ def run_inference_sam3(
             stats["skipped_no_render"] += 1
             continue
 
-        streams_npy = gt_dir / "streams_instance_map.npy"
-        if not streams_npy.exists():
-            logger.warning(f"Streams map not found: {streams_npy}")
-            stats["skipped_no_streams"] += 1
-            continue
+        streams_map = None
+        if not is_pseudo:
+            streams_npy = gt_dir / "streams_instance_map.npy"
+            if not streams_npy.exists():
+                logger.warning(f"Streams map not found: {streams_npy}")
+                stats["skipped_no_streams"] += 1
+                continue
+            streams_map = np.load(streams_npy)
 
         gt_dir.mkdir(parents=True, exist_ok=True)
 
         image_pil = Image.open(render_path).convert("RGB")
         image_np = np.array(image_pil)
-        streams_map = np.load(streams_npy)
 
         masks, time_ms = runner.run(image_pil, prompts)
         logger.info(f"{key}: SAM3 returned {len(masks)} masks in {time_ms:.0f}ms")
@@ -123,7 +147,7 @@ def run_inference_sam3(
         if masks:
             append_metrics_to_masks(masks, H_work, W_work, compute_hull=True)
 
-        save_predictions_json(raw_json_path, masks, H_work, W_work,
+        save_predictions_json(gt_dir / "sam3_predictions_raw.json", masks, H_work, W_work,
                               engine="sam3", layer="raw")
 
         stream_masks = [m for m in masks if m.get("type_label") == "streams"]
@@ -139,16 +163,21 @@ def run_inference_sam3(
 
         post_masks = kept_streams + kept_sat_final
 
-        save_predictions_json(post_json_path, post_masks, H_work, W_work,
+        save_predictions_json(gt_dir / "sam3_predictions_post.json", post_masks, H_work, W_work,
                               engine="sam3", layer="post")
 
-        save_evaluation_overlay(overlay_path, image_np, streams_map, post_masks)
+        if is_pseudo:
+            save_pseudo_gt(gt_dir, post_masks, H_work, W_work)
+            save_pseudo_label_overlay(gt_dir / "sam3_pseudo_label_overlay.png", image_np, post_masks)
+        else:
+            save_evaluation_overlay(gt_dir / "sam3_eval_overlay.png", image_np, streams_map, post_masks)
 
         manifest_path = gt_dir / "manifest.json"
         manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
         manifest.update({
             "engine": "sam3",
             "run_mode": run_mode,
+            "gt_source": "none" if is_pseudo else "streams_instance_map",
             "sam3_n_raw": len(masks),
             "sam3_n_post": len(post_masks),
             "sam3_n_streams_kept": len(kept_streams),
@@ -162,4 +191,4 @@ def run_inference_sam3(
         if stats["processed"] % 10 == 0:
             logger.info(f"Progress: {stats['processed']}/{len(base_keys)}")
 
-    logger.info(f"SAM3 evaluate: {stats['processed']} processed, {stats['skipped_exists']} skipped")
+    logger.info(f"SAM3 {run_mode}: {stats['processed']} processed, {stats['skipped_exists']} skipped")

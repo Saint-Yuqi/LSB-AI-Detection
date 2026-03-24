@@ -23,19 +23,23 @@ from prepare_unified_dataset import BaseKey, VariantKey, generate_base_keys
 
 class TestBaseKey:
     def test_str_zero_pads_galaxy_id(self):
-        k = BaseKey(galaxy_id=11, orientation="eo")
+        k = BaseKey(galaxy_id=11, view_id="eo")
         assert str(k) == "00011_eo"
 
     def test_str_large_galaxy_id(self):
-        k = BaseKey(galaxy_id=99999, orientation="fo")
+        k = BaseKey(galaxy_id=99999, view_id="fo")
         assert str(k) == "99999_fo"
 
     def test_str_single_digit(self):
-        k = BaseKey(galaxy_id=3, orientation="eo")
+        k = BaseKey(galaxy_id=3, view_id="eo")
         assert str(k) == "00003_eo"
 
+    def test_str_los_view(self):
+        k = BaseKey(galaxy_id=11, view_id="los00")
+        assert str(k) == "00011_los00"
+
     def test_frozen(self):
-        k = BaseKey(galaxy_id=11, orientation="eo")
+        k = BaseKey(galaxy_id=11, view_id="eo")
         with pytest.raises(AttributeError):
             k.galaxy_id = 12
 
@@ -45,18 +49,24 @@ class TestBaseKey:
         assert a == b
         assert hash(a) == hash(b)
         assert a != BaseKey(11, "fo")
+        assert a != BaseKey(11, "los00")
 
 
 class TestVariantKey:
     def test_str_format(self):
-        bk = BaseKey(galaxy_id=13, orientation="fo")
+        bk = BaseKey(galaxy_id=13, view_id="fo")
         vk = VariantKey(base_key=bk, preprocessing="asinh_stretch")
         assert str(vk) == "00013_fo_asinh_stretch"
 
     def test_str_multi_exposure(self):
-        bk = BaseKey(galaxy_id=7, orientation="eo")
+        bk = BaseKey(galaxy_id=7, view_id="eo")
         vk = VariantKey(base_key=bk, preprocessing="multi_exposure")
         assert str(vk) == "00007_eo_multi_exposure"
+
+    def test_str_los_view(self):
+        bk = BaseKey(galaxy_id=11, view_id="los05")
+        vk = VariantKey(base_key=bk, preprocessing="linear_magnitude")
+        assert str(vk) == "00011_los05_linear_magnitude"
 
 
 class TestGenerateBaseKeys:
@@ -65,18 +75,18 @@ class TestGenerateBaseKeys:
         return {
             "data_selection": {
                 "galaxy_ids": [11, 13, 15, 17],
-                "orientations": ["eo", "fo"],
+                "views": ["eo", "fo"],
             }
         }
 
     def test_all_keys(self, config):
         keys = generate_base_keys(config)
-        assert len(keys) == 8  # 4 galaxies x 2 orientations
+        assert len(keys) == 8  # 4 galaxies x 2 views
         assert all(isinstance(k, BaseKey) for k in keys)
 
     def test_galaxy_filter(self, config):
         keys = generate_base_keys(config, galaxy_filter=[11, 17])
-        assert len(keys) == 4  # 2 galaxies x 2 orientations
+        assert len(keys) == 4  # 2 galaxies x 2 views
         galaxy_ids = {k.galaxy_id for k in keys}
         assert galaxy_ids == {11, 17}
 
@@ -88,8 +98,31 @@ class TestGenerateBaseKeys:
         keys = generate_base_keys(config, galaxy_filter=None)
         assert len(keys) == 8
 
-    def test_order_galaxy_first_then_orientation(self, config):
+    def test_order_galaxy_first_then_view(self, config):
         keys = generate_base_keys(config)
         assert str(keys[0]) == "00011_eo"
         assert str(keys[1]) == "00011_fo"
         assert str(keys[2]) == "00013_eo"
+
+    def test_legacy_orientations_compat(self):
+        """data_selection.orientations still works with deprecation warning."""
+        import warnings
+        config = {
+            "data_selection": {
+                "galaxy_ids": [11],
+                "orientations": ["eo", "fo"],
+            }
+        }
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            keys = generate_base_keys(config)
+            assert len(keys) == 2
+            assert any("deprecated" in str(warning.message).lower() for warning in w)
+
+    def test_24_view_keys(self):
+        views = [f"los{i:02d}" for i in range(24)]
+        config = {"data_selection": {"galaxy_ids": [11], "views": views}}
+        keys = generate_base_keys(config)
+        assert len(keys) == 24
+        assert str(keys[0]) == "00011_los00"
+        assert str(keys[23]) == "00011_los23"

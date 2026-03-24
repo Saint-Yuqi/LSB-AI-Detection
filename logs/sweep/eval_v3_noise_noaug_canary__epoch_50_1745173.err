@@ -1,0 +1,357 @@
+/shares/feldmann.ics.mnf.uzh/Yuqi/sam3/sam3/model_builder.py:8: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+INFO:evaluate_model:Checkpoint: /home/yuqyan/Yuqi/LSB-AI-Detection/scratch/sweep_20260311/v3_noise_noaug_canary/checkpoints/checkpoint_50.pt
+INFO:evaluate_model:[1/70] 00011_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6626 matched_iou=0.6853 inst_recall=0.2857 n_pred=7
+INFO:evaluate_model:  satellites.raw: dice=0.7641 matched_iou=0.7648 inst_recall=1.0000 n_pred=34
+INFO:evaluate_model:    combined.raw: dice=0.7015 matched_iou=0.7549 inst_recall=0.7907 n_pred=41
+INFO:evaluate_model:[2/70] 00011_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.2537 matched_iou=0.6151 inst_recall=0.1429 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.6159 matched_iou=0.7427 inst_recall=0.8636 n_pred=27
+INFO:evaluate_model:    combined.raw: dice=0.3922 matched_iou=0.7217 inst_recall=0.6111 n_pred=29
+INFO:evaluate_model:[3/70] 00013_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.2938 matched_iou=0.7267 inst_recall=0.3333 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.6869 matched_iou=0.7828 inst_recall=0.8571 n_pred=21
+INFO:evaluate_model:    combined.raw: dice=0.3740 matched_iou=0.7785 inst_recall=0.7647 n_pred=22
+INFO:evaluate_model:[4/70] 00013_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5319 matched_iou=0.6719 inst_recall=0.4000 n_pred=6
+INFO:evaluate_model:  satellites.raw: dice=0.6022 matched_iou=0.7134 inst_recall=0.8125 n_pred=18
+INFO:evaluate_model:    combined.raw: dice=0.5441 matched_iou=0.7079 inst_recall=0.7143 n_pred=24
+INFO:evaluate_model:[5/70] 00019_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00019_eo: GT ID mismatch — map_only=set(), json_only={36}, evaluating with intersection (44 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.0921 matched_iou=0.0000 inst_recall=0.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.6214 matched_iou=0.7864 inst_recall=0.8214 n_pred=33
+INFO:evaluate_model:    combined.raw: dice=0.2789 matched_iou=0.7864 inst_recall=0.5227 n_pred=34
+WARNING:src.evaluation.sam3_eval:00019_eo: GT ID mismatch — map_only=set(), json_only={36}, evaluating with intersection (44 IDs)
+INFO:evaluate_model:[6/70] 00019_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.3508 matched_iou=0.0000 inst_recall=0.0000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.6357 matched_iou=0.7538 inst_recall=0.8500 n_pred=23
+INFO:evaluate_model:    combined.raw: dice=0.4785 matched_iou=0.7538 inst_recall=0.7391 n_pred=25
+INFO:evaluate_model:[7/70] 00022_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.4923 matched_iou=0.7979 inst_recall=0.3333 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.7982 matched_iou=0.8033 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.5322 matched_iou=0.8018 inst_recall=0.6364 n_pred=9
+INFO:evaluate_model:[8/70] 00022_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7966 matched_iou=0.6692 inst_recall=0.7500 n_pred=7
+INFO:evaluate_model:  satellites.raw: dice=0.5533 matched_iou=0.7004 inst_recall=0.6667 n_pred=8
+INFO:evaluate_model:    combined.raw: dice=0.7748 matched_iou=0.6817 inst_recall=0.7143 n_pred=15
+INFO:evaluate_model:[9/70] 00024_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.3726 matched_iou=0.0000 inst_recall=0.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.6238 matched_iou=0.7633 inst_recall=0.8000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.4084 matched_iou=0.7633 inst_recall=0.4000 n_pred=7
+INFO:evaluate_model:[10/70] 00024_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5137 matched_iou=0.0000 inst_recall=0.0000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.4318 matched_iou=0.6419 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.4972 matched_iou=0.6419 inst_recall=0.4286 n_pred=6
+INFO:evaluate_model:[11/70] 00025_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6215 matched_iou=0.7663 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.3261 matched_iou=0.8536 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.6121 matched_iou=0.8012 inst_recall=0.6250 n_pred=7
+INFO:evaluate_model:[12/70] 00025_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7489 matched_iou=0.6746 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.3028 matched_iou=0.8664 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.7399 matched_iou=0.7705 inst_recall=0.6667 n_pred=7
+INFO:evaluate_model:[13/70] 00027_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6208 matched_iou=0.6213 inst_recall=0.2500 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.9109 matched_iou=0.8382 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.6269 matched_iou=0.7840 inst_recall=0.5714 n_pred=11
+INFO:evaluate_model:[14/70] 00027_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.3633 matched_iou=0.0000 inst_recall=0.0000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.6618 matched_iou=0.8366 inst_recall=1.0000 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.3808 matched_iou=0.8366 inst_recall=0.4444 n_pred=12
+INFO:evaluate_model:[15/70] 00028_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.5023 matched_iou=0.8314 inst_recall=0.8750 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.5023 matched_iou=0.8314 inst_recall=0.8750 n_pred=9
+INFO:evaluate_model:[16/70] 00028_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=null inst_recall=null n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.7269 matched_iou=0.7603 inst_recall=0.6250 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.3898 matched_iou=0.7603 inst_recall=0.6250 n_pred=6
+INFO:evaluate_model:[17/70] 00029_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7758 matched_iou=0.7524 inst_recall=0.6667 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.7952 matched_iou=0.7205 inst_recall=0.9231 n_pred=16
+INFO:evaluate_model:    combined.raw: dice=0.7809 matched_iou=0.7251 inst_recall=0.8750 n_pred=18
+INFO:evaluate_model:[18/70] 00029_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5374 matched_iou=0.7548 inst_recall=0.1429 n_pred=4
+INFO:evaluate_model:  satellites.raw: dice=0.6177 matched_iou=0.7088 inst_recall=0.9231 n_pred=17
+INFO:evaluate_model:    combined.raw: dice=0.5504 matched_iou=0.7123 inst_recall=0.6500 n_pred=21
+INFO:evaluate_model:[19/70] 00030_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=null inst_recall=null n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.5266 matched_iou=0.7172 inst_recall=0.6667 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.1382 matched_iou=0.7172 inst_recall=0.6667 n_pred=7
+INFO:evaluate_model:[20/70] 00030_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.4748 matched_iou=0.0000 inst_recall=0.0000 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.2952 matched_iou=0.6312 inst_recall=1.0000 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.4703 matched_iou=0.6312 inst_recall=0.5000 n_pred=10
+INFO:evaluate_model:[21/70] 00032_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00032_eo: GT ID mismatch — map_only=set(), json_only={7}, evaluating with intersection (14 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.1912 matched_iou=0.0000 inst_recall=0.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.7009 matched_iou=0.8069 inst_recall=0.8750 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.4022 matched_iou=0.8069 inst_recall=0.5000 n_pred=10
+WARNING:src.evaluation.sam3_eval:00032_eo: GT ID mismatch — map_only=set(), json_only={7}, evaluating with intersection (14 IDs)
+INFO:evaluate_model:[22/70] 00032_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.3158 matched_iou=0.6899 inst_recall=0.2857 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.8198 matched_iou=0.7668 inst_recall=1.0000 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.3640 matched_iou=0.7514 inst_recall=0.6667 n_pred=11
+INFO:evaluate_model:[23/70] 00033_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.5552 matched_iou=0.8981 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.5552 matched_iou=0.8981 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:[24/70] 00033_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8486 matched_iou=0.8136 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.8486 matched_iou=0.8136 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:[25/70] 00034_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6690 matched_iou=0.5744 inst_recall=0.5000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.7097 matched_iou=0.7949 inst_recall=1.0000 n_pred=12
+INFO:evaluate_model:    combined.raw: dice=0.6763 matched_iou=0.7634 inst_recall=0.8750 n_pred=14
+INFO:evaluate_model:[26/70] 00034_fo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00034_fo: GT ID mismatch — map_only=set(), json_only={8, 9}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.6844 matched_iou=0.5955 inst_recall=0.6000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.5678 matched_iou=0.7880 inst_recall=0.8000 n_pred=10
+INFO:evaluate_model:    combined.raw: dice=0.6892 matched_iou=0.7055 inst_recall=0.7000 n_pred=13
+WARNING:src.evaluation.sam3_eval:00034_fo: GT ID mismatch — map_only=set(), json_only={8, 9}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:[27/70] 00035_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00035_eo: GT ID mismatch — map_only=set(), json_only={6}, evaluating with intersection (6 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.8295 matched_iou=0.7265 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:  satellites.raw: dice=0.4844 matched_iou=0.7278 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.8170 matched_iou=0.7270 inst_recall=1.0000 n_pred=8
+WARNING:src.evaluation.sam3_eval:00035_eo: GT ID mismatch — map_only=set(), json_only={6}, evaluating with intersection (6 IDs)
+INFO:evaluate_model:[28/70] 00035_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.4653 matched_iou=0.0000 inst_recall=0.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.3550 matched_iou=0.7570 inst_recall=1.0000 n_pred=7
+INFO:evaluate_model:    combined.raw: dice=0.4430 matched_iou=0.7570 inst_recall=0.6000 n_pred=8
+INFO:evaluate_model:[29/70] 00036_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7465 matched_iou=0.6125 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.9146 matched_iou=0.8474 inst_recall=1.0000 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.7512 matched_iou=0.7803 inst_recall=1.0000 n_pred=7
+INFO:evaluate_model:[30/70] 00036_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7805 matched_iou=0.6859 inst_recall=0.7500 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.8725 matched_iou=0.7871 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.7823 matched_iou=0.7437 inst_recall=0.8750 n_pred=7
+INFO:evaluate_model:[31/70] 00037_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7581 matched_iou=0.6329 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.8187 matched_iou=0.7992 inst_recall=0.8889 n_pred=8
+INFO:evaluate_model:    combined.raw: dice=0.7660 matched_iou=0.7660 inst_recall=0.9091 n_pred=10
+INFO:evaluate_model:[32/70] 00037_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5965 matched_iou=0.5165 inst_recall=0.2500 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.6424 matched_iou=0.7393 inst_recall=0.8750 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.5999 matched_iou=0.7115 inst_recall=0.6667 n_pred=11
+INFO:evaluate_model:[33/70] 00038_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00038_eo: GT ID mismatch — map_only=set(), json_only={11}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.5979 matched_iou=0.6871 inst_recall=0.8750 n_pred=10
+INFO:evaluate_model:    combined.raw: dice=0.4460 matched_iou=0.6871 inst_recall=0.7000 n_pred=10
+WARNING:src.evaluation.sam3_eval:00038_eo: GT ID mismatch — map_only=set(), json_only={11}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:[34/70] 00038_fo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00038_fo: GT ID mismatch — map_only=set(), json_only={2}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.5455 matched_iou=0.7340 inst_recall=0.6667 n_pred=8
+INFO:evaluate_model:    combined.raw: dice=0.3227 matched_iou=0.7340 inst_recall=0.6000 n_pred=8
+WARNING:src.evaluation.sam3_eval:00038_fo: GT ID mismatch — map_only=set(), json_only={2}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:[35/70] 00039_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00039_eo: GT ID mismatch — map_only=set(), json_only={8}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.5334 matched_iou=0.6589 inst_recall=0.4000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.9389 matched_iou=0.9122 inst_recall=0.8000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.5430 matched_iou=0.8277 inst_recall=0.6000 n_pred=7
+WARNING:src.evaluation.sam3_eval:00039_eo: GT ID mismatch — map_only=set(), json_only={8}, evaluating with intersection (10 IDs)
+INFO:evaluate_model:[36/70] 00039_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.3721 matched_iou=0.7151 inst_recall=0.2500 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.7854 matched_iou=0.8162 inst_recall=1.0000 n_pred=7
+INFO:evaluate_model:    combined.raw: dice=0.3873 matched_iou=0.7713 inst_recall=0.4286 n_pred=12
+INFO:evaluate_model:[37/70] 00041_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8045 matched_iou=0.8206 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.1264 matched_iou=0.8206 inst_recall=0.7500 n_pred=4
+INFO:evaluate_model:[38/70] 00041_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.3621 matched_iou=0.8289 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.0173 matched_iou=0.8289 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:[39/70] 00042_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5608 matched_iou=0.5516 inst_recall=0.2500 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.7155 matched_iou=0.8687 inst_recall=0.7500 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.5717 matched_iou=0.7894 inst_recall=0.5000 n_pred=8
+INFO:evaluate_model:[40/70] 00042_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5067 matched_iou=0.7085 inst_recall=0.4000 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.5054 matched_iou=0.8539 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.5066 matched_iou=0.7958 inst_recall=0.6250 n_pred=11
+INFO:evaluate_model:[41/70] 00043_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8965 matched_iou=0.7834 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.8965 matched_iou=0.7834 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:[42/70] 00043_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8025 matched_iou=0.8049 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.8025 matched_iou=0.8049 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:[43/70] 00044_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6731 matched_iou=0.5073 inst_recall=1.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.7373 matched_iou=0.8966 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.6804 matched_iou=0.7668 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:[44/70] 00044_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5209 matched_iou=0.5748 inst_recall=0.1667 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.7063 matched_iou=0.7302 inst_recall=0.7500 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.5346 matched_iou=0.6913 inst_recall=0.4000 n_pred=4
+INFO:evaluate_model:[45/70] 00045_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5759 matched_iou=0.7161 inst_recall=0.2222 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.4700 matched_iou=0.7957 inst_recall=0.8000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.5758 matched_iou=0.7692 inst_recall=0.4286 n_pred=11
+INFO:evaluate_model:[46/70] 00045_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.2025 matched_iou=0.6339 inst_recall=0.2000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.4555 matched_iou=0.8362 inst_recall=0.7500 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.2389 matched_iou=0.7856 inst_recall=0.4444 n_pred=5
+INFO:evaluate_model:[47/70] 00046_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8926 matched_iou=0.7708 inst_recall=0.6667 n_pred=2
+INFO:evaluate_model:    combined.raw: dice=0.0936 matched_iou=0.7708 inst_recall=0.4000 n_pred=2
+INFO:evaluate_model:[48/70] 00046_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.7259 matched_iou=0.8418 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.2082 matched_iou=0.8418 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:[49/70] 00047_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8343 matched_iou=0.8175 inst_recall=1.0000 n_pred=7
+INFO:evaluate_model:    combined.raw: dice=0.0799 matched_iou=0.8175 inst_recall=0.6667 n_pred=7
+INFO:evaluate_model:[50/70] 00047_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6735 matched_iou=0.5012 inst_recall=0.3333 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.5302 matched_iou=0.7808 inst_recall=1.0000 n_pred=7
+INFO:evaluate_model:    combined.raw: dice=0.6661 matched_iou=0.7249 inst_recall=0.7143 n_pred=12
+INFO:evaluate_model:[51/70] 00048_eo (gt_mode=full)
+WARNING:src.evaluation.sam3_eval:00048_eo: GT ID mismatch — map_only=set(), json_only={9, 11}, evaluating with intersection (9 IDs)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.6936 matched_iou=0.8188 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.0319 matched_iou=0.8188 inst_recall=0.3333 n_pred=6
+WARNING:src.evaluation.sam3_eval:00048_eo: GT ID mismatch — map_only=set(), json_only={9, 11}, evaluating with intersection (9 IDs)
+INFO:evaluate_model:[52/70] 00048_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.9196 matched_iou=0.8576 inst_recall=1.0000 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.0969 matched_iou=0.8576 inst_recall=0.8333 n_pred=5
+INFO:evaluate_model:[53/70] 00049_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.8525 matched_iou=0.7682 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:  satellites.raw: dice=0.6594 matched_iou=0.7626 inst_recall=0.8750 n_pred=9
+INFO:evaluate_model:    combined.raw: dice=0.8329 matched_iou=0.7639 inst_recall=0.9000 n_pred=13
+INFO:evaluate_model:[54/70] 00049_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7373 matched_iou=0.5839 inst_recall=1.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.6773 matched_iou=0.7602 inst_recall=1.0000 n_pred=8
+INFO:evaluate_model:    combined.raw: dice=0.7272 matched_iou=0.7381 inst_recall=1.0000 n_pred=9
+INFO:evaluate_model:[55/70] 00050_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.3937 matched_iou=0.5231 inst_recall=0.3333 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.0829 matched_iou=0.5231 inst_recall=0.2000 n_pred=6
+INFO:evaluate_model:[56/70] 00050_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5752 matched_iou=0.5957 inst_recall=0.3333 n_pred=4
+INFO:evaluate_model:  satellites.raw: dice=0.5219 matched_iou=0.7657 inst_recall=0.7500 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.5702 matched_iou=0.7232 inst_recall=0.5714 n_pred=10
+INFO:evaluate_model:[57/70] 00053_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7224 matched_iou=0.6934 inst_recall=0.7500 n_pred=5
+INFO:evaluate_model:  satellites.raw: dice=0.8677 matched_iou=0.7893 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.7314 matched_iou=0.7413 inst_recall=0.8571 n_pred=9
+INFO:evaluate_model:[58/70] 00053_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.8489 matched_iou=0.7307 inst_recall=0.7500 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.3373 matched_iou=0.7826 inst_recall=1.0000 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.8182 matched_iou=0.7566 inst_recall=0.8571 n_pred=8
+INFO:evaluate_model:[59/70] 00056_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.4663 matched_iou=0.7902 inst_recall=0.5000 n_pred=2
+INFO:evaluate_model:  satellites.raw: dice=0.4581 matched_iou=0.7620 inst_recall=0.6667 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.4825 matched_iou=0.7761 inst_recall=0.5714 n_pred=5
+INFO:evaluate_model:[60/70] 00056_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.7536 matched_iou=0.6783 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.8561 matched_iou=0.8380 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.7604 matched_iou=0.7924 inst_recall=0.7778 n_pred=9
+INFO:evaluate_model:[61/70] 00063_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.5337 matched_iou=0.5183 inst_recall=0.5000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.9340 matched_iou=0.8668 inst_recall=1.0000 n_pred=4
+INFO:evaluate_model:    combined.raw: dice=0.5740 matched_iou=0.7797 inst_recall=0.8000 n_pred=5
+INFO:evaluate_model:[62/70] 00063_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6576 matched_iou=0.6839 inst_recall=0.3333 n_pred=4
+INFO:evaluate_model:  satellites.raw: dice=0.9086 matched_iou=0.8412 inst_recall=1.0000 n_pred=3
+INFO:evaluate_model:    combined.raw: dice=0.6715 matched_iou=0.8019 inst_recall=0.6667 n_pred=7
+INFO:evaluate_model:[63/70] 00064_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6593 matched_iou=0.5893 inst_recall=0.5000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.8635 matched_iou=0.9084 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:    combined.raw: dice=0.6793 matched_iou=0.7489 inst_recall=0.6667 n_pred=3
+INFO:evaluate_model:[64/70] 00064_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.6513 matched_iou=0.7262 inst_recall=0.5000 n_pred=3
+INFO:evaluate_model:  satellites.raw: dice=0.9482 matched_iou=0.9015 inst_recall=1.0000 n_pred=1
+INFO:evaluate_model:    combined.raw: dice=0.6645 matched_iou=0.8138 inst_recall=0.6667 n_pred=4
+INFO:evaluate_model:[65/70] 00066_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.7837 matched_iou=0.7294 inst_recall=0.8000 n_pred=5
+INFO:evaluate_model:    combined.raw: dice=0.7837 matched_iou=0.7294 inst_recall=0.8000 n_pred=5
+INFO:evaluate_model:[66/70] 00066_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.4997 matched_iou=0.8033 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:    combined.raw: dice=0.4997 matched_iou=0.8033 inst_recall=1.0000 n_pred=6
+INFO:evaluate_model:[67/70] 00068_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.2411 matched_iou=0.0000 inst_recall=0.0000 n_pred=1
+INFO:evaluate_model:  satellites.raw: dice=0.9106 matched_iou=0.8358 inst_recall=1.0000 n_pred=1
+INFO:evaluate_model:    combined.raw: dice=0.2590 matched_iou=0.8358 inst_recall=0.5000 n_pred=2
+INFO:evaluate_model:[68/70] 00068_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.8576 matched_iou=0.7991 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:    combined.raw: dice=0.8576 matched_iou=0.7991 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:[69/70] 00072_eo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=0.0000 matched_iou=0.0000 inst_recall=0.0000 n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.9465 matched_iou=0.8989 inst_recall=1.0000 n_pred=2
+INFO:evaluate_model:    combined.raw: dice=0.1812 matched_iou=0.8989 inst_recall=0.5000 n_pred=2
+INFO:evaluate_model:[70/70] 00072_fo (gt_mode=full)
+INFO:evaluate_model:     streams.raw: dice=null matched_iou=null inst_recall=null n_pred=0
+INFO:evaluate_model:  satellites.raw: dice=0.6334 matched_iou=0.8541 inst_recall=0.6667 n_pred=2
+INFO:evaluate_model:    combined.raw: dice=0.6334 matched_iou=0.8541 inst_recall=0.6667 n_pred=2
+INFO:evaluate_model:Results saved to outputs/eval_sam3_sweep/v3_noise_noaug_canary/epoch_50/eval_results_20260317_201212.json
+INFO:evaluate_model:============================================================
+INFO:evaluate_model:SUMMARY (macro-averaged, null-skipping)
+INFO:evaluate_model:============================================================
+INFO:evaluate_model:  STREAMS / RAW:
+INFO:evaluate_model:    Dice:      0.4403 ± 0.2835
+INFO:evaluate_model:    Precision: 0.7389 ± 0.2179
+INFO:evaluate_model:    Recall:    0.4024 ± 0.2823
+INFO:evaluate_model:    HD95:      433.1942 ± 540.1606
+INFO:evaluate_model:    Match IoU: 0.4355 ± 0.3186
+INFO:evaluate_model:    Inst Rec:  0.3319 ± 0.3232
+INFO:evaluate_model:    Micro D/P/R: 0.5305/0.7481/0.4109
+INFO:evaluate_model:    Empty: pred=11 gt=2 both=9
+INFO:evaluate_model:  STREAMS / POST:
+INFO:evaluate_model:    Dice:      0.4403 ± 0.2835
+INFO:evaluate_model:    Precision: 0.7389 ± 0.2179
+INFO:evaluate_model:    Recall:    0.4024 ± 0.2823
+INFO:evaluate_model:    HD95:      433.1942 ± 540.1606
+INFO:evaluate_model:    Match IoU: 0.4355 ± 0.3186
+INFO:evaluate_model:    Inst Rec:  0.3319 ± 0.3232
+INFO:evaluate_model:    Micro D/P/R: 0.5305/0.7481/0.4109
+INFO:evaluate_model:    Empty: pred=11 gt=2 both=9
+INFO:evaluate_model:  SATELLITES / RAW:
+INFO:evaluate_model:    Dice:      0.6752 ± 0.1821
+INFO:evaluate_model:    Precision: 0.6505 ± 0.2419
+INFO:evaluate_model:    Recall:    0.7702 ± 0.1485
+INFO:evaluate_model:    HD95:      209.8034 ± 175.9745
+INFO:evaluate_model:    Match IoU: 0.7917 ± 0.0682
+INFO:evaluate_model:    Inst Rec:  0.9039 ± 0.1355
+INFO:evaluate_model:    Micro D/P/R: 0.6518/0.5944/0.7214
+INFO:evaluate_model:    Empty: pred=0 gt=0 both=0
+INFO:evaluate_model:  SATELLITES / POST:
+INFO:evaluate_model:    Dice:      0.6752 ± 0.1821
+INFO:evaluate_model:    Precision: 0.6505 ± 0.2419
+INFO:evaluate_model:    Recall:    0.7702 ± 0.1485
+INFO:evaluate_model:    HD95:      209.8034 ± 175.9745
+INFO:evaluate_model:    Match IoU: 0.7917 ± 0.0682
+INFO:evaluate_model:    Inst Rec:  0.9039 ± 0.1355
+INFO:evaluate_model:    Micro D/P/R: 0.6518/0.5944/0.7214
+INFO:evaluate_model:    Empty: pred=0 gt=0 both=0
+INFO:evaluate_model:  COMBINED / RAW:
+INFO:evaluate_model:    Dice:      0.5215 ± 0.2302
+INFO:evaluate_model:    Precision: 0.7267 ± 0.1967
+INFO:evaluate_model:    Recall:    0.4931 ± 0.2691
+INFO:evaluate_model:    HD95:      182.4297 ± 138.2271
+INFO:evaluate_model:    Match IoU: 0.7679 ± 0.0593
+INFO:evaluate_model:    Inst Rec:  0.6863 ± 0.1943
+INFO:evaluate_model:    Micro D/P/R: 0.5502/0.7305/0.4413
+INFO:evaluate_model:    Empty: pred=0 gt=0 both=0
+INFO:evaluate_model:  COMBINED / POST:
+INFO:evaluate_model:    Dice:      0.5215 ± 0.2302
+INFO:evaluate_model:    Precision: 0.7267 ± 0.1967
+INFO:evaluate_model:    Recall:    0.4931 ± 0.2691
+INFO:evaluate_model:    HD95:      182.4297 ± 138.2271
+INFO:evaluate_model:    Match IoU: 0.7679 ± 0.0593
+INFO:evaluate_model:    Inst Rec:  0.6863 ± 0.1943
+INFO:evaluate_model:    Micro D/P/R: 0.5502/0.7305/0.4413
+INFO:evaluate_model:    Empty: pred=0 gt=0 both=0

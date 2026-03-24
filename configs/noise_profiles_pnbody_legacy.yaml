@@ -1,0 +1,47 @@
+# Noise Injection Profiles For PNbody Legacy-VIS2-Compatible FITS
+# ===============================================================
+#
+# Intended clean input layout:
+#   data/01_raw/PNbody_FIREbox_VIS2_legacy/SB_maps/
+#     magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz
+#
+# Intended noisy output layout:
+#   data/04_noise/pnbody_legacy/{profile_name}/
+#     magnitudes-Fbox-{gid}-{orient}-VIS2.fits.gz
+#
+# Example:
+#   conda run -n sam3 python scripts/generate_noisy_fits.py \
+#     --config configs/noise_profiles_pnbody_legacy.yaml
+
+paths:
+  firebox_root: "data/01_raw/PNbody_FIREbox_VIS2_legacy"
+  output_root: "data/04_noise/pnbody_legacy"
+
+data_selection:
+  # Keep the same FIREbox halo IDs as the existing VIS2 dataset so masks
+  # and downstream base keys remain aligned.
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36,
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56,
+               63, 64, 66, 68, 72]
+  views: ["eo", "fo"]
+
+noise_model:
+  zeropoint: 22.5
+  sky_level: 200.0
+  read_noise: 5.0
+  signal_quantile: 0.90
+  background_quantile: 0.20
+
+profiles:
+  - name: "snr05"
+    target_snr: 5
+  - name: "snr10"
+    target_snr: 10
+  - name: "snr20"
+    target_snr: 20
+  - name: "snr50"
+    target_snr: 50
+
+reproducibility:
+  random_seed: 42
+

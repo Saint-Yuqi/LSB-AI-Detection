@@ -26,6 +26,10 @@ def run_gt_phase(
     force_variants: set[str] | None = None,
 ) -> None:
     """Load SB32 streams mask -> streams_instance_map.npy."""
+    if not config.get("gt_phase", {}).get("enabled", True):
+        logger.info("GT phase disabled in config — skipping")
+        return
+
     logger.info("=" * 60)
     logger.info("PHASE 2: GT (Streams)")
     logger.info("=" * 60)
@@ -46,7 +50,7 @@ def run_gt_phase(
 
         mask_path = resolver.get_mask_path(key, sb_threshold)
 
-        if not mask_path.exists():
+        if mask_path is None or not mask_path.exists():
             logger.warning(f"Mask not found: {mask_path}")
             stats["skipped_no_mask"] += 1
             continue

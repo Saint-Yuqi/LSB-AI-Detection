@@ -5,6 +5,7 @@
 - Tie together discrete structural modules into end-to-end workflows.
 - Manage dataset generation, model evaluation, and visual diagnostics.
 - Run folder-based SAM3 evaluation over rendered/noisy image sets with reproducible JSON outputs.
+- Generate PNbody multi-view FITS datasets and metadata manifests from halo HDF5 inputs.
 
 ## Non-goals
 - **No Core Logic:** Scripts must defer complex math, astrophysical conversions, filtering logic, and metric calculations to downstream modules.
@@ -22,6 +23,42 @@
   - Phase 2: `gt_canonical/current/{base_key}/streams_instance_map.npy`
   - Phase 3: `gt_canonical/current/{base_key}/instance_map_uint8.png` (SAM2) or `sam3_predictions_*.json` (SAM3)
   - Phase 4: `sam2_prepared/` symlinks + `sam3_prepared/annotations.json`
+
+### PNbody 24-View FITS Generator (`generate_pnbody_fits.py`)
+- **Input:** `--config: Path` pointing to a `.yaml` file (e.g. `configs/pnbody/firebox_pnbody_24los.yaml`).
+  - `--galaxies`: Optional comma-separated galaxy ID subset override for smoke tests
+  - `--dry-run` (flag): Log `mockimgs_sb_compute_images` commands without executing them
+- **YAML schema (`--config`):**
+  - Required keys:
+    - `halo_root: str`
+    - `halo_pattern: str` with `{galaxy_id}` formatting placeholder
+    - `galaxy_ids: List[int]`
+    - `los_file: str`
+    - `distance: float`
+    - `instrument_file: str`
+    - `output_root: str`
+    - `metadata_root: str`
+  - Optional keys:
+    - `rsp_opts.rsp_mode: str` (defaults to `"None"`)
+    - `rsp_opts.rsp_fac: float` (defaults to `0.6`)
+- **Output:**
+  - `{output_root}/magnitudes-Fbox-{galaxy_id}-los{00..23}-VIS2.fits.gz`
+  - `{metadata_root}/views.csv` — rows with columns:
+    - `galaxy_id: int`
+    - `view_id: str`
+    - `los_x: float`
+    - `los_y: float`
+    - `los_z: float`
+    - `source_hdf5: str`
+    - `output_fits: str`
+  - `{metadata_root}/generation_manifest.json` — top-level keys:
+    - `generated_at: str`
+    - `config: str`
+    - `distance_mpc: float`
+    - `rsp_opts: Dict`
+    - `instrument_file: str`
+    - `n_galaxies: int`
+    - `galaxies: List[Dict]` with per-galaxy `halo_file`, `n_views`, and `views`
 
 ### SAM2 Evaluation (`evaluate_sam2.py`, formerly `eval_model.py`)
 - **Input:** `--config: Path` (`configs/eval_sam2.yaml` by default)
@@ -97,16 +134,21 @@
 ## Invariants
 - **Reproducibility:** Evaluation runs serialize the exact `.yaml` config snapshot alongside output artifacts in the same directory.
 - **Dependency Inversion:** All path resolution is driven by CLI arguments; no paths are hardcoded in script bodies.
+- **PNbody View Cardinality:** PNbody FITS generation requires exactly 24 LOS vectors and emits canonical `los00`..`los23` outputs.
+- **CLI Fallback:** PNbody FITS generation prefers `mockimgs_sb_compute_images` on `PATH`, but may fall back to the repo-local script entry point.
 
 ## Produced Artifacts
 - Configured inference datasets.
 - Evaluation run matrices resolving to static JSON/CSV artifacts.
 - Performance plots evaluating validation baselines.
 - Type-aware SAM3 evaluation JSON reports and optional overlay visualizations.
+- PNbody FITS cubes plus LOS metadata tables and generation manifests.
 
 ## Failure Modes
 - `FileNotFoundError`: Raised when any CLI-provided path (`--config`, `--dataset_dir`, `--checkpoint`, `--masks_dir`) does not exist on the filesystem.
 - `yaml.YAMLError`: Raised when the `.yaml` config file cannot be parsed (syntax error).
 - `KeyError`: Raised when the parsed config dict is missing a required key (e.g., `output_dir`, `sb_thresholds`, `model_cfg`, `iou_threshold`).
 - `RuntimeError`: Raised when GPU memory is exhausted during inference (OOM).
+- `ValueError`: Raised by `generate_pnbody_fits.py` when the LOS table does not contain exactly 24 vectors.
+- `subprocess.CalledProcessError`: Raised by `generate_pnbody_fits.py` when `mockimgs_sb_compute_images` exits non-zero for a halo/view job.
  

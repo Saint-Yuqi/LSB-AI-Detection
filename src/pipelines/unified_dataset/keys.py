@@ -1,7 +1,7 @@
 """
 Immutable data keys for the unified dataset pipeline.
 
-BaseKey identifies a unique galaxy+orientation pair.
+BaseKey identifies a unique galaxy+view pair (e.g. galaxy 11 viewed from los00).
 VariantKey extends BaseKey with a preprocessing variant name.
 """
 from __future__ import annotations
@@ -11,12 +11,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class BaseKey:
-    """Immutable key for a unique galaxy+orientation."""
+    """Immutable key for a unique galaxy+view (e.g. eo, fo, los00..los23)."""
     galaxy_id: int
-    orientation: str
+    view_id: str
 
     def __str__(self) -> str:
-        return f"{self.galaxy_id:05d}_{self.orientation}"
+        return f"{self.galaxy_id:05d}_{self.view_id}"
 
 
 @dataclass(frozen=True)

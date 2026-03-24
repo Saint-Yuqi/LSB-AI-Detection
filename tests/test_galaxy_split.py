@@ -39,6 +39,7 @@ def _make_coco(n_galaxies=5, orientations=("eo", "fo"), variants=("a", "b"), ann
                     "width": 64,
                     "height": 64,
                     "galaxy_id": gid,
+                    "view_id": ori,
                     "orientation": ori,
                     "variant": var,
                     "base_key": f"{gid:05d}_{ori}",
@@ -156,3 +157,26 @@ class TestGalaxySplit:
         train, val, _ = galaxy_split_coco(coco)
         assert train["categories"] == coco["categories"]
         assert val["categories"] == coco["categories"]
+
+    def test_los_views_grouped_by_galaxy(self):
+        """With losNN views, split still groups by galaxy_id."""
+        coco = _make_coco(n_galaxies=5, orientations=("los00", "los01"))
+        train, val, manifest = galaxy_split_coco(coco, train_ratio=0.6, seed=42)
+        train_gids = set(manifest["train_galaxy_ids"])
+        val_gids = set(manifest["val_galaxy_ids"])
+        assert train_gids.isdisjoint(val_gids)
+
+        train_img_gids = {img["galaxy_id"] for img in train["images"]}
+        val_img_gids = {img["galaxy_id"] for img in val["images"]}
+        assert train_img_gids.isdisjoint(val_img_gids)
+
+    def test_anti_leakage_pnbody_views(self):
+        """If galaxy X is val, ALL its losNN views must be excluded from train."""
+        coco = _make_coco(n_galaxies=5, orientations=tuple(f"los{i:02d}" for i in range(24)))
+        train, val, manifest = galaxy_split_coco(coco, train_ratio=0.6, seed=42)
+
+        val_gids = set(manifest["val_galaxy_ids"])
+        for img in train["images"]:
+            assert img["galaxy_id"] not in val_gids, (
+                f"Leakage: galaxy {img['galaxy_id']} is val but found in train"
+            )

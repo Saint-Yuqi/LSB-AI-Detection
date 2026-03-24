@@ -14,7 +14,7 @@ data_selection:
   galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36,
                37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56,
                63, 64, 66, 68, 72]
-  orientations: ["eo", "fo"]
+  views: ["eo", "fo"]
 
 noise_model:
   zeropoint: 22.5

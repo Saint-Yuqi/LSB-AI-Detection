@@ -145,6 +145,51 @@ def save_evaluation_overlay(
     cv2.imwrite(str(path), cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
 
 
+def save_pseudo_label_overlay(
+    path: Path,
+    image: np.ndarray,
+    predictions: list[dict[str, Any]],
+) -> None:
+    """QA overlay for pseudo-labels: prediction fills + contours + scores (no GT)."""
+    overlay = image.copy()
+
+    stream_colors = [(100, 149, 237), (65, 105, 225), (30, 144, 255)]
+    sat_colors = [(255, 165, 0), (255, 140, 0), (255, 127, 80)]
+    stream_idx, sat_idx = 0, 0
+
+    for m in predictions:
+        seg = m.get("segmentation")
+        if seg is None or seg.sum() == 0:
+            continue
+        mask_bool = seg.astype(bool)
+        tl = m.get("type_label", "")
+
+        if tl == "streams":
+            color = np.array(stream_colors[stream_idx % len(stream_colors)], dtype=np.uint8)
+            stream_idx += 1
+        else:
+            color = np.array(sat_colors[sat_idx % len(sat_colors)], dtype=np.uint8)
+            sat_idx += 1
+
+        alpha = 0.45
+        overlay[mask_bool] = (overlay[mask_bool].astype(np.float32) * (1 - alpha)
+                              + color.astype(np.float32) * alpha).astype(np.uint8)
+
+        seg_u8 = seg.astype(np.uint8)
+        contours, _ = cv2.findContours(seg_u8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(overlay, contours, -1, color.tolist(), 1)
+
+        score = m.get("predicted_iou", 0.0)
+        bbox = m.get("bbox", None)
+        if bbox and len(bbox) == 4:
+            x, y = int(bbox[0]), max(int(bbox[1]) - 5, 12)
+            cv2.putText(overlay, f"{tl[0]}:{score:.2f}", (x, y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.35,
+                        color.tolist(), 1, cv2.LINE_AA)
+
+    cv2.imwrite(str(path), cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+
+
 def save_instance_overlay(path: Path, image: np.ndarray, instance_map: np.ndarray) -> None:
     """Generate QA overlay with colored instances from a merged instance_map."""
     overlay = image.copy()

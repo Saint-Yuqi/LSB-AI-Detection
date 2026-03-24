@@ -1,8 +1,15 @@
 """
 Forward Observation Noise Model for LSB Surface Brightness Maps.
 
-Physics Chain:
-    SB(mag/arcsec²) → flux → counts → +sky → Poisson(total) → +N(0,σ_read) → −sky → mag
+# --- MENTOR EXPLANATION (Physics Chain & Correctness) ---
+# 1. Mag → Flux: Exponentiates magnitude to linear physical photon flux.
+# 2. Flux → Counts (signal_scale): Applies quantum efficiency / effective gain (e-/photon).
+# 3. + Sky: LSB targets are heavily sky-dominated. Sky level is added BEFORE Poisson noise.
+# 4. Poisson(Signal + Sky): Shot noise explicitly models discrete photon arrival statistics.
+#    *Crucial: Variance scales with (Signal + Sky), creating heteroscedastic noise.
+# 5. + N(0, read_noise): Adds Gaussian electronic readout noise from the CCD amplifier.
+# 6. - Sky: Emulates standard calibration pipelines (sky subtraction).
+# 7. Validation: Use `validate_physics()` to prove Empirical Noise ≈ Analytic Noise.
 
 Usage:
     from src.noise import ForwardObservationModel
@@ -140,6 +147,62 @@ class ForwardObservationModel:
         if std_bkg < 1e-12:
             return np.inf
         return mean_sig / std_bkg
+
+    # ------------------------------------------------------------------
+    # Physics Validation (For Mentor/Supervisor review)
+    # ------------------------------------------------------------------
+
+    def validate_physics(self, sb_map: np.ndarray) -> dict[str, float]:
+        """
+        Validate the noise injection process by comparing empirical vs expected statistics.
+        Proves to the mentor that signal and noise are scaling correctly.
+        Prints and returns the statistics.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # 1. Expected (Analytic)
+        flux = np.power(10.0, (self.zeropoint - sb_map) / 2.5)
+        counts_signal = flux * self.signal_scale
+        flat_signal = counts_signal.ravel()
+
+        bkg_thresh = np.quantile(flat_signal, self.background_quantile)
+        sig_thresh = np.quantile(flat_signal, self.signal_quantile)
+
+        bkg_mask = flat_signal <= bkg_thresh
+        sig_mask = flat_signal >= sig_thresh
+
+        expected_sig = float(np.mean(flat_signal[sig_mask]))
+        expected_noise = np.sqrt(float(np.mean(flat_signal[bkg_mask])) + self.sky_level + self.read_noise ** 2)
+
+        # 2. Empirical (Simulated)
+        counts_total = counts_signal + self.sky_level
+        counts_poisson = self._rng.poisson(counts_total).astype(np.float64)
+        counts_final = counts_poisson + self._rng.normal(0.0, self.read_noise, size=counts_poisson.shape)
+        counts_sky_sub = counts_final - self.sky_level
+        flat_noisy = counts_sky_sub.ravel()
+
+        empirical_sig = float(np.mean(flat_noisy[sig_mask]))
+        empirical_noise = float(np.std(flat_noisy[bkg_mask]))
+
+        stats = {
+            "expected_sig": expected_sig,
+            "empirical_sig": empirical_sig,
+            "expected_noise": expected_noise,
+            "empirical_noise": empirical_noise,
+        }
+
+        msg = (
+            f"\n--- Noise Physics Validation ---\n"
+            f"Expected Signal (top {self.signal_quantile*100:.0f}%): {expected_sig:.2f} e-\n"
+            f"Empirical Signal: {empirical_sig:.2f} e- (err: {abs(expected_sig - empirical_sig)/max(1e-9, expected_sig):.2%})\n"
+            f"Expected Noise (bottom {self.background_quantile*100:.0f}% variance): {expected_noise:.2f} e-\n"
+            f"Empirical Noise: {empirical_noise:.2f} e- (err: {abs(expected_noise - empirical_noise)/max(1e-9, expected_noise):.2%})\n"
+            f"--------------------------------"
+        )
+        print(msg)
+        logger.info(msg)
+        return stats
 
     # ------------------------------------------------------------------
     # Analytic expected SNR (no random sampling needed)

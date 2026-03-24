@@ -22,7 +22,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _NON_ID_IMAGE_FIELDS = (
-    "width", "height", "galaxy_id", "orientation",
+    "width", "height", "galaxy_id", "view_id", "orientation",
     "variant", "base_key", "snr_tag",
 )
 

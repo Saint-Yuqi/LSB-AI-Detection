@@ -48,6 +48,7 @@ def _make_clean_coco(
                     "width": width,
                     "height": height,
                     "galaxy_id": gid,
+                    "view_id": ori,
                     "orientation": ori,
                     "variant": var,
                     "base_key": base_key,

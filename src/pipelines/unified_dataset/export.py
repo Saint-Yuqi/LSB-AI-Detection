@@ -109,7 +109,8 @@ def run_export_phase(
                 "width": W,
                 "height": H,
                 "galaxy_id": key.galaxy_id,
-                "orientation": key.orientation,
+                "view_id": key.view_id,
+                "orientation": key.view_id,
                 "variant": vname,
                 "base_key": str(key),
             })
@@ -148,7 +149,8 @@ def run_export_phase(
         "annotations": sam3_annotations,
         "categories": sam3_categories,
     }
-    (sam3_dir / "annotations.json").write_text(json.dumps(coco, indent=2))
+    ann_filename = config.get("export_phase", {}).get("annotations_filename", "annotations.json")
+    (sam3_dir / ann_filename).write_text(json.dumps(coco, indent=2))
 
     logger.info(f"SAM2: {len(base_keys) * len(variants)} symlinks")
     logger.info(f"SAM3: {len(sam3_images)} images, {len(sam3_annotations)} annotations")

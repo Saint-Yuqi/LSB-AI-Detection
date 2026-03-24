@@ -59,7 +59,7 @@ class TestPhaseChoices:
             "preprocessing_variants": [{"name": "asinh_stretch"}],
             "data_selection": {
                 "galaxy_ids": [11],
-                "orientations": ["eo"],
+                "views": ["eo"],
                 "canonical_sb_threshold": 32,
             },
         }
@@ -90,7 +90,7 @@ class TestForceVariants:
             ],
             "data_selection": {
                 "galaxy_ids": [11],
-                "orientations": ["eo"],
+                "views": ["eo"],
                 "canonical_sb_threshold": 32,
             },
         }
@@ -151,3 +151,51 @@ class TestForceVariants:
             main()
 
         assert captured_fv["render"] is None
+
+
+class TestGtPhaseSkip:
+    def test_phase_all_skips_gt_when_disabled(self):
+        """--phase all with gt_phase.enabled=false must NOT call run_gt_phase."""
+        from prepare_unified_dataset import main
+
+        phases_called = []
+
+        def fake_render(*a, **kw):
+            phases_called.append("render")
+
+        def fake_gt(*a, **kw):
+            phases_called.append("gt")
+
+        def fake_inference(*a, **kw):
+            phases_called.append("inference")
+
+        def fake_export(*a, **kw):
+            phases_called.append("export")
+
+        config_gt_disabled = {
+            "paths": {"firebox_root": "/dummy", "output_root": "/dummy"},
+            "data_sources": {"streams": {}},
+            "processing": {"target_size": [64, 64]},
+            "preprocessing_variants": [{"name": "linear_magnitude"}],
+            "data_selection": {
+                "galaxy_ids": [11],
+                "views": ["los00"],
+                "canonical_sb_threshold": 32,
+            },
+            "gt_phase": {"enabled": False},
+        }
+
+        with (
+            patch("sys.argv", ["prog", "--config", "dummy.yaml", "--phase", "all"]),
+            patch("prepare_unified_dataset.load_config", return_value=config_gt_disabled),
+            patch("prepare_unified_dataset.run_render_phase", fake_render),
+            patch("prepare_unified_dataset.run_gt_phase", fake_gt),
+            patch("prepare_unified_dataset.run_inference_phase", fake_inference),
+            patch("prepare_unified_dataset.run_export_phase", fake_export),
+        ):
+            main()
+
+        assert "gt" not in phases_called
+        assert "render" in phases_called
+        assert "inference" in phases_called
+        assert "export" in phases_called

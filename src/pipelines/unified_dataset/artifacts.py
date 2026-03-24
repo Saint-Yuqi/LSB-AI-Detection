@@ -93,6 +93,55 @@ def save_satellites_cache(
     np.savez_compressed(path, cache=cache)
 
 
+def rasterize_pseudo_gt(
+    masks: list[dict[str, Any]],
+    H: int,
+    W: int,
+) -> tuple[np.ndarray, list[dict]]:
+    """Convert post-filtered masks to an instance map + instances list.
+
+    Assigns instance IDs 1..N. Last-writer-wins for pixel overlap.
+    Returns (instance_map_uint8, instances_list).
+
+    Raises:
+        AssertionError: if N > 255 (uint8 overflow).
+    """
+    assert len(masks) <= 255, f"Too many masks for uint8: {len(masks)}"
+
+    instance_map = np.zeros((H, W), dtype=np.int32)
+    instances_list: list[dict] = []
+
+    for i, m in enumerate(masks, start=1):
+        seg = m.get("segmentation")
+        if seg is None or seg.sum() == 0:
+            continue
+        instance_map[seg.astype(bool)] = i
+        instances_list.append({
+            "id": i,
+            "type": m.get("type_label", "unknown"),
+        })
+
+    return instance_map.astype(np.uint8), instances_list
+
+
+def save_pseudo_gt(
+    gt_dir: Path,
+    masks: list[dict[str, Any]],
+    H: int,
+    W: int,
+) -> tuple[np.ndarray, list[dict]]:
+    """Rasterize post-filtered masks and write instance_map_uint8.png + instances.json."""
+    from PIL import Image as _PILImage
+
+    instance_map, instances_list = rasterize_pseudo_gt(masks, H, W)
+
+    gt_dir.mkdir(parents=True, exist_ok=True)
+    _PILImage.fromarray(instance_map).save(gt_dir / "instance_map_uint8.png")
+    (gt_dir / "instances.json").write_text(json.dumps(instances_list, indent=2))
+
+    return instance_map, instances_list
+
+
 def merge_instances(
     streams_map: np.ndarray,
     inferred_masks: list[dict],

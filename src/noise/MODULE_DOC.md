@@ -30,6 +30,11 @@
 - **Input:** `sb_map: np.ndarray` — shape `(H, W)`, dtype float
 - **Output:** `float` — empirical SNR from one stochastic realization
 
+### `ForwardObservationModel.validate_physics(sb_map)`
+- **Input:** `sb_map: np.ndarray` — shape `(H, W)`, dtype float
+- **Output:** `Dict[str, float]` with keys `expected_sig`, `empirical_sig`, `expected_noise`, `empirical_noise`
+- **Side Effects:** Prints and logs a short validation summary comparing analytic vs empirical signal/noise statistics.
+
 ### `ForwardObservationModel.expected_snr(sb_map)`
 - **Input:** `sb_map: np.ndarray` — shape `(H, W)`, dtype float
 - **Output:** `float` — analytic expected SNR (deterministic)
@@ -42,9 +47,11 @@
 - Operations are fully vectorized over pixels (`numpy` array math).
 - RNG state is instance-local (`np.random.Generator`) for reproducibility and multi-process safety.
 - Negative sky-subtracted flux is represented as `NaN` in magnitude space.
+- Validation uses the same quantile-defined signal/background regions as the SNR estimators.
 
 ## Produced Artifacts
 - In-memory noisy SB maps and calibrated model instances.
+- In-memory physics-validation statistics plus console/log diagnostics.
 
 ## Failure Modes
 - `ValueError`: Raised by NumPy quantile/stat operations when input arrays are empty.

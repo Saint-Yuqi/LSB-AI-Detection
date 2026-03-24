@@ -1,1 +1,0 @@
-../../.agent_rules/environment-first-protocol.md
