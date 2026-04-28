@@ -1,0 +1,106 @@
+# Checkpoint evaluation config — single source of truth for scripts/eval/evaluate_checkpoint.py.
+#
+# Benchmarks (all at fixed 1024x1024 working grid):
+#   fbox_gold_satellites  satellites-only, ROI-restricted (470x470 at 1024)
+#   firebox_dr1_streams   streams-only at SBlim31.5, full-frame
+#   gt_canonical          streams + satellites, full-frame (post-retrain use)
+#
+# Post layers:
+#   pred_only  pure prediction post (5 stages). Runs for every benchmark.
+#   gt_aware   pred_only + GT-stream conflict resolver. Only populated for gt_canonical.
+
+checkpoint: "scratch/sweep_20260418_gtrefresh/v1_clean_noaug/checkpoints/checkpoint.pt"
+
+benchmark:
+  mode: "fbox_gold_satellites"   # fbox_gold_satellites | firebox_dr1_streams | gt_canonical
+  allow_instance_drop: false     # 2051 -> 1024 positive-ID-set preservation guard
+  fbox:
+    manifest: "data/01_raw/LSB_and_Satellites/Fbox_Gold_Satellites/dataset_manifest.json"
+    masks_root: "data/01_raw/LSB_and_Satellites/Fbox_Gold_Satellites/MASKS"
+    roi: "data/01_raw/LSB_and_Satellites/Fbox_Gold_Satellites/roi_definition.json"
+  dr1:
+    root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+    sb_threshold: 31.5           # fixed per benchmark protocol
+  canonical:
+    gt_dir: "data/02_processed/gt_canonical_tidal_v1/current"
+
+render:
+  root: "data/02_processed/renders_eval"   # ignored for canonical (uses data/02_processed/renders/)
+  condition: "current"                     # current | noisy
+  variant: "linear_magnitude"              # asinh_stretch | linear_magnitude
+  noise_profile: null                      # "sb31.5" when condition == noisy
+
+target_size: [1024, 1024]                  # fixed; 2051 rejected
+
+sam3:
+  bpe_path: "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
+  resolution: 1008
+  confidence_threshold: 0.18               # single unified processor-level floor
+  device: "cuda"
+
+# Per-benchmark prompt list. The CLI enables the union of the prompts needed
+# for the active benchmark mode and ignores the others.
+prompts:
+  fbox_gold_satellites:
+    - { text: "satellite galaxy", type_label: "satellites", confidence_threshold: 0.18 }
+  firebox_dr1_streams:
+    - { text: "stellar stream",   type_label: "tidal_features", confidence_threshold: 0.30 }
+  gt_canonical:
+    - { text: "stellar stream",   text_alias: "tidal_features", type_label: "tidal_features", confidence_threshold: 0.30 }
+    - { text: "satellite galaxy", type_label: "satellites",     confidence_threshold: 0.18 }
+
+# Unified post config. Thresholds are 1024-px absolute. Defaults mirror the
+# current canonical SAM3 pipeline.
+post:
+  pred_only:
+    enable_streams_sanity: true
+    enable_score_gate:     true
+    enable_prior_filter:   true
+    enable_core_policy:    false       # tidal_v1: no core stage
+    enable_cross_type_conflict: false  # tidal_v1: no cross-class conflict
+    streams_sanity:
+      stats_json: "outputs/mask_stats/mask_stats_summary.json"
+      edge_touch_frac: 0.8
+    score_gate:
+      small_area_max_px: 200
+      medium_area_max_px: 600
+      small_min_score: 0.60
+      medium_min_score: 0.20
+      large_min_score: 0.18
+    # Frozen prior_filter mirrors unified_data_prep.yaml. Eval keeps
+    # `hard_center_action: "drop"` because eval measures the post chain;
+    # the relabel rule is GT-generation only.
+    prior_filter:
+      area_min: 14
+      solidity_min: 0.8852
+      aspect_sym_max: 2.6731
+      hard_center_radius_frac: 0.03
+      hard_center_action: "drop"
+  gt_aware:
+    enable_gt_stream_conflict: false   # tidal_v1: no GT-stream conflict
+
+matching:
+  iou_threshold: 0.5
+
+# Pred-centric GT-driven satellite diagnostics (Phase 1). Runs on RAW
+# predictions when benchmark is fbox_gold_satellites or gt_canonical. ROI
+# is always a secondary slice, never a primary filter.
+diagnostics:
+  enabled: true
+  satellites:
+    min_purity_for_match: 0.50    # below this, label is reject_low_purity
+    completeness_complete: 0.50   # above this, label is compact_complete
+    complete_one_to_one_min_completeness: 0.95  # near-complete one-to-one GT coverage unlocks ratio guard
+    complete_one_to_one_max_seed_ratio: 3.0     # R_max for small/medium GT outer-growth tolerance
+    annulus_r_in_frac: 1.2        # inner radius of evaluation annulus (in r_eq)
+    annulus_r_out_frac: 2.0       # outer radius of evaluation annulus (in r_eq)
+    radial_n_rings: 6             # number of rings for radial_monotonicity
+
+overlay:
+  enabled: true
+
+output:
+  root: "outputs/eval_checkpoint"
+  save_raw_predictions: true
+  save_post_predictions: true
+  save_overlays: true

@@ -3,20 +3,26 @@
 # 4-Phase Pipeline: render → gt → satellites → export
 #
 # Usage:
-#   python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
-#   python scripts/data/prepare_unified_dataset.py --config ... --phase render
-#   python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --phase render
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
 
 paths:
   firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
   output_root: "data/02_processed"
+  # Versioned GT subdirectory (tidal_v1 path). Setting either knob to a
+  # non-default name activates the new 3-class flow in inference_sam3 and
+  # gt.py. Legacy GT under "gt_canonical" / "pseudo_gt_canonical" is left
+  # untouched.
+  gt_subdir: "gt_canonical_tidal_v1"
+  pseudo_gt_subdir: "pseudo_gt_canonical_tidal_v1"
 
 data_selection:
   galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36, 
                37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56, 
                63, 64, 66, 68, 72]
   views: ["eo", "fo"]
-  canonical_sb_threshold: 32.0
+  canonical_sb_threshold: 31.5
 
 # Data sources (FITS paths)
 data_sources:
@@ -50,66 +56,61 @@ preprocessing_variants:
   #     nonlinearity: 300.0
   #     clip_percentile: 99.5
 
-# Inference Phase (Phase 3) – engine selector
-# engine: "sam2" uses the satellites block below (AutoMask pipeline)
-# engine: "sam3" uses SAM3 text-prompt grounding
+# Inference Phase (Phase 3) – SAM3 only (SAM2 was purged).
 inference_phase:
-  engine: "sam2"          # "sam2" or "sam3"
+  engine: "sam3"          # only 'sam3' is supported
   run_mode: "evaluate"    # "evaluate" = save predictions + QA overlay, no merge
   input_image_variant: "linear_magnitude"
   
   sam3:
-    checkpoint: "/home/yuqyan/Yuqi/sam3/scratch/sam3_finetuning/checkpoints/checkpoint_best.pt"
+    checkpoint: "/home/yuqyan/Yuqi/LSB-AI-Detection/sam3_finetuning_2026-02-24_19-04-51/checkpoints/checkpoint.pt"
     bpe_path: "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
-    confidence_threshold: 0.55
+    # Processor-level floor. MUST be <= the smallest downstream gate
+    # (satellite score_gate.large_min_score = 0.18), otherwise large-but-
+    # low-score satellites are dropped before the pipeline ever sees them.
+    # Per-prompt confidence_threshold below can tighten this per text prompt.
+    confidence_threshold: 0.18
     resolution: 1008
+    # DR1 new path: tidal features come from FIREbox SB31.5 FITS via
+    # gt.py, NOT from a SAM3 stream prompt. Only the satellite prompt
+    # runs at inference time. Hard-center satellites become inner_galaxy
+    # via the prior filter's relabel rule.
     prompts:
-      - text: "stellar stream"
-        type_label: "streams"
       - text: "satellite galaxy"
         type_label: "satellites"
+        confidence_threshold: 0.18   # defer to score_gate tiers
     streams_sanity:
       stats_json: "outputs/mask_stats/mask_stats_summary.json"
       # min_area / max_area_px loaded from stats_json; explicit values here override GT.
       edge_touch_frac: 0.8
 
-# Satellites pipeline (AutoMask + filters) – used when engine: "sam2"
-satellites:
-  enabled: true
-  automask_config_name: "dense_v2_grp10"
-  input_image_variant: "linear_magnitude"
-  
-  # SAM2 Model Configuration
-  checkpoint: "/home/yuqyan/Yuqi/sam2/scratch/sam2_finetuning_20260205_210313/checkpoints/checkpoint.pt"
-  model_cfg: "configs/sam2.1/sam2.1_hiera_b+.yaml"
-  
-  # Deterministic ordering for reproducibility
-  satellite_sort_policy: ["area_desc", "centroid_x_asc", "centroid_y_asc"]
-  
-  # Overlap handling: satellites only fill where streams==0
-  overlap_policy: "keep_streams"
-  
-  generator:
-    points_per_side: 64
-    points_per_batch: 64
-    pred_iou_thresh: 0.65
-    stability_score_thresh: 0.95
-    box_nms_thresh: 0.4
-    crop_n_layers: 1
-    crop_overlap_ratio: 0.4
-    min_mask_region_area: 10
-  
-  grouping:
-    centroid_dist_px: 10.0
-  
-  prior:
-    ambiguous_factor: 0.25
-    stats_json: "outputs/mask_stats/mask_stats_summary.json"
-    # Filter uses aspect_sym_moment (cov-eigenvalue) for aspect_sym_max threshold.
-    # Stats JSON should contain aspect_sym_moment_max from analyze_mask_stats.py.
-  
-  core_exclusion:
-    radius_frac: 0.08
+    # DR1 satellite pipeline (new path): unit-safe, static thresholds.
+    # All keys carry explicit unit suffixes (*_px / *_frac / *_score).
+    score_gate:
+      small_area_max_px: 200
+      medium_area_max_px: 600
+      small_min_score: 0.60
+      medium_min_score: 0.20
+      large_min_score: 0.18
+    # Frozen prior-filter thresholds for the tidal_v1 path.
+    # Source: outputs/mask_stats/mask_stats_summary.json (filter_recommendations.satellites)
+    # Frozen-config sha1 (prior_filter dict only): a3689cfbf63df482
+    prior_filter:
+      area_min: 14
+      solidity_min: 0.8852
+      aspect_sym_max: 2.6731
+      hard_center_radius_frac: 0.03
+      # Hard-center action on the new path: relabel as inner_galaxy
+      # rather than drop. Eval keeps "drop" semantics (configs/eval_checkpoint.yaml).
+      hard_center_action: "relabel_inner_galaxy"
+    conflict_policy:
+      # Disable cross-class conflict on the new path. The runner emits a
+      # "skipped" StageEvent for each candidate, preserving diagnostics.
+      enabled: false
+
+# Reviewed satellite exceptions are applied via the Shadow GT migration
+# flow (scripts/review/migrate_satellite_overrides.py), not at inference
+# time. Re-introducing `satellite_overrides_path` here will fail fast.
 
 # Reproducibility
 reproducibility:

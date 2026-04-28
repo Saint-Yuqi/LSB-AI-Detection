@@ -4,13 +4,34 @@
 # SAM3 runs in pseudo_label mode to generate canonical pseudo-GT.
 #
 # Usage:
-#   python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep_pnbody.yaml
-#   python scripts/data/prepare_unified_dataset.py --config ... --phase inference
-#   python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep_pnbody.yaml
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --phase inference
+#   conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
 
 paths:
   firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox_PNbody"
   output_root: "data/02_processed"
+  diagnostics_root: "data/02_processed/sam3_diagnostics"
+  # Versioned pseudo-GT subdirectory (tidal_v1 path). Setting either knob
+  # to a non-default name activates the new 3-class flow in inference_sam3.
+  gt_subdir: "gt_canonical_tidal_v1"
+  pseudo_gt_subdir: "pseudo_gt_canonical_tidal_v1"
+
+dataset_name: "pnbody"
+
+data_conditions:
+  clean:
+    fits_root: "data/01_raw/LSB_and_Satellites/FIREbox_PNbody/SB_maps"
+    image_pattern: "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz"
+    label_mode: "authoritative"
+  sb30:
+    fits_root: "data/04_noise/pnbody_physics/sb30"
+    image_pattern: "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz"
+    label_mode: "clone_from_clean"
+  sb31.5:
+    fits_root: "data/04_noise/pnbody_physics/sb31.5"
+    image_pattern: "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz"
+    label_mode: "clone_from_clean"
 
 gt_phase:
   enabled: false
@@ -40,7 +61,7 @@ data_selection:
 data_sources:
   streams:
     image_subdir: "SB_maps"
-    image_pattern: "magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz"
+    image_pattern: "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz"
 
 processing:
   target_size: [1024, 1024]
@@ -58,25 +79,37 @@ inference_phase:
   input_image_variant: "linear_magnitude"
 
   sam3:
-    checkpoint: "/home/yuqyan/Yuqi/sam3/scratch/sam3_finetuning/checkpoints/checkpoint_best.pt"
+    checkpoint: "/home/yuqyan/Yuqi/LSB-AI-Detection/sam3_finetuning_2026-02-24_19-04-51/checkpoints/checkpoint.pt"
     bpe_path: "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt.gz"
     confidence_threshold: 0.55
     resolution: 1008
+    # PNbody runs both prompts. Stream-prompt outputs are routed into the
+    # tidal_features bucket on the new path. The text remains the model's
+    # trained vocabulary; only the type_label is renamed.
     prompts:
       - text: "stellar stream"
-        type_label: "streams"
+        type_label: "tidal_features"
       - text: "satellite galaxy"
         type_label: "satellites"
     streams_sanity:
       stats_json: "outputs/mask_stats/mask_stats_summary.json"
       edge_touch_frac: 0.8
 
-satellites:
-  prior:
-    ambiguous_factor: 0.25
-    stats_json: "outputs/mask_stats/mask_stats_summary.json"
-  core_exclusion:
-    radius_frac: 0.08
+    score_gate:
+      small_area_max_px: 200
+      medium_area_max_px: 600
+      small_min_score: 0.60
+      medium_min_score: 0.20
+      large_min_score: 0.18
+    # Same frozen prior_filter as DR1 (sha1: a3689cfbf63df482).
+    prior_filter:
+      area_min: 14
+      solidity_min: 0.8852
+      aspect_sym_max: 2.6731
+      hard_center_radius_frac: 0.03
+      hard_center_action: "relabel_inner_galaxy"
+    conflict_policy:
+      enabled: false
 
 export_phase:
   annotations_filename: "annotations_pnbody_pseudo.json"

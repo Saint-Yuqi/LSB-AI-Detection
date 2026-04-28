@@ -75,7 +75,7 @@ def calculate_instance_iou(
     Calculate IoU metrics for instance segmentation.
     
     Args:
-        pred_masks: List of predicted masks from SAM2.
+        pred_masks: List of predicted masks.
             Each dict should have a 'segmentation' key with a binary mask.
         gt_mask: Ground truth mask with instance IDs (0=bg, 1,2,3...=instances)
         
@@ -132,7 +132,7 @@ def calculate_matched_metrics(
     whether each GT object is successfully detected.
     
     Args:
-        pred_masks: List of SAM2 predicted masks (each with 'segmentation' key)
+        pred_masks: List of predicted masks (each with 'segmentation' key)
         gt_mask: Ground truth mask (0=bg, 1,2,3...=instance IDs)
         iou_threshold: Minimum IoU to count as detected
         
@@ -357,6 +357,217 @@ def calculate_pixel_metrics(
     }
 
 
+# =========================================================================== #
+#  Pred-centric primitives (reusable by diagnostics, notebooks, experiments)
+#
+#  These functions do NOT use an IoU threshold. They answer:
+#      "For a single prediction, what GT instance does it primarily hit,
+#       and how much of it lands inside / covers that GT?"
+#
+#  Split by scope so the single-prediction helpers have no hidden global
+#  dependency on the rest of the prediction list.
+# =========================================================================== #
+
+
+def primary_gt_match(
+    pred_bin: np.ndarray,
+    gt_instance_map: np.ndarray,
+) -> Dict[str, Any]:
+    """
+    O(|P|) arg-max match of one prediction against an instance map.
+
+    Counts positive GT IDs under the predicted foreground via
+    ``np.bincount(gt_instance_map[pred_bin])``, then picks the most-overlapped
+    positive ID. No IoU threshold.
+
+    Tie-break: ``np.argmax`` returns the first occurrence, i.e. the smallest
+    positive GT ID wins when two IDs have identical overlap. This is the
+    documented behaviour.
+
+    Args:
+        pred_bin:         (H, W) bool — single prediction foreground.
+        gt_instance_map:  (H, W) int — positive IDs are GT instances, 0 = bg.
+
+    Returns:
+        dict with keys:
+            matched_gt_id:    int | None   — arg-max positive ID; None when
+                                              there is zero overlap with any
+                                              positive ID.
+            overlap_px:       int          — |P ∩ G*|.
+            pred_area:        int          — |P|.
+            matched_gt_area:  int | None   — |G*|; None iff matched_gt_id
+                                              is None.
+
+    Raises:
+        ValueError: if ``pred_bin.shape != gt_instance_map.shape``.
+    """
+    if pred_bin.shape != gt_instance_map.shape:
+        raise ValueError(
+            f"Shape mismatch: pred_bin {pred_bin.shape} vs "
+            f"gt_instance_map {gt_instance_map.shape}"
+        )
+    pred_bool = pred_bin.astype(bool)
+    pred_area = int(pred_bool.sum())
+    if pred_area == 0:
+        return {
+            'matched_gt_id': None,
+            'overlap_px': 0,
+            'pred_area': 0,
+            'matched_gt_area': None,
+        }
+    ids_under_pred = gt_instance_map[pred_bool]
+    # bincount requires non-negative integers; gt_instance_map is int with 0=bg.
+    if ids_under_pred.min() < 0:
+        raise ValueError(
+            "gt_instance_map contains negative values; expected 0 = bg and "
+            "positive instance IDs only."
+        )
+    counts = np.bincount(ids_under_pred.astype(np.int64))
+    if counts.size <= 1 or counts[1:].max() == 0:
+        return {
+            'matched_gt_id': None,
+            'overlap_px': 0,
+            'pred_area': pred_area,
+            'matched_gt_area': None,
+        }
+    counts[0] = 0
+    gid = int(counts.argmax())
+    overlap_px = int(counts[gid])
+    matched_gt_area = int((gt_instance_map == gid).sum())
+    return {
+        'matched_gt_id': gid,
+        'overlap_px': overlap_px,
+        'pred_area': pred_area,
+        'matched_gt_area': matched_gt_area,
+    }
+
+
+def derive_purity_completeness(
+    overlap_px: int,
+    pred_area: int,
+    matched_gt_area: Optional[int],
+) -> Dict[str, Optional[float]]:
+    """
+    Pure scalar helper. Single-prediction, no global dependency.
+
+    Args:
+        overlap_px:       |P ∩ G*|.
+        pred_area:        |P|.
+        matched_gt_area:  |G*|, or None when there is no matched GT.
+
+    Returns:
+        dict with keys:
+            purity:         overlap_px / pred_area        (0.0 when pred_area == 0)
+            completeness:   overlap_px / matched_gt_area  (None iff matched_gt_area is None)
+            seed_gt_ratio:  pred_area / matched_gt_area   (None iff matched_gt_area is None)
+    """
+    purity = (overlap_px / pred_area) if pred_area > 0 else 0.0
+    if matched_gt_area is None:
+        return {
+            'purity': float(purity),
+            'completeness': None,
+            'seed_gt_ratio': None,
+        }
+    if matched_gt_area <= 0:
+        raise ValueError(
+            f"matched_gt_area must be > 0 when provided; got {matched_gt_area}"
+        )
+    return {
+        'purity': float(purity),
+        'completeness': float(overlap_px / matched_gt_area),
+        'seed_gt_ratio': float(pred_area / matched_gt_area),
+    }
+
+
+def compute_one_to_one_flags(
+    pred_bins: List[np.ndarray],
+    gt_instance_map: np.ndarray,
+) -> List[bool]:
+    """
+    Batch helper. Builds the (N_pred × N_gt) overlap matrix once and returns
+    ``True`` for prediction p iff p is the arg-max-overlap prediction for its
+    primary GT (and that primary GT has positive overlap with p).
+
+    Tie-break: ``np.argmax`` takes the first occurrence — the prediction at
+    the lowest list index wins when two predictions have identical overlap
+    with the same GT.
+
+    Args:
+        pred_bins:        list of (H, W) bool arrays, all sharing the image
+                          shape of ``gt_instance_map``. Predictions in this
+                          list should belong to a single type channel (the
+                          caller decides — e.g. satellites only).
+        gt_instance_map:  (H, W) int, 0 = bg.
+
+    Returns:
+        list[bool] of length ``len(pred_bins)``.
+
+    Raises:
+        ValueError: if any pred shape mismatches ``gt_instance_map``.
+    """
+    n_pred = len(pred_bins)
+    if n_pred == 0:
+        return []
+
+    gt_ids = np.unique(gt_instance_map)
+    gt_ids = gt_ids[gt_ids > 0]
+    if gt_ids.size == 0:
+        # No GT at all: no prediction is "the best hit" for any GT.
+        return [False] * n_pred
+
+    H, W = gt_instance_map.shape
+    for idx, p in enumerate(pred_bins):
+        if p.shape != (H, W):
+            raise ValueError(
+                f"pred_bins[{idx}].shape={p.shape} does not match "
+                f"gt_instance_map shape {(H, W)}"
+            )
+
+    # Primary GT per prediction (first-argmax tie-break).
+    primary_gt = np.full(n_pred, -1, dtype=np.int64)
+    overlap_with_primary = np.zeros(n_pred, dtype=np.int64)
+    for i, p in enumerate(pred_bins):
+        info = primary_gt_match(p, gt_instance_map)
+        if info['matched_gt_id'] is None:
+            continue
+        primary_gt[i] = info['matched_gt_id']
+        overlap_with_primary[i] = info['overlap_px']
+
+    # For each GT id, find the pred with the largest overlap with that GT
+    # (first-argmax tie-break). A pred is one-to-one iff it is that winner
+    # AND its overlap with that GT is > 0 AND the GT is its own primary.
+    best_pred_for_gt: Dict[int, int] = {}
+    # Compute overlap(p, g) only for (p, g) pairs where g == primary_gt[p];
+    # that is the only comparison we need for the "mutual primary" check.
+    per_gt_candidates: Dict[int, List[tuple]] = {}
+    for i in range(n_pred):
+        gid = int(primary_gt[i])
+        if gid < 0:
+            continue
+        per_gt_candidates.setdefault(gid, []).append((i, int(overlap_with_primary[i])))
+
+    for gid, cands in per_gt_candidates.items():
+        # first-argmax: pick the candidate with the largest overlap; on tie,
+        # the one encountered first (lowest i) wins — matches np.argmax.
+        best_i = cands[0][0]
+        best_ov = cands[0][1]
+        for i, ov in cands[1:]:
+            if ov > best_ov:
+                best_i = i
+                best_ov = ov
+        if best_ov > 0:
+            best_pred_for_gt[gid] = best_i
+
+    flags = [False] * n_pred
+    for i in range(n_pred):
+        gid = int(primary_gt[i])
+        if gid < 0:
+            continue
+        if best_pred_for_gt.get(gid) == i:
+            flags[i] = True
+    return flags
+
+
 def calculate_optimal_instance_metrics(
     pred_masks: List[Dict],
     gt_instance_map: np.ndarray,
@@ -497,3 +708,176 @@ def calculate_optimal_instance_metrics(
         'num_pred': num_pred,
         'per_instance_details': details,
     }
+
+
+def calculate_optimal_instance_metrics_rle(
+    pred_rle_list: List[Dict],
+    gt_rle_list: List[Dict],
+    iou_threshold: float = 0.5,
+) -> Dict[str, Any]:
+    """RLE-aware variant of ``calculate_optimal_instance_metrics``.
+
+    Operates directly on lists of COCO RLE dicts (one per instance) rather
+    than packing instances into a single int32 raster. This preserves
+    within-class overlap that would otherwise collapse during raster
+    packing (e.g. PNbody tidal_features, satellites under the new GT).
+
+    Returns the same metric tuple shape as the integer-raster variant so
+    surrounding plumbing in ``checkpoint_eval`` stays unchanged. The
+    ``gt_instance_id`` slot in ``per_instance_details`` is replaced by a
+    1-based positional index because RLEs carry no intrinsic ID.
+    """
+    num_gt = len(gt_rle_list)
+    num_pred = len(pred_rle_list)
+
+    if num_gt == 0:
+        return {
+            'instance_recall': None,
+            'matched_iou': None,
+            'unmatched_iou': None,
+            'num_gt': 0,
+            'num_detected': 0,
+            'num_pred': num_pred,
+            'per_instance_details': [],
+        }
+
+    if num_pred == 0:
+        details = []
+        for gi in range(num_gt):
+            gt_area = _rle_area(gt_rle_list[gi])
+            details.append({
+                'gt_instance_id': gi + 1,
+                'matched_pred_idx': None,
+                'iou': 0.0,
+                'detected': False,
+                'gt_area': gt_area,
+            })
+        return {
+            'instance_recall': 0.0,
+            'matched_iou': 0.0,
+            'unmatched_iou': 0.0,
+            'num_gt': num_gt,
+            'num_detected': 0,
+            'num_pred': 0,
+            'per_instance_details': details,
+        }
+
+    iou_matrix = _rle_iou_matrix(gt_rle_list, pred_rle_list)  # (N_gt, N_pred)
+    cost = 1.0 - iou_matrix
+    row_idx, col_idx = linear_sum_assignment(cost)
+
+    assignment: Dict[int, tuple] = {}
+    for r, c in zip(row_idx, col_idx):
+        assignment[r] = (c, float(iou_matrix[r, c]))
+
+    matched_ious: list[float] = []
+    unmatched_ious: list[float] = []
+    details: list[dict] = []
+    detected = 0
+
+    for gi in range(num_gt):
+        gt_area = _rle_area(gt_rle_list[gi])
+        if gi in assignment:
+            pred_idx, iou_val = assignment[gi]
+            is_match = iou_val >= iou_threshold
+        else:
+            best_iou = float(iou_matrix[gi].max()) if num_pred > 0 else 0.0
+            pred_idx = None
+            iou_val = best_iou
+            is_match = False
+
+        if is_match:
+            detected += 1
+            matched_ious.append(iou_val)
+        else:
+            best = float(iou_matrix[gi].max()) if num_pred > 0 else 0.0
+            unmatched_ious.append(best)
+
+        details.append({
+            'gt_instance_id': gi + 1,
+            'matched_pred_idx': int(pred_idx) if pred_idx is not None and is_match else None,
+            'iou': float(iou_val),
+            'detected': is_match,
+            'gt_area': gt_area,
+        })
+
+    return {
+        'instance_recall': detected / num_gt,
+        'matched_iou': float(np.mean(matched_ious)) if matched_ious else 0.0,
+        'unmatched_iou': float(np.mean(unmatched_ious)) if unmatched_ious else 0.0,
+        'num_gt': num_gt,
+        'num_detected': detected,
+        'num_pred': num_pred,
+        'per_instance_details': details,
+    }
+
+
+def rasterize_per_class_rles(
+    rle_list: List[Dict],
+    H: int,
+    W: int,
+) -> np.ndarray:
+    """Pack per-class RLEs into an int32 last-wins raster.
+
+    Used by the legacy diagnostic / pixel-metric paths in checkpoint_eval
+    that expect a single int32 GT array per class. Within-class overlap
+    pixels are owned by the last-painted instance — this is fine for
+    taxonomy classification (a per-candidate label) but would lose RLE
+    fidelity for instance recall, which is why we report RLE-aware
+    metrics in a separate sub-block.
+    """
+    out = np.zeros((H, W), dtype=np.int32)
+    for i, rle in enumerate(rle_list, start=1):
+        binary = _rle_decode_binary(rle).astype(bool)
+        if binary.shape != (H, W):
+            raise ValueError(
+                f"RLE shape {binary.shape} does not match expected {(H, W)}"
+            )
+        out[binary] = i
+    return out
+
+
+def _rle_decode_binary(rle: Dict) -> np.ndarray:
+    """Decode a COCO RLE dict to a (H, W) bool array."""
+    from src.utils.coco_utils import decode_rle as _decode
+    return _decode(rle).astype(bool)
+
+
+def _rle_area(rle: Dict) -> int:
+    """Pixel area of an RLE without materializing the full raster."""
+    return int(_rle_decode_binary(rle).sum())
+
+
+def _rle_iou_matrix(gt_rles: List[Dict], pred_rles: List[Dict]) -> np.ndarray:
+    """Pairwise IoU between GT and predicted RLE lists.
+
+    Falls back to a numpy implementation when pycocotools is unavailable.
+    """
+    try:
+        import pycocotools.mask as mask_utils
+        # pycocotools expects byte counts, not str counts. Convert if needed.
+        def _ensure_bytes(rle):
+            r = dict(rle)
+            counts = r.get("counts")
+            if isinstance(counts, str):
+                r["counts"] = counts.encode("ascii")
+            return r
+
+        gt_pc = [_ensure_bytes(r) for r in gt_rles]
+        pred_pc = [_ensure_bytes(r) for r in pred_rles]
+        iscrowd = [0] * len(gt_pc)
+        ious = mask_utils.iou(pred_pc, gt_pc, iscrowd)
+        # mask_utils.iou returns (N_pred, N_gt); we want (N_gt, N_pred).
+        return np.asarray(ious).T.astype(np.float64)
+    except (ImportError, ModuleNotFoundError):
+        gt_bin = [_rle_decode_binary(r).ravel() for r in gt_rles]
+        pred_bin = [_rle_decode_binary(r).ravel() for r in pred_rles]
+        gt_arr = np.stack(gt_bin, axis=0).astype(np.float32) if gt_bin else np.zeros((0, 0), dtype=np.float32)
+        pred_arr = np.stack(pred_bin, axis=0).astype(np.float32) if pred_bin else np.zeros((0, 0), dtype=np.float32)
+        if gt_arr.size == 0 or pred_arr.size == 0:
+            return np.zeros((len(gt_bin), len(pred_bin)), dtype=np.float64)
+        intersection = gt_arr @ pred_arr.T
+        gt_areas = gt_arr.sum(axis=1, keepdims=True)
+        pred_areas = pred_arr.sum(axis=1, keepdims=True).T
+        union = gt_areas + pred_areas - intersection
+        return np.where(union > 0, intersection / union, 0.0).astype(np.float64)
