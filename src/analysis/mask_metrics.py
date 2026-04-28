@@ -212,3 +212,169 @@ def append_metrics_to_masks(
         seg = m["segmentation"]
         metrics = compute_mask_metrics(seg, H, W, compute_hull)
         m.update(metrics)
+
+
+# ---------------------------------------------------------------------------
+#  Image-evidence metrics (operate on the render intensity SAM3 saw)
+#
+#  These helpers are NOT added to append_metrics_to_masks because they need
+#  the render signal in addition to the mask. Only the satellite diagnostics
+#  module calls them today.
+#
+#  No magnitude -> flux inversion happens anywhere. The signal is the same
+#  (H, W) intensity array used by SAM3 at inference, with arbitrary units.
+# ---------------------------------------------------------------------------
+
+
+def _cleaned_mask_for_signal(seg: np.ndarray) -> tuple[np.ndarray, int]:
+    """Return (clean uint8 mask, area_clean). area_clean == 0 if no foreground."""
+    if seg.size == 0:
+        return seg.astype(np.uint8), 0
+    clean = _clean_mask(seg.astype(np.uint8))
+    return clean, int(clean.sum())
+
+
+def _r_eq(area_clean: int) -> float:
+    """Equivalent-circle radius from a mask area: r_eq = sqrt(area / pi)."""
+    return float(np.sqrt(area_clean / np.pi))
+
+
+def _centroid_yx(clean: np.ndarray) -> tuple[float, float]:
+    rows, cols = np.where(clean > 0)
+    return float(rows.mean()), float(cols.mean())
+
+
+def annulus_excess(
+    signal: np.ndarray,
+    seg: np.ndarray,
+    r_in_frac: float = 1.2,
+    r_out_frac: float = 2.0,
+) -> float | None:
+    """
+    Mean signal excess in an annulus around a mask, relative to a farther
+    reference ring. Units are whatever ``signal`` is in — no conversion.
+
+    Args:
+        signal:      (H, W) float32 intensity array (fails fast on other rank).
+        seg:         (H, W) binary mask (uint8/bool).
+        r_in_frac:   inner radius of the evaluation annulus, in units of r_eq.
+        r_out_frac:  outer radius of the evaluation annulus, in units of r_eq.
+                     The reference ring is ``[2 * r_out_frac * r_eq,
+                     3 * r_out_frac * r_eq]``.
+
+    Returns:
+        float: mean(signal in evaluation annulus) − mean(signal in reference
+               ring), in ``signal`` units. Positive ⇒ envelope extends beyond
+               the seed.
+        None:  when the mask is too small (``area_clean < MIN_AREA_FOR_HULL``),
+               when either annulus has zero pixels on-frame, or when centroid
+               cannot be determined.
+
+    Raises:
+        ValueError: if ``signal.ndim != 2`` or shapes mismatch.
+    """
+    if signal.ndim != 2:
+        raise ValueError(f"signal must be (H, W); got shape {signal.shape}")
+    if signal.shape != seg.shape:
+        raise ValueError(
+            f"shape mismatch: signal {signal.shape} vs seg {seg.shape}"
+        )
+    if r_in_frac <= 0 or r_out_frac <= r_in_frac:
+        raise ValueError(
+            f"require 0 < r_in_frac < r_out_frac; "
+            f"got r_in_frac={r_in_frac}, r_out_frac={r_out_frac}"
+        )
+
+    clean, area_clean = _cleaned_mask_for_signal(seg)
+    if area_clean < MIN_AREA_FOR_HULL:
+        return None
+
+    r_eq = _r_eq(area_clean)
+    if r_eq <= 0:
+        return None
+
+    cy, cx = _centroid_yx(clean)
+    H, W = signal.shape
+    ys = np.arange(H, dtype=np.float32)[:, None]
+    xs = np.arange(W, dtype=np.float32)[None, :]
+    dist = np.sqrt((ys - cy) ** 2 + (xs - cx) ** 2)
+
+    r_in = r_in_frac * r_eq
+    r_out = r_out_frac * r_eq
+    ref_in = 2.0 * r_out
+    ref_out = 3.0 * r_out
+
+    eval_mask = (dist >= r_in) & (dist < r_out)
+    ref_mask = (dist >= ref_in) & (dist < ref_out)
+
+    if not eval_mask.any() or not ref_mask.any():
+        return None
+
+    eval_mean = float(signal[eval_mask].mean())
+    ref_mean = float(signal[ref_mask].mean())
+    return eval_mean - ref_mean
+
+
+def radial_monotonicity(
+    signal: np.ndarray,
+    seg: np.ndarray,
+    n_rings: int = 6,
+    r_out_frac: float = 2.0,
+) -> float | None:
+    """
+    Fraction of consecutive ring pairs whose azimuthally-averaged signal
+    strictly decreases as radius increases.
+
+    Args:
+        signal:      (H, W) float32 intensity array.
+        seg:         (H, W) binary mask.
+        n_rings:     number of equal-width rings from r=0 to r_out_frac * r_eq.
+                     Must be >= 2.
+        r_out_frac:  outer radius of the last ring in units of r_eq.
+
+    Returns:
+        float in [0, 1]: fraction of (n_rings − 1) consecutive pairs where
+                         ``mean_{k+1} < mean_k``. 1.0 = strictly monotone decay
+                         from centroid outward.
+        None:  when the mask is too small, when any ring has zero pixels
+               on-frame, or when n_rings < 2.
+
+    Raises:
+        ValueError: if shapes mismatch or r_out_frac <= 0.
+    """
+    if signal.ndim != 2:
+        raise ValueError(f"signal must be (H, W); got shape {signal.shape}")
+    if signal.shape != seg.shape:
+        raise ValueError(
+            f"shape mismatch: signal {signal.shape} vs seg {seg.shape}"
+        )
+    if r_out_frac <= 0:
+        raise ValueError(f"r_out_frac must be > 0; got {r_out_frac}")
+    if n_rings < 2:
+        return None
+
+    clean, area_clean = _cleaned_mask_for_signal(seg)
+    if area_clean < MIN_AREA_FOR_HULL:
+        return None
+
+    r_eq = _r_eq(area_clean)
+    if r_eq <= 0:
+        return None
+
+    cy, cx = _centroid_yx(clean)
+    H, W = signal.shape
+    ys = np.arange(H, dtype=np.float32)[:, None]
+    xs = np.arange(W, dtype=np.float32)[None, :]
+    dist = np.sqrt((ys - cy) ** 2 + (xs - cx) ** 2)
+
+    r_max = r_out_frac * r_eq
+    edges = np.linspace(0.0, r_max, n_rings + 1)
+    means = np.empty(n_rings, dtype=np.float64)
+    for k in range(n_rings):
+        ring = (dist >= edges[k]) & (dist < edges[k + 1])
+        if not ring.any():
+            return None
+        means[k] = float(signal[ring].mean())
+
+    decreases = int(np.sum(means[1:] < means[:-1]))
+    return float(decreases / (n_rings - 1))

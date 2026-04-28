@@ -37,11 +37,12 @@ def _make_coco(prefix="a", n_images=3, n_anns_per_image=2, start_id=1):
             "height": 64,
             "galaxy_id": 10 + i,
             "view_id": "eo",
-            "orientation": "eo",
-            "variant": "asinh_stretch",
-            "base_key": f"{10 + i:05d}_eo",
-            "snr_tag": "clean",
-        })
+                "orientation": "eo",
+                "variant": "asinh_stretch",
+                "base_key": f"{10 + i:05d}_eo",
+                "snr_tag": "clean",
+                "noise_tag": "clean",
+            })
         for j in range(n_anns_per_image):
             ann_id += 1
             annotations.append({
@@ -191,6 +192,7 @@ class TestCompose:
                 "variant": "linear_magnitude",
                 "base_key": f"{100 + i:05d}_los{i:02d}",
                 "snr_tag": "clean",
+                "noise_tag": "clean",
             })
             pseudo_anns.append({
                 "id": i + 1, "image_id": i + 1,
@@ -219,3 +221,18 @@ class TestCompose:
         assert len(merged["images"]) == 5  # 3 gold + 2 pseudo
         sources_seen = {img["dataset_source"] for img in merged["images"]}
         assert sources_seen == {"gold", "pnbody_pseudo"}
+
+    def test_compose_duplicate_noise_tag_mismatch_is_rejected(self, tmp_path):
+        coco_a = _make_coco(prefix="shared", n_images=1)
+        coco_b = _make_coco(prefix="shared", n_images=1)
+        coco_b["images"][0]["noise_tag"] = "sb30"
+        path_a = _write_coco(tmp_path, "a.json", coco_a)
+        path_b = _write_coco(tmp_path, "b.json", coco_b)
+        output = tmp_path / "active.json"
+
+        with pytest.raises(ValueError, match="noise_tag"):
+            compose_training_coco(
+                sources=[("a", path_a), ("b", path_b)],
+                output_path=output,
+                allow_duplicate_filenames=True,
+            )

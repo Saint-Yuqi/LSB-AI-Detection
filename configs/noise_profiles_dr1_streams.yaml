@@ -1,0 +1,36 @@
+# FIREbox-DR1 Streams Noise Profiles (mockimgs_sb_add_noise)
+# ===========================================================
+# Drives generate_pnbody_noisy_fits.py against the FIREbox-DR1 streams
+# benchmark (streams-only at SBlim31.5, ~72 samples = {36 eo + 36 fo},
+# 2051x2051 VIS2 FITS) to produce SB31.5 noisy FITS for evaluation.
+#
+# Sample universe is defined by whatever SBlim31.5 masks exist on disk at
+# MASKS_EO/MASKS_FO; the count is not hardcoded.
+#
+# Output: data/04_noise/firebox_dr1_streams/sb31.5/{gid:05d}/magnitudes-Fbox-{gid}-{view}-VIS2.fits.gz
+#
+# Usage:
+#   conda run -n sam3 python scripts/data/generate_pnbody_noisy_fits.py \
+#       --config configs/noise_profiles_dr1_streams.yaml
+#   conda run -n sam3 python scripts/data/generate_pnbody_noisy_fits.py \
+#       --config ... --galaxies 11 --profiles sb31.5
+
+paths:
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  output_root: "data/04_noise/firebox_dr1_streams"
+
+source:
+  filename_suffix: "VIS2"       # DR1 uses VIS2
+  sb_maps_layout: "flat"        # SB_maps/magnitudes-Fbox-...
+  enumeration:
+    mode: "mask_glob"
+    mask_eo_glob: "MASKS_EO/ark_features-*-eo-SBlim31.5.fits.gz"
+    mask_fo_glob: "MASKS_FO/ark_features-*-fo-SBlim31.5.fits.gz"
+    mask_name_regex: "ark_features-(\\d+)-(eo|fo)-SBlim31\\.5\\.fits\\.gz"
+
+profiles:
+  - name: "sb31.5"
+    sb_limit: 31.5
+
+reproducibility:
+  random_seed: 42

@@ -23,12 +23,12 @@ def save_visualization(
     
     Creates a 3-panel figure showing:
     1. Original input image
-    2. SAM2 predicted masks (overlaid with distinct colors)
+    2. Predicted masks (overlaid with distinct colors)
     3. Ground truth instances (overlaid with distinct colors)
     
     Args:
         image: Input RGB image array with shape (H, W, 3)
-        pred_masks: List of predicted masks from SAM2.
+        pred_masks: List of predicted masks.
             Each dict should have a 'segmentation' key with a binary mask.
         gt_mask: Ground truth mask with instance IDs (0=bg, 1,2,...=instances)
         output_path: Path to save the visualization image
@@ -60,7 +60,7 @@ def save_visualization(
     else:
         axes[1].imshow(image)
     
-    axes[1].set_title(f'SAM2 Predictions ({len(pred_masks)} masks)')
+    axes[1].set_title(f'Predictions ({len(pred_masks)} masks)')
     axes[1].axis('off')
     
     # Panel 3: Ground truth

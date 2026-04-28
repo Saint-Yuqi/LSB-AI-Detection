@@ -1,0 +1,31 @@
+# Fbox Gold Satellites Noise Profiles (mockimgs_sb_add_noise)
+# ============================================================
+# Drives generate_pnbody_noisy_fits.py against the Fbox Gold Satellites
+# benchmark (satellites-only, 132 samples, 2051x2051 VIS FITS) to produce
+# SB31.5 noisy FITS for evaluation.
+#
+# Output: data/04_noise/fbox_gold_satellites/sb31.5/{gid:05d}/magnitudes-Fbox-{gid}-{view}-VIS.fits.gz
+#
+# Usage:
+#   conda run -n sam3 python scripts/data/generate_pnbody_noisy_fits.py \
+#       --config configs/noise_profiles_fbox_gold.yaml
+#   conda run -n sam3 python scripts/data/generate_pnbody_noisy_fits.py \
+#       --config ... --galaxies 11 --profiles sb31.5
+
+paths:
+  firebox_root: "data/01_raw/LSB_and_Satellites/Fbox_Gold_Satellites"
+  output_root: "data/04_noise/fbox_gold_satellites"
+
+source:
+  filename_suffix: "VIS"        # Fbox Gold uses VIS, not VIS2
+  sb_maps_layout: "nested"      # SB_maps/{gid:05d}/...
+  enumeration:
+    mode: "manifest"
+    manifest: "data/01_raw/LSB_and_Satellites/Fbox_Gold_Satellites/dataset_manifest.json"
+
+profiles:
+  - name: "sb31.5"
+    sb_limit: 31.5
+
+reproducibility:
+  random_seed: 42

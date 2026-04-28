@@ -16,7 +16,7 @@
 - `segmentation: np.ndarray` (boolean, HxW)
 - `area: int`
 - `bbox: List[int]` ([x0, y0, w, h])
-- `predicted_iou: float`
+- `score: float`
 - `point_coords: List[List[float]]`
 - `stability_score: float`
 - `crop_box: List[int]`

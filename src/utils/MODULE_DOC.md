@@ -70,4 +70,8 @@
 - `TypeError`: Raised by `mask_to_rle` if `binary_mask` dtype is not `np.uint8`.
 - `ValueError`: Raised by `mask_to_rle` if `binary_mask` is not C-contiguous (non-standard memory layout).
 - `ValueError`: Raised by `get_bbox_from_mask` if `binary_mask` contains no foreground pixels (empty mask returns no valid bounding box).
- 
+
+## `runtime_env.py`
+
+### `assert_expected_conda_env(expected="sam3", context="this command") -> None`
+- Guard helper that fails closed when the active `CONDA_DEFAULT_ENV` does not match `expected`. Used by CLI entrypoints (e.g. `scripts/eval/evaluate_checkpoint.py`) to prevent accidental runs in the wrong conda environment. `context` is interpolated into the error message so it points at the offending caller.

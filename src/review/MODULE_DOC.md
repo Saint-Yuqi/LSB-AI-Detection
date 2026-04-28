@@ -98,3 +98,7 @@ is validated.
 ### `authoritative_gt.rebuild_id_map(instances)` (extended)
 - Now tolerates both legacy (`type` field with `"streams"`/`"satellites"`) and new (`type_label` field with `"tidal_features"`/`"satellites"`/`"inner_galaxy"`) row shapes. Falls back to `inst.get("type") or inst.get("type_label", "unknown")`.
 - The `streams` and `satellites` buckets are still emitted unconditionally for backward compatibility with consumers that index by hardcoded class name.
+
+## Status
+
+Experimental, partially prepared — only a subset of inputs has been generated so far and whether a full verifier loop runs end-to-end is still being decided. The module ships the schemas, render/asset pipeline, silver labeller, example/ETL builders, and correction write-back paths; consumers should treat it as exploratory and not depend on it from the main training/eval flows.

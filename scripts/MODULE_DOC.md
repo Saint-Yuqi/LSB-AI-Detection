@@ -118,7 +118,7 @@
     - `segmentation: Dict` — RLE-encoded mask with keys `{"counts": str, "size": List[int]}` ([H, W])
     - `area: int`
     - `bbox: List[int]` ([x0, y0, w, h])
-    - `predicted_iou: float`
+    - `score: float`
     - `point_coords: List[List[float]]`
     - `stability_score: float`
     - `crop_box: List[int]`
@@ -141,6 +141,7 @@
 ## Invariants
 - **Reproducibility:** Evaluation runs serialize the exact `.yaml` config snapshot alongside output artifacts in the same directory.
 - **Dependency Inversion:** All path resolution is driven by CLI arguments; no paths are hardcoded in script bodies.
+- **SAM3 Runtime Contract:** Current SAM3 render/eval/review CLIs are launched in the `sam3` conda env; examples should use `conda run --no-capture-output -n sam3 ...`.
 - **PNbody View Cardinality:** PNbody FITS generation requires exactly 24 LOS vectors and emits canonical `los00`..`los23` outputs.
 - **CLI Fallback:** PNbody FITS generation prefers `mockimgs_sb_compute_images` on `PATH`, but may fall back to the repo-local script entry point.
 

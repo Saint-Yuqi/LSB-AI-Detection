@@ -16,7 +16,7 @@ Args:
 
 Output:
     data/02_processed/renders/noisy/{variant}/{profile}/{base_key}/0000.png
-    Directory naming uses zero-padded galaxy IDs: {gid:05d}_{orient}
+    Directory naming uses zero-padded galaxy IDs: {gid:05d}_{view}
 """
 
 from __future__ import annotations
@@ -97,15 +97,26 @@ def main() -> None:
         profiles = [p for p in profiles if p in set(args.profiles)]
 
     # --- Enumerate input FITS ---
-    total = 0
     work_items: list[tuple[str, Path]] = []  # (profile, fits_path)
     for prof in profiles:
         prof_dir = noise_root / prof
         if not prof_dir.exists():
             print(f"  SKIP (missing dir): {prof_dir}")
             continue
-        fits_files = sorted(prof_dir.glob("magnitudes-Fbox-*-VIS2.fits.gz"))
-        work_items.extend((prof, f) for f in fits_files)
+        fits_candidates = sorted(prof_dir.rglob("magnitudes-Fbox-*-VIS2.fits.gz"))
+        by_base_key: dict[str, Path] = {}
+        for fits_path in fits_candidates:
+            m = _FNAME_RE.match(fits_path.name)
+            if not m:
+                continue
+            gid = int(m.group(1))
+            view = m.group(2)
+            base_key = f"{gid:05d}_{view}"
+            current = by_base_key.get(base_key)
+            # Prefer the grouped-by-galaxy canonical path over flat compat symlinks.
+            if current is None or fits_path.parent.name == f"{gid:05d}":
+                by_base_key[base_key] = fits_path
+        work_items.extend((prof, f) for _, f in sorted(by_base_key.items()))
     total = len(work_items) * len(preprocessors)
 
     print(f"Rendering {total} images "
@@ -116,15 +127,14 @@ def main() -> None:
     t0 = time.time()
 
     for prof, fits_path in work_items:
-        # Parse galaxy_id and orientation from filename
+        # Parse galaxy_id and view_id from filename
         m = _FNAME_RE.match(fits_path.name)
         if not m:
             print(f"  SKIP (bad filename): {fits_path.name}")
             continue
         gid = int(m.group(1))
-        orient = m.group(2)
-        # Zero-padded base_key matching BaseKey.__str__
-        base_key = f"{gid:05d}_{orient}"
+        view = m.group(2)
+        base_key = f"{gid:05d}_{view}"
 
         # Lazy-load FITS only if at least one variant needs rendering
         sb_map = None

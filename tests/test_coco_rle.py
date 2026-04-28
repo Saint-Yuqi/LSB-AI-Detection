@@ -3,7 +3,7 @@
 Round-trip validation for COCO RLE encode/decode.
 
 Usage:
-    conda run -n sam2 --no-capture-output python tests/test_coco_rle.py
+    conda run -n sam3 --no-capture-output python tests/test_coco_rle.py
 """
 import sys
 from pathlib import Path

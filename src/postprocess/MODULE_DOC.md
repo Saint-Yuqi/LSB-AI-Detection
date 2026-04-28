@@ -184,3 +184,10 @@
 
 ### `satellite_core_policy` (deprecated)
 - Module retained for legacy import compatibility; new (tidal_v1) configs should construct `SatellitePipelineRunner(..., core_policy=None, enable_core_policy=False)`. Hard-center handling is done by `SatellitePriorFilter.decide_with_target` instead.
+
+### `StreamSatelliteConflictFilter` (`stream_satellite_conflict_filter.py`)
+- Cross-class conflict resolver between predicted streams and predicted satellites in the `post_pred_only` chain. Decides per-pair via overlap ratio, area, and shape priors and emits drop/keep decisions with a `THRESHOLD_VERSION`-tagged reason string. Disabled on the tidal_v1 path (`enable_cross_type_conflict: false` in `configs/eval_checkpoint.yaml`).
+
+### `SatelliteConflictResolver` — `THRESHOLD_VERSION = "conflict_policy_v1_dr1"`
+### `SatelliteScoreGate` — `THRESHOLD_VERSION = "score_gate_v1_static"`
+- Both classes export their threshold-set version string for inclusion in eval/diagnostics manifests so policy changes are traceable across runs.

@@ -1,0 +1,74 @@
+# Render specifications V1
+# =======================
+# Each entry defines immutable visual parameters for one task family.
+# Changing any field requires a new spec_id; the spec_id enters the
+# revision hash so that render changes force new revisions.
+
+render_specs:
+  - spec_id: sat_mv_v1
+    input_variant: asinh
+    crop_size: 384
+    contour_color: [255, 255, 255]   # white (RGB) – matches sam3_eval_overlay style
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 0]        # yellow (RGB) – improves stamped-context visibility
+    bbox_thickness: 1
+    image_order: [crop, context]
+    fragment_hints_enabled: false
+
+  - spec_id: sat_mv_linear_v1
+    input_variant: linear_magnitude
+    crop_size: 384
+    contour_color: [255, 255, 255]   # white (RGB)
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 0]        # yellow (RGB) – improves stamped-context visibility
+    bbox_thickness: 1
+    image_order: [crop, context]
+    fragment_hints_enabled: false
+
+  - spec_id: sat_ev_v1
+    input_variant: asinh
+    crop_size: 384                   # unused for EV but kept for schema compat
+    contour_color: [255, 255, 0]     # yellow (RGB) – aligned with GT satellite contour in sam3_eval_overlay
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 255]
+    bbox_thickness: 1
+    image_order: [full_image]
+    fragment_hints_enabled: true     # overlay all current satellite contours
+
+  - spec_id: stream_ev_v1
+    input_variant: asinh
+    crop_size: 384
+    contour_color: [0, 255, 0]
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 255]
+    bbox_thickness: 1
+    image_order: [full_image]
+    fragment_hints_enabled: true
+
+  # Same visuals as *_v1 asinh EV specs; input_variant names the stretch for
+  # asset filenames and cache keys (use with linear_magnitude render_dir).
+  - spec_id: sat_ev_linear_v1
+    input_variant: linear_magnitude
+    crop_size: 384
+    contour_color: [255, 255, 0]     # yellow (RGB) – aligned with GT satellite contour in sam3_eval_overlay
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 255]
+    bbox_thickness: 1
+    image_order: [full_image]
+    fragment_hints_enabled: true
+
+  - spec_id: stream_ev_linear_v1
+    input_variant: linear_magnitude
+    crop_size: 384
+    contour_color: [0, 255, 0]
+    contour_alpha: 0.6
+    contour_thickness: 2
+    bbox_color: [255, 255, 255]
+    bbox_thickness: 1
+    image_order: [full_image]
+    fragment_hints_enabled: true

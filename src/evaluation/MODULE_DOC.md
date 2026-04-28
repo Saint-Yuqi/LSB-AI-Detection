@@ -177,12 +177,24 @@ loader).
   `aggregate(reports)` signature is unchanged — typed-block summaries only,
   no sidecar reads.
 
-### SAM3 Evaluation Utilities (`sam3_eval.py`)
-- `discover_pairs(render_dir, gt_dir, max_samples)` → `List[Dict]` of render/GT pair metadata.
-- `run_and_evaluate(runner, pair, prompts, H_work, W_work, match_iou_thresh, streams_filter)` → per-image type-aware metrics dict.
-- `aggregate_results(per_image, group_by)` → macro/micro summaries (`overall` or `galaxy` grouping).
-- `save_results(output_dir, config, summary, per_image)` → writes `eval_results_{timestamp}.json`.
-- `save_eval_overlay(path, render_path, gt_streams_map, gt_satellites_map, stream_masks, satellite_masks)` → QA PNG overlay.
+### Checkpoint Evaluation Utilities (`checkpoint_eval.py`)
+Single SAM3 evaluation entrypoint backing `scripts/eval/evaluate_checkpoint.py`.
+Drives three benchmarks (`fbox_gold_satellites`, `firebox_dr1_streams`,
+`gt_canonical`) at a fixed 1024×1024 working grid with three layers:
+`raw`, `post_pred_only`, and (where applicable) `post_gt_aware`.
+
+- `Sample` (TypedDict) — one render/GT pair plus benchmark/ROI metadata,
+  rasterized GT maps, and the optional `gt_rles_by_type` / `gt_path_version`
+  fields used on the tidal_v1 path.
+- `compute_sample_report(sample, raw_masks, po_pair, ga_pair, iou_thresh, render_signal=None) -> (report, diag_report)`
+  — per-sample report builder. Returns `(report, diag_report)` where
+  `diag_report` is `None` for streams-only benchmarks or when diagnostics
+  are disabled.
+- `aggregate(reports) -> dict` — typed-block macro/micro summaries.
+- The legacy SAM3 utility module `sam3_eval.py` (and its
+  `discover_pairs / run_and_evaluate / aggregate_results / save_results /
+  save_eval_overlay` helpers) has been removed; checkpoint_eval is the
+  single replacement.
 
 ## Invariants
 - **Missing Annotations:** GT instances with pixel ID 0 (background) are excluded from recall calculation.

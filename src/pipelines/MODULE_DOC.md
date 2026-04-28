@@ -20,7 +20,7 @@
 - `inference.py` — Phase 3 dispatcher (routes to SAM2 or SAM3)
 - `inference_sam2.py` — SAM2 AutoMask -> filter -> merge -> cache
 - `inference_sam3.py` — SAM3 text-prompt -> filter -> evaluate or pseudo_label
-- `artifacts.py` — Prediction JSON, pseudo-GT rasterization, satellites cache, instance merging
+- `artifacts.py` — Prediction JSON, pseudo-GT rasterization, satellites cache, instance merging, `assign_stable_ids`
 - `export.py` — Phase 4: SAM2 symlinks + SAM3 COCO annotations
 - `split.py` — Galaxy-level COCO train/val split (hash-stable)
 - `noise_aug.py` — Noise augmentation (train-only): symlinks noisy renders, copies GT annotations
@@ -85,8 +85,10 @@ only merges JSON — image symlinks are created by upstream producers.
 ### `run_inference_sam3(config, base_keys, logger, force=False, force_variants=None)`
 - **Input:** Unified-dataset config, `List[BaseKey]`, logger, and rebuild controls.
 - **Mode Contract:** `config["inference_phase"]["run_mode"]` may be `evaluate` or `pseudo_label`.
+- **Purity Contract:** Standard `evaluate` runs are override-free; reviewed exceptions are migrated later through Shadow GT tooling, not injected at runtime.
 - **Output:**
   - `evaluate`: `sam3_predictions_raw.json`, `sam3_predictions_post.json`, `sam3_eval_overlay.png`, manifest update with `gt_source: "streams_instance_map"`
+    `sam3_eval_overlay.png` is the standard pipeline post-filter QA overlay with streams GT only; compare-only reference-GT overlays are produced by `scripts/eval/run_gt_refresh_compare.py`, not by the pipeline itself.
   - `pseudo_label`: `sam3_predictions_raw.json`, `sam3_predictions_post.json`, `instance_map_uint8.png`, `instances.json`, `sam3_pseudo_label_overlay.png`, manifest update with `gt_source: "none"`
 
 ## Invariants
@@ -94,6 +96,18 @@ only merges JSON — image symlinks are created by upstream producers.
 - Path formatting remains config-driven; no dataset-specific filenames are hardcoded outside pattern templates.
 - Pseudo-label GT rasterization uses `uint8` instance IDs and therefore caps per-image instance count at 255.
 - SAM3 pseudo-label completion is defined by six artifacts: raw predictions, post predictions, pseudo GT image, `instances.json`, overlay, and `manifest.json`.
+- **Stable prediction identity** — `assign_stable_ids(masks)` in
+  `unified_dataset/artifacts.py` stamps `raw_index` (global ordinal over
+  the full mask list, streams + satellites together) and `candidate_id`
+  (per-type ordinal `{sat|stream}_NNNN`). Once stamped, these IDs are
+  the cross-layer source-raw identity keys: a candidate that survives
+  into `predictions_post_pred_only.json` or `predictions_post_gt_aware.json`
+  carries the same `raw_index` it had in `predictions_raw.json`. As a
+  result, `raw_index` values in post-layer JSONs are non-consecutive —
+  that is correct. Readers that want "row index inside this file" should
+  index the `predictions` array directly. `save_predictions_json` reuses
+  pre-stamped IDs when present and falls back to local file ordinals only
+  when they are absent.
 
 ## Produced Artifacts
 - Render/GT/inference/export directory trees for the unified dataset pipeline.

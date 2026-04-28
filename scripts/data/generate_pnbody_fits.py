@@ -191,8 +191,11 @@ def main():
 
         logger.info("Processing galaxy %d: %s", gid, halo_path.name)
 
+        galaxy_dir = output_root / f"{gid:05d}"
+        galaxy_dir.mkdir(parents=True, exist_ok=True)
+
         for los_idx, los_vec in enumerate(los_vectors):
-            canonical = output_root / f"magnitudes-Fbox-{gid}-los{los_idx:02d}-VIS2.fits.gz"
+            canonical = galaxy_dir / f"magnitudes-Fbox-{gid}-los{los_idx:02d}-VIS2.fits.gz"
             _run_pnbody(
                 halo_path=halo_path,
                 instrument_file=instrument_file,
@@ -208,7 +211,7 @@ def main():
                 "view_id": f"los{los_idx:02d}",
                 "los_x": lx, "los_y": ly, "los_z": lz,
                 "source_hdf5": str(halo_path),
-                "output_fits": canonical.name,
+                "output_fits": str(canonical.relative_to(output_root)),
             })
 
         manifest_entries.append({

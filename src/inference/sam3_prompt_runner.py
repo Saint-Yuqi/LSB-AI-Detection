@@ -12,11 +12,11 @@ Args:
     prompts:    [{"text": "stellar stream", "type_label": "streams"}, ...]
 
 Returns:
-    masks: list[dict] aligned with SAM2 AutoMask contract:
+    masks: list[dict] aligned with the legacy AutoMask mask contract:
         segmentation: np.ndarray(H_work, W_work, bool)
         area:         int
-        predicted_iou: float (from scores)
-        stability_score: float (= predicted_iou, SAM3 has no stability metric)
+        score:        float (SAM3 native; from inference_state["scores"])
+        stability_score: float (= score, SAM3 has no stability metric)
         type_label:   str
         bbox:         [x, y, w, h]  (XYWH, on working grid)
     time_ms: float
@@ -51,7 +51,7 @@ DEFAULT_BPE_PATH = "/home/yuqyan/Yuqi/sam3/sam3/assets/bpe_simple_vocab_16e6.txt
 
 
 class SAM3PromptRunner:
-    """Thin wrapper: image + text prompts → list[dict] aligned with SAM2 mask contract."""
+    """Thin wrapper: image + text prompts → list[dict] aligned with the legacy mask contract."""
 
     def __init__(
         self,
@@ -133,7 +133,7 @@ class SAM3PromptRunner:
                 if thresh is not None:
                     converted = [
                         m for m in converted
-                        if m["predicted_iou"] >= thresh
+                        if m["score"] >= thresh
                     ]
 
                 all_masks.extend(converted)
@@ -195,7 +195,7 @@ class SAM3PromptRunner:
             result.append({
                 "segmentation": seg,
                 "area": area,
-                "predicted_iou": score,
+                "score": score,
                 "stability_score": score,     # SAM3 has no stability metric
                 "type_label": type_label,
                 "bbox": bbox_xywh,

@@ -1,0 +1,19 @@
+# Silver derivation policy V1
+# ===========================
+# Multi-signal thresholds for auto-deriving silver labels.
+# minor_fix and redraw are gold-only -- never auto-generated.
+
+common:
+  ev_match_iou_thresh: 0.3
+  ev_recall_thresh: 0.9
+  ev_precision_thresh: 0.9
+  ev_mixed_area_dominance_ratio: 3.0
+
+satellite_mv:
+  accept_iou_thresh: 0.7
+  reject_iou_thresh: 0.1
+  min_area_ratio: 0.5
+  max_area_ratio: 2.0
+  boundary_f1_thresh: 0.3
+  confidence_thresh: 0.5
+  ambiguity_gap: 0.15

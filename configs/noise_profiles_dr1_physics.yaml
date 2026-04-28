@@ -1,0 +1,42 @@
+# DR1 Physics Noise Profiles (mockimgs_sb_add_noise)
+# ===================================================
+# Applies pNbody physics noise to the 35 DR1 galaxies (eo/fo views).
+# These images have GT annotations, making them useful for noise-robust
+# training and evaluation.
+#
+# Galaxy count: 35 (config-authoritative). Galaxy 62 exists on disk at
+# FIREbox-DR1/SB_maps/ but is excluded to stay aligned with
+# noise_profiles.yaml and the annotated training set.
+#
+# Usage:
+#   conda run -n sam3 python scripts/data/generate_pnbody_noisy_fits.py \
+#       --config configs/noise_profiles_dr1_physics.yaml
+#
+# Rendering (reuses existing render_noisy_fits.py):
+#   conda run -n sam3 python scripts/data/render_noisy_fits.py \
+#       --noise-config configs/noise_profiles_dr1_physics.yaml \
+#       --data-config configs/unified_data_prep.yaml \
+#       --variants linear_magnitude
+
+paths:
+  firebox_root: "data/01_raw/LSB_and_Satellites/FIREbox-DR1"
+  output_root: "data/04_noise/dr1_physics"
+
+data_selection:
+  # 35 galaxies — config-authoritative. Galaxy 62 exists on disk but is
+  # excluded to stay aligned with noise_profiles.yaml and the annotated set.
+  galaxy_ids: [11, 13, 19, 22, 24, 25, 27, 28, 29, 30, 32, 33, 34, 35, 36,
+               37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 53, 56,
+               63, 64, 66, 68, 72]
+  views: ["eo", "fo"]
+
+profiles:
+  - name: "sb30"
+    sb_limit: 30.0
+  - name: "sb31.5"
+    sb_limit: 31.5
+  - name: "sb32"
+    sb_limit: 32.0   # less noise than sb31.5 (higher SB threshold => smaller Gaussian sigma)
+
+reproducibility:
+  random_seed: 42

@@ -1,0 +1,27 @@
+{
+  "include": [
+    "src",
+    "scripts",
+    "tests",
+    "instruments",
+    "docs/api/conf.py"
+  ],
+  "exclude": [
+    "data",
+    "outputs",
+    "logs",
+    "notebooks",
+    "notebook_images",
+    "references",
+    "sam2_finetuning_20260205_210313",
+    "sam3_finetuning_2026-02-24_19-04-51",
+    "scratch",
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
+    "**/.ipynb_checkpoints",
+    "**/node_modules",
+    "**/.*"
+  ]
+}

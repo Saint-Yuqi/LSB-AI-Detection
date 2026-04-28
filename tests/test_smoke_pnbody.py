@@ -45,9 +45,12 @@ class TestConfigLoading:
         from src.pipelines.unified_dataset.config import load_config, generate_base_keys
         cfg = load_config(PROJECT_ROOT / "configs" / "unified_data_prep_pnbody.yaml")
 
+        assert cfg["dataset_name"] == "pnbody"
         assert cfg["gt_phase"]["enabled"] is False
         assert cfg["inference_phase"]["run_mode"] == "pseudo_label"
         assert cfg["export_phase"]["annotations_filename"] == "annotations_pnbody_pseudo.json"
+        assert set(cfg["data_conditions"]) == {"clean", "sb30", "sb31.5"}
+        assert cfg["data_conditions"]["sb30"]["label_mode"] == "clone_from_clean"
 
         keys = generate_base_keys(cfg, galaxy_filter=[11])
         assert len(keys) == 24
@@ -124,11 +127,28 @@ class TestPathResolverDualFormatKey:
         from src.pipelines.unified_dataset.keys import BaseKey
 
         config = {
-            "paths": {"firebox_root": "/data/FIREbox_PNbody", "output_root": "/out"},
+            "dataset_name": "pnbody",
+            "paths": {
+                "firebox_root": "/data/FIREbox_PNbody",
+                "output_root": "/out",
+                "diagnostics_root": "/out/sam3_diagnostics",
+            },
+            "data_conditions": {
+                "clean": {
+                    "fits_root": "/data/FIREbox_PNbody/SB_maps",
+                    "image_pattern": "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz",
+                    "label_mode": "authoritative",
+                },
+                "sb30": {
+                    "fits_root": "/noise/sb30",
+                    "image_pattern": "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz",
+                    "label_mode": "clone_from_clean",
+                },
+            },
             "data_sources": {
                 "streams": {
                     "image_subdir": "SB_maps",
-                    "image_pattern": "magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz",
+                    "image_pattern": "{galaxy_id:05d}/magnitudes-Fbox-{galaxy_id}-{view_id}-VIS2.fits.gz",
                 }
             },
             "processing": {"target_size": [1024, 1024]},
@@ -137,7 +157,16 @@ class TestPathResolverDualFormatKey:
         key = BaseKey(11, "los00")
 
         fits_path = resolver.get_fits_path(key)
-        assert "magnitudes-Fbox-11-los00-VIS2.fits.gz" in str(fits_path)
+        assert str(fits_path).endswith("/SB_maps/00011/magnitudes-Fbox-11-los00-VIS2.fits.gz")
+
+        noisy_fits = resolver.get_condition_fits_path(key, condition="sb30")
+        assert str(noisy_fits).endswith("/sb30/00011/magnitudes-Fbox-11-los00-VIS2.fits.gz")
+
+        pseudo_gt_dir = resolver.get_pseudo_gt_dir(key, dataset="pnbody", condition="sb30")
+        assert str(pseudo_gt_dir).endswith("/pseudo_gt_canonical/pnbody/sb30/current/00011_los00")
+
+        diag_dir = resolver.get_diagnostics_dir(key, dataset="pnbody", condition="sb30")
+        assert str(diag_dir).endswith("/sam3_diagnostics/pnbody/sb30/current/00011_los00")
 
     def test_mask_returns_none_when_absent(self):
         """PathResolver.get_mask_path returns None when mask config is absent."""
@@ -293,9 +322,9 @@ class TestPseudoLabelFlow:
         H, W = 64, 64
         masks = [
             {"segmentation": np.zeros((H, W), dtype=bool), "type_label": "streams",
-             "predicted_iou": 0.92, "bbox": [5, 5, 10, 10]},
+             "score": 0.92, "bbox": [5, 5, 10, 10]},
             {"segmentation": np.zeros((H, W), dtype=bool), "type_label": "satellites",
-             "predicted_iou": 0.88, "bbox": [30, 30, 10, 10]},
+             "score": 0.88, "bbox": [30, 30, 10, 10]},
         ]
         masks[0]["segmentation"][5:15, 5:15] = True
         masks[1]["segmentation"][30:40, 30:40] = True
@@ -324,6 +353,36 @@ class TestPseudoLabelFlow:
         (gt_dir / "sam3_predictions_raw.json").write_text("{}")
         (gt_dir / "sam3_predictions_post.json").write_text("{}")
         assert _pseudo_label_complete(gt_dir)
+
+    def test_stream_first_rasterization_keeps_stream_pixels(self, tmp_path):
+        """stream_first prevents satellites from overwriting stream pixels."""
+        from src.pipelines.unified_dataset.artifacts import save_pseudo_gt
+
+        H, W = 32, 32
+        stream = np.zeros((H, W), dtype=bool)
+        sat = np.zeros((H, W), dtype=bool)
+        stream[8:20, 8:20] = True
+        sat[12:24, 12:24] = True
+
+        gt_dir = tmp_path / "stream_first"
+        save_pseudo_gt(
+            gt_dir,
+            [
+                {"segmentation": stream, "type_label": "streams"},
+                {"segmentation": sat, "type_label": "satellites"},
+            ],
+            H,
+            W,
+            overlap_policy="stream_first",
+            write_id_map=True,
+        )
+
+        instance_map = np.array(Image.open(gt_dir / "instance_map_uint8.png"))
+        assert instance_map[12, 12] == 1
+        assert instance_map[22, 22] == 2
+        id_map = json.loads((gt_dir / "id_map.json").read_text())
+        assert id_map["streams"]["0"] == 1
+        assert id_map["satellites"]["0"] == 2
 
     def test_overlay_runs_without_gt(self, tmp_path):
         """save_pseudo_label_overlay works with empty predictions."""
@@ -379,7 +438,7 @@ class TestExportAnnotationsFilename:
 
         output_root = tmp_path / "output"
         key = BaseKey(11, "los00")
-        gt_dir = output_root / "gt_canonical" / "current" / str(key)
+        gt_dir = output_root / "pseudo_gt_canonical" / "pnbody" / "clean" / "current" / str(key)
         gt_dir.mkdir(parents=True)
 
         H, W = 64, 64
@@ -393,7 +452,24 @@ class TestExportAnnotationsFilename:
         Image.fromarray(np.zeros((H, W, 3), dtype=np.uint8)).save(render_dir / "0000.png")
 
         config = {
-            "paths": {"firebox_root": "/dummy", "output_root": str(output_root)},
+            "dataset_name": "pnbody",
+            "paths": {
+                "firebox_root": "/dummy",
+                "output_root": str(output_root),
+                "diagnostics_root": str(output_root / "sam3_diagnostics"),
+            },
+            "data_conditions": {
+                "clean": {
+                    "fits_root": "/dummy",
+                    "image_pattern": "{galaxy_id:05d}/unused-{view_id}.fits.gz",
+                    "label_mode": "authoritative",
+                },
+                "sb30": {
+                    "fits_root": "/dummy-noise",
+                    "image_pattern": "{galaxy_id:05d}/unused-{view_id}.fits.gz",
+                    "label_mode": "clone_from_clean",
+                },
+            },
             "data_sources": {"streams": {}},
             "processing": {"target_size": [H, W]},
             "preprocessing_variants": [{"name": "linear_magnitude"}],
@@ -403,9 +479,11 @@ class TestExportAnnotationsFilename:
         logger = logging.getLogger("test_export")
         run_export_phase(config, [key], logger)
 
-        ann_path = output_root / "sam3_prepared" / "annotations_pnbody_pseudo.json"
+        ann_path = output_root / "sam3_prepared" / "pnbody" / "annotations_pnbody_pseudo.json"
         assert ann_path.exists()
         coco = json.loads(ann_path.read_text())
         assert len(coco["images"]) == 1
         assert coco["images"][0]["view_id"] == "los00"
         assert coco["images"][0]["orientation"] == "los00"  # mirror field
+        assert coco["images"][0]["dataset"] == "pnbody"
+        assert coco["images"][0]["condition"] == "clean"

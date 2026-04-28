@@ -3,7 +3,7 @@
 Analyze instance mask statistics from canonical GT masks (unified pipeline).
 
 Usage:
-    conda run -n sam2 --no-capture-output python scripts/analysis/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
+    conda run -n sam3 --no-capture-output python scripts/analysis/analyze_mask_stats.py [--gt_root PATH] [--output_dir PATH]
 
 Args:
     --gt_root: Root directory of canonical GT (default: data/02_processed/gt_canonical/current)

@@ -5,16 +5,16 @@ Unified Dataset Preparation Pipeline
 4-Phase Architecture:
     render     -> renders/current/{preprocessing}/{BaseKey}/0000.png
     gt         -> gt_canonical/.../streams_instance_map.npy
-    inference  -> SAM2 (AutoMask merge) or SAM3 (evaluate: predictions JSON + QA overlay)
-    export     -> SAM2 symlinks + SAM3 annotations.json
+    inference  -> SAM3 evaluate (predictions JSON + QA overlay)
+    export     -> SAM3 annotations.json (COCO)
 
 Usage:
-    python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
-    python scripts/data/prepare_unified_dataset.py --config ... --phase inference
-    python scripts/data/prepare_unified_dataset.py --config ... --phase satellites  # alias
-    python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
-    python scripts/data/prepare_unified_dataset.py --config ... --force
-    python scripts/data/prepare_unified_dataset.py --config ... --force-variants asinh_stretch
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --phase inference
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --phase satellites  # alias
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --galaxies 11,13
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --force
+    conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config ... --force-variants asinh_stretch
 
 Env:
     CUDA, PyTorch with bf16 support for inference phase.
@@ -44,11 +44,19 @@ from src.pipelines.unified_dataset.artifacts import (  # noqa: F401
     save_predictions_json as _save_predictions_json,
     merge_instances as _merge_instances,
 )
+from src.utils.runtime_env import assert_expected_conda_env
 
 
 def main():
+    assert_expected_conda_env(
+        context="scripts/data/prepare_unified_dataset.py",
+    )
     parser = argparse.ArgumentParser(description="Unified Dataset Preparation")
     parser.add_argument("--config", "-c", type=Path, required=True, help="Config YAML path")
+    parser.add_argument("--dataset", type=str, default=None,
+                        help="Override config dataset_name (e.g. pnbody)")
+    parser.add_argument("--conditions", nargs="+", default=None,
+                        help="Subset of condition names to process (e.g. clean sb30 sb31.5)")
     parser.add_argument(
         "--phase", type=str,
         choices=["render", "gt", "inference", "satellites", "export", "all"],
@@ -70,6 +78,19 @@ def main():
     logger = logging.getLogger(__name__)
 
     config = load_config(args.config)
+    if args.dataset:
+        config["dataset_name"] = args.dataset
+
+    if args.conditions is not None:
+        known_conditions = set(config.get("data_conditions", {}).keys())
+        unknown = [c for c in args.conditions if known_conditions and c not in known_conditions]
+        if unknown:
+            raise ValueError(
+                f"Unknown conditions {unknown}; expected subset of {sorted(known_conditions)}"
+            )
+        config["_active_conditions"] = list(args.conditions)
+    elif "data_conditions" in config:
+        config["_active_conditions"] = list(config["data_conditions"].keys())
 
     galaxy_filter = None
     if args.galaxies:
@@ -84,6 +105,9 @@ def main():
         logger.info(f"Force rebuild variants: {force_variants}")
 
     base_keys = generate_base_keys(config, galaxy_filter)
+    dataset_name = config.get("dataset_name", "dr1")
+    conditions = config.get("_active_conditions", ["clean"])
+    logger.info(f"Dataset: {dataset_name}, conditions: {conditions}")
     logger.info(f"Processing {len(base_keys)} BaseKeys")
 
     phases = ["render", "gt", "inference", "export"] if args.phase == "all" else [args.phase]

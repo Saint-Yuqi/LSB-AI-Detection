@@ -32,7 +32,7 @@ class CoreExclusionFilter:
     ) -> tuple[list[dict], list[dict], dict[str, Any]]:
         """
         Args:
-            masks: list of SAM2 mask dicts with 'segmentation'.
+            masks: list of mask dicts with 'segmentation'.
             H, W: image dimensions.
 
         Returns:

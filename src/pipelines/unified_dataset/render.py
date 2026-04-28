@@ -38,32 +38,44 @@ def run_render_phase(
         )
 
     stats = {"rendered": 0, "skipped_exists": 0, "skipped_no_fits": 0}
+    conditions = resolver.get_active_conditions()
 
-    for key in base_keys:
-        fits_path = resolver.get_fits_path(key)
+    for condition in conditions:
+        logger.info("Render condition: %s", condition)
+        for key in base_keys:
+            fits_path = resolver.get_condition_fits_path(
+                key,
+                dataset=resolver.dataset_name,
+                condition=condition,
+            )
 
-        if not fits_path.exists():
-            logger.warning(f"FITS not found: {fits_path}")
-            stats["skipped_no_fits"] += 1
-            continue
-
-        sb_map = load_fits_gz(fits_path)
-
-        for name, proc in preprocessors.items():
-            out_dir = resolver.get_render_dir(name, key)
-            out_path = out_dir / "0000.png"
-
-            if out_path.exists() and force_variants and name in force_variants:
-                out_path.unlink()
-                logger.info(f"Force rebuild: {name}/{key}")
-            elif out_path.exists():
-                stats["skipped_exists"] += 1
+            if not fits_path.exists():
+                logger.warning(f"FITS not found: {fits_path}")
+                stats["skipped_no_fits"] += 1
                 continue
 
-            out_dir.mkdir(parents=True, exist_ok=True)
+            sb_map = load_fits_gz(fits_path)
 
-            rgb = proc.process(sb_map)
-            cv2.imwrite(str(out_path), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
-            stats["rendered"] += 1
+            for name, proc in preprocessors.items():
+                out_dir = resolver.get_render_dir(
+                    name,
+                    key,
+                    dataset=resolver.dataset_name,
+                    condition=condition,
+                )
+                out_path = out_dir / "0000.png"
+
+                if out_path.exists() and force_variants and name in force_variants:
+                    out_path.unlink()
+                    logger.info(f"Force rebuild: {condition}/{name}/{key}")
+                elif out_path.exists():
+                    stats["skipped_exists"] += 1
+                    continue
+
+                out_dir.mkdir(parents=True, exist_ok=True)
+
+                rgb = proc.process(sb_map)
+                cv2.imwrite(str(out_path), cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+                stats["rendered"] += 1
 
     logger.info(f"Rendered: {stats['rendered']}, Skipped (exists): {stats['skipped_exists']}, Skipped (no FITS): {stats['skipped_no_fits']}")

@@ -10,16 +10,19 @@ A modular Python package for detecting Low Surface Brightness (LSB) features in 
 LSB-AI-Detection/
 ├── configs/                          # YAML configuration files
 │   ├── unified_data_prep.yaml        #   4-phase data pipeline
+│   ├── archive/                      #   Archived migration-only configs
 │   ├── eval_sam2.yaml                #   SAM2 evaluation
 │   ├── eval_sam3.yaml                #   SAM3 type-aware evaluation
 │   ├── noise_profiles.yaml           #   Forward noise model SNR profiles
-│   └── sam3_dataset_split.yaml       #   Galaxy-level train/val split
+│   ├── sam3_dataset_split.yaml       #   Galaxy-level train/val split
+│   └── review/                       #   AI Verifier Protocol V1.1 configs
 ├── data/                             # Raw and processed datasets
 ├── docs/                             # Documentation (API and Datasets)
 ├── scripts/                          # CLI entry points (data / eval / cluster / viz / analysis)
 │   ├── data/                         #   Dataset build, noise FITS, splits
 │   ├── eval/                         #   SAM2/SAM3 eval, local batch bash
 │   ├── cluster/                      #   Slurm templates + sbatch launcher (site-specific)
+│   ├── review/                       #   AI Verifier Protocol CLI scripts
 │   ├── viz/                          #   QA grids and metric figures
 │   └── analysis/                     #   Mask stats and recall curves
 ├── src/                              # Source code package
@@ -30,6 +33,7 @@ LSB-AI-Detection/
 │   ├── noise/                        #   Forward observation noise model
 │   ├── pipelines/unified_dataset/    #   Modular dataset pipeline subpackage
 │   ├── postprocess/                  #   Prior filter, grouping, representative selection
+│   ├── review/                       #   AI Verifier Protocol V1.1
 │   ├── utils/                        #   COCO utils, logger, geometry helpers
 │   └── visualization/               #   Overlay & QA visualization
 ├── tests/                            # Unit tests (pytest)
@@ -53,6 +57,7 @@ LSB-AI-Detection/
 - [Analysis Module (`src/analysis`)](src/analysis/MODULE_DOC.md)
 - [Evaluation Module (`src/evaluation`)](src/evaluation/MODULE_DOC.md)
 - [Visualization Module (`src/visualization`)](src/visualization/MODULE_DOC.md)
+- [Review Module (`src/review`)](src/review/MODULE_DOC.md)
 - [Utilities Module (`src/utils`)](src/utils/MODULE_DOC.md)
 
 ---
@@ -72,23 +77,25 @@ LSB-AI-Detection/
 ## Quick Start
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies inside the SAM3 runtime env
+conda run --no-capture-output -n sam3 pip install -r requirements.txt
 
 # Configure AST Versioned Git Hooks
 git config core.hooksPath tools/githooks
 
+# Current SAM3 render/eval/review flows assume the `sam3` conda env.
+
 # 1. Unified Pipeline (Recommended)
-python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
+conda run --no-capture-output -n sam3 python scripts/data/prepare_unified_dataset.py --config configs/unified_data_prep.yaml
 
 # 2. Noise augmentation
-python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
-python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
+conda run --no-capture-output -n sam3 python scripts/data/render_noisy_fits.py --config configs/unified_data_prep.yaml
+conda run --no-capture-output -n sam3 python scripts/data/build_noise_augmented_annotations.py --config configs/unified_data_prep.yaml
 
 # 3. Train/val split
-python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
+conda run --no-capture-output -n sam3 python scripts/data/split_annotations.py --config configs/sam3_dataset_split.yaml
 
 # 4. Evaluate
-python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
-python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
+conda run --no-capture-output -n sam3 python scripts/eval/evaluate_sam2.py --config configs/eval_sam2.yaml
+conda run --no-capture-output -n sam3 python scripts/eval/evaluate_sam3.py --config configs/eval_sam3.yaml
 ```

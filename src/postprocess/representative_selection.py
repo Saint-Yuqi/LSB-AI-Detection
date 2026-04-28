@@ -75,7 +75,7 @@ def compute_rep_score(m: dict[str, Any], cfg: dict[str, Any]) -> float:
 
     Formula (no solidity):
         score = w_stab * stability_score
-              + w_iou * predicted_iou
+              + w_iou * score
               - w_aspect * |aspect_sym_moment - 1|
               - w_area * |log(area_clean) - log(area_target)|
 
@@ -99,7 +99,7 @@ def compute_rep_score(m: dict[str, Any], cfg: dict[str, Any]) -> float:
 
     score = (
         w_stab * m.get("stability_score", 0.0)
-        + w_iou * m.get("predicted_iou", 0.0)
+        + w_iou * m.get("score", 0.0)
         - w_aspect * abs(aspect - 1.0)
         - w_area * abs(log(area) - log(target))
     )

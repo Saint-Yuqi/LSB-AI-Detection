@@ -31,7 +31,7 @@ class TestSavePredictionsJsonSchema:
             {
                 "segmentation": np.zeros((64, 64), dtype=bool),
                 "type_label": "streams",
-                "predicted_iou": 0.9,
+                "score": 0.9,
                 "area": 100,
                 "bbox": [10, 10, 20, 20],
             }
@@ -61,7 +61,7 @@ class TestSavePredictionsJsonSchema:
             {
                 "segmentation": seg,
                 "type_label": "satellites",
-                "predicted_iou": 0.85,
+                "score": 0.85,
                 "area": 100,
                 "bbox": [5, 5, 10, 10],
             }
@@ -77,6 +77,9 @@ class TestSavePredictionsJsonSchema:
         assert "area" in pred
         assert "bbox_xywh" in pred
         assert "rle" in pred
+        assert "candidate_id" in pred
+        assert "raw_index" in pred
+        assert "candidate_rle_sha1" in pred
 
     def test_empty_masks(self, tmp_path):
         out = tmp_path / "preds.json"
@@ -272,3 +275,25 @@ class TestRasterizePseudoGt:
         imap, instances = rasterize_pseudo_gt([], 64, 64)
         assert imap.max() == 0
         assert instances == []
+
+    def test_stream_first_overlap_policy(self):
+        from src.pipelines.unified_dataset.artifacts import rasterize_pseudo_gt
+
+        H, W = 32, 32
+        stream = np.zeros((H, W), dtype=bool)
+        sat = np.zeros((H, W), dtype=bool)
+        stream[4:16, 4:16] = True
+        sat[10:22, 10:22] = True
+
+        imap, instances = rasterize_pseudo_gt(
+            [
+                {"segmentation": stream, "type_label": "streams"},
+                {"segmentation": sat, "type_label": "satellites"},
+            ],
+            H,
+            W,
+            overlap_policy="stream_first",
+        )
+        assert imap[10, 10] == 1
+        assert imap[20, 20] == 2
+        assert instances[0]["type"] == "streams"

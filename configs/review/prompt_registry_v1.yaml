@@ -1,0 +1,43 @@
+# Prompt templates V1
+# ===================
+# Each entry: fixed_prompt_id -> text template, allowed labels, isolation token.
+# Isolation tokens are always prepended for forward compatibility.
+
+prompts:
+  - fixed_prompt_id: sat_mv_v1
+    isolation_token: "<SAT_MV>"
+    text_template: >-
+      Decide exactly one label: accept | minor_fix | reject | route_to_ev.
+      Image 1 is the candidate crop with white contour.
+      Image 2 is the full-image context with yellow bounding box.
+    allowed_labels:
+      - accept
+      - minor_fix
+      - reject
+      - route_to_ev
+
+  - fixed_prompt_id: sat_ev_v1
+    isolation_token: "<SAT_EV>"
+    text_template: >-
+      Decide exactly one label: confirm_complete | add_missing | confirm_empty.
+      The image shows the full field of view with all current satellite annotations highlighted by yellow contours.
+      Assess whether the satellite annotation set is complete: confirm if all satellites are annotated,
+      flag missing annotations, or confirm the field is empty.
+    allowed_labels:
+      - confirm_complete
+      - add_missing
+      - confirm_empty
+
+  - fixed_prompt_id: stream_ev_v1
+    isolation_token: "<STREAM_EV>"
+    text_template: >-
+      Decide exactly one label: confirm_complete | add_missing_fragment | delete_fragment | redraw | confirm_empty | uncertain.
+      The image shows the full field of view with stream fragment hints overlaid.
+      Assess whether the stream annotation set is complete and accurate.
+    allowed_labels:
+      - confirm_complete
+      - add_missing_fragment
+      - delete_fragment
+      - redraw
+      - confirm_empty
+      - uncertain

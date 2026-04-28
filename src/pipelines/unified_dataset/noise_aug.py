@@ -1,12 +1,12 @@
 """
-Noise augmentation for train-only COCO annotations.
+Noise augmentation for split-aware COCO annotations.
 
-Takes a clean annotations_train.json and produces an augmented COCO
+Takes a clean split JSON (train or val) and produces an augmented COCO
 dataset containing the original clean images plus noisy variants
 (symlinked from pre-rendered noisy PNGs).
 
 Guardrails:
-    - Two-way leakage check against split_manifest
+    - Split-aware leakage check against split_manifest
     - Re-augmentation rejection (refuses input that already contains noisy images)
     - Per-image dimension validation (noisy PNG must match clean resolution)
     - Idempotent symlink creation
@@ -19,33 +19,44 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-_SNR_SENTINEL = "__snr"
+_NOISE_SENTINEL = "__noise_"
+_LEGACY_SNR_SENTINEL = "__snr"
+_DEFAULT_NOISY_VARIANTS = {"linear_magnitude"}
+
+
+def _sanitize_tag(tag: str) -> str:
+    """Make a profile tag safe for filenames while preserving readability."""
+    return tag.replace(".", "p")
 
 
 def build_noise_augmented_coco(
-    coco_train: dict[str, Any],
+    coco_split: dict[str, Any],
     noisy_root: Path,
-    snr_tags: list[str],
+    noise_tags: list[str],
     dataset_root: Path,
     split_manifest: dict[str, Any],
+    target_split: Literal["train", "val"],
+    noisy_variants: set[str] | None = None,
     force: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Build a noise-augmented COCO dataset from a clean train split.
+    """Build a split-aware noise-augmented COCO dataset from a clean split.
 
     Args:
-        coco_train: COCO dict loaded from annotations_train.json (clean only).
+        coco_split: COCO dict loaded from annotations_{split}.json (clean only).
         noisy_root: Root of pre-rendered noisy PNGs
-                    (layout: {variant}/{snr_tag}/{base_key}/0000.png).
-        snr_tags: SNR profiles to include, e.g. ["snr20", "snr50"].
+                    (layout: {variant}/{noise_tag}/{base_key}/0000.png).
+        noise_tags: Noise profiles to include, e.g. ["sb30", "sb31.5"].
         dataset_root: SAM3 dataset root where image symlinks are created.
         split_manifest: Galaxy split manifest (must contain train_galaxy_ids
                         and val_galaxy_ids).
+        target_split: Which split is being augmented ("train" or "val").
+        noisy_variants: Variants that should receive noisy clones.
         force: If True, overwrite divergent symlinks instead of raising.
 
     Returns:
@@ -53,15 +64,22 @@ def build_noise_augmented_coco(
         computed counts only (no file paths).
 
     Raises:
-        ValueError: Leakage detected, re-augmentation attempt, or
-                    dimension mismatch.
+        ValueError: Leakage detected, re-augmentation attempt, invalid split,
+                    or dimension mismatch.
         FileNotFoundError: A required noisy PNG is missing.
         FileExistsError: Symlink target conflict (when force=False).
     """
-    images = coco_train["images"]
-    annotations = coco_train["annotations"]
+    if target_split not in {"train", "val"}:
+        raise ValueError(
+            f"target_split must be 'train' or 'val', got {target_split!r}"
+        )
 
-    _validate_no_leakage(images, split_manifest)
+    noisy_variants = set(noisy_variants or _DEFAULT_NOISY_VARIANTS)
+
+    images = coco_split["images"]
+    annotations = coco_split["annotations"]
+
+    _validate_no_leakage(images, split_manifest, target_split)
     _validate_not_augmented(images)
 
     img_id_to_anns: dict[int, list[dict]] = {}
@@ -76,6 +94,7 @@ def build_noise_augmented_coco(
         clean_img = {
             **img,
             "snr_tag": "clean",
+            "noise_tag": "clean",
             "source_image_id_in_base": orig_id,
             "source_file_name": img["file_name"],
         }
@@ -96,16 +115,20 @@ def build_noise_augmented_coco(
     for img in images:
         orig_id = img["id"]
         variant = img["variant"]
+        if variant not in noisy_variants:
+            continue
+
         base_key = img["base_key"]
 
-        for snr in snr_tags:
-            noisy_path = noisy_root / variant / snr / base_key / "0000.png"
+        for noise_tag in noise_tags:
+            noisy_path = noisy_root / variant / noise_tag / base_key / "0000.png"
             if not noisy_path.exists():
                 raise FileNotFoundError(
                     f"Noisy render missing: {noisy_path}"
                 )
 
-            noisy_size = Image.open(noisy_path).size  # (W, H)
+            with Image.open(noisy_path) as noisy_image:
+                noisy_size = noisy_image.size
             if noisy_size != (img["width"], img["height"]):
                 raise ValueError(
                     f"Dimension mismatch for {noisy_path}: "
@@ -113,7 +136,10 @@ def build_noise_augmented_coco(
                     f"got {noisy_size}"
                 )
 
-            stem = f"{base_key}_{variant}{_SNR_SENTINEL}{snr[3:]}"
+            stem = (
+                f"{base_key}_{variant}"
+                f"{_NOISE_SENTINEL}{_sanitize_tag(noise_tag)}"
+            )
             sym_name = f"{stem}.png"
             sym_path = images_dir / sym_name
 
@@ -122,7 +148,8 @@ def build_noise_augmented_coco(
             noisy_img = {
                 **img,
                 "file_name": f"images/{sym_name}",
-                "snr_tag": snr,
+                "snr_tag": noise_tag,
+                "noise_tag": noise_tag,
                 "source_image_id_in_base": orig_id,
                 "source_file_name": img["file_name"],
             }
@@ -137,8 +164,8 @@ def build_noise_augmented_coco(
     new_images, new_anns = _renumber(all_images, all_annotations)
 
     augmented_coco = {
-        "info": coco_train.get("info", {}),
-        "categories": coco_train.get("categories", []),
+        "info": coco_split.get("info", {}),
+        "categories": coco_split.get("categories", []),
         "images": new_images,
         "annotations": new_anns,
     }
@@ -148,7 +175,9 @@ def build_noise_augmented_coco(
 
     stats = {
         "dataset_variant": "noise_aug",
-        "snr_tags": list(snr_tags),
+        "target_split": target_split,
+        "noise_tags": list(noise_tags),
+        "noisy_variants": sorted(noisy_variants),
         "n_images_clean": n_clean_images,
         "n_images_noisy": n_noisy_images,
         "n_images_total": len(new_images),
@@ -159,8 +188,12 @@ def build_noise_augmented_coco(
     }
 
     logger.info(
-        "Noise augmentation: %d clean + %d noisy = %d images, %d annotations",
-        n_clean_images, n_noisy_images, len(new_images), len(new_anns),
+        "Noise augmentation (%s): %d clean + %d noisy = %d images, %d annotations",
+        target_split,
+        n_clean_images,
+        n_noisy_images,
+        len(new_images),
+        len(new_anns),
     )
 
     return augmented_coco, stats
@@ -169,24 +202,36 @@ def build_noise_augmented_coco(
 def _validate_no_leakage(
     images: list[dict[str, Any]],
     split_manifest: dict[str, Any],
+    target_split: Literal["train", "val"],
 ) -> None:
-    """Two-way galaxy leakage check."""
+    """Split-aware galaxy leakage check."""
     input_gids = {img["galaxy_id"] for img in images}
     val_gids = set(split_manifest["val_galaxy_ids"])
     train_gids = set(split_manifest["train_galaxy_ids"])
 
-    overlap = input_gids & val_gids
+    if target_split == "train":
+        allowed_gids = train_gids
+        forbidden_gids = val_gids
+        allowed_label = "train_galaxy_ids"
+        forbidden_label = "val_galaxy_ids"
+    else:
+        allowed_gids = val_gids
+        forbidden_gids = train_gids
+        allowed_label = "val_galaxy_ids"
+        forbidden_label = "train_galaxy_ids"
+
+    overlap = input_gids & forbidden_gids
     if overlap:
         raise ValueError(
             f"Leakage: galaxies {sorted(overlap)} appear in both "
-            f"input and val_galaxy_ids"
+            f"input and {forbidden_label}"
         )
 
-    outside = input_gids - train_gids
+    outside = input_gids - allowed_gids
     if outside:
         raise ValueError(
             f"Input galaxies {sorted(outside)} are not in "
-            f"train_galaxy_ids from split manifest"
+            f"{allowed_label} from split manifest"
         )
 
 
@@ -200,10 +245,20 @@ def _validate_not_augmented(images: list[dict[str, Any]]) -> None:
                 f"(image {img['id']} has snr_tag={snr_tag!r}); "
                 f"refusing to re-augment"
             )
-        if _SNR_SENTINEL in img.get("file_name", ""):
+
+        noise_tag = img.get("noise_tag")
+        if noise_tag is not None and noise_tag != "clean":
             raise ValueError(
                 f"Input already contains augmented images "
-                f"(image {img['id']} file_name contains '{_SNR_SENTINEL}'); "
+                f"(image {img['id']} has noise_tag={noise_tag!r}); "
+                f"refusing to re-augment"
+            )
+
+        file_name = img.get("file_name", "")
+        if _LEGACY_SNR_SENTINEL in file_name or _NOISE_SENTINEL in file_name:
+            raise ValueError(
+                f"Input already contains augmented images "
+                f"(image {img['id']} file_name contains a noise sentinel); "
                 f"refusing to re-augment"
             )
 

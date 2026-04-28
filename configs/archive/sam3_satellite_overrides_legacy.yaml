@@ -1,0 +1,41 @@
+# Archived migration input only.
+# Never consumed by inference runtime; use scripts/review/migrate_satellite_overrides.py.
+schema_version: 1
+base_keys:
+  "00019_fo":
+    force_keep:
+      - candidate_rle_sha1: "5994da3354f71ee8"
+        note: "Large high-confidence satellite only grazing stream pixels; retain despite tiny conflict overlap."
+  "00049_eo":
+    force_keep:
+      - candidate_id: "sat_0010"
+        candidate_rle_sha1: "3d11c153349a15e1"
+        note: "Reviewed medium-score satellite retained for this case instead of the earlier borderline candidate."
+  "00049_fo":
+    force_keep:
+      - candidate_id: "sat_0001"
+        candidate_rle_sha1: "6abd955162616308"
+        note: "Near-center soft-core satellite manually retained for this case."
+  "00068_eo":
+    force_keep:
+      - candidate_id: "sat_0000"
+        note: "Large near-center satellite retained despite stream-conflict drop."
+  "00066_fo":
+    inject_from_json:
+      - path: "data/02_processed/probes/sam3_conf006_raw/00066_fo/sam3_predictions_raw.json"
+        candidate_rle_sha1: "f147915181240349"
+        note: "Import the larger reviewed near-centre low-confidence satellite from the 0.06 probe run."
+      - path: "data/02_processed/probes/sam3_conf006_raw/00066_fo/sam3_predictions_raw.json"
+        candidate_rle_sha1: "29c36b077323452c"
+        note: "Import the overlapping smaller near-centre raw candidate for auditability; final keep prefers the larger area mask."
+      - path: "data/02_processed/probes/sam3_conf006_raw/00066_fo/sam3_predictions_raw.json"
+        candidate_rle_sha1: "8ed043a391e1003e"
+        note: "Import the overlapping smaller far raw candidate for auditability; final keep prefers the larger area mask."
+      - path: "data/02_processed/probes/sam3_conf006_raw/00066_fo/sam3_predictions_raw.json"
+        candidate_rle_sha1: "7de20fc37e584a01"
+        note: "Import the low-confidence large far satellite from the 0.06 probe run."
+    force_keep:
+      - candidate_rle_sha1: "f147915181240349"
+        note: "Retain the larger reviewed near-centre low-confidence satellite for this case."
+      - candidate_rle_sha1: "7de20fc37e584a01"
+        note: "Retain the injected low-confidence large far satellite for this reviewed case."
